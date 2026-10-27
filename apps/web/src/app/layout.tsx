@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   robots: INDEXABLE
     ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
     : { index: false, follow: false },
-  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined },
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || "PV2Tc0MI8AE_GoDiaFVqWuM09AtV7Ie2ANLyKtOexRU" },
   formatDetection: { telephone: false, email: false, address: false },
   appleWebApp: { capable: true, title: MARCA.nombre, statusBarStyle: "default" },
 };
