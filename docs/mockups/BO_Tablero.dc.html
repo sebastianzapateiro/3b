@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Backoffice tablero</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F3EFE7}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="min-height: 1180px; display: flex; flex-wrap: wrap; background: #F3EFE7; color: #1B2623; font-family: Inter, system-ui, sans-serif">
+
+  <aside style="flex: 1 1 240px; min-width: 0; background: #1B2623; color: #FBF7F0; padding: 22px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px">
+    <span style="display: flex; align-items: center; gap: 8px; padding: 0 8px">
+      <svg width="44" height="22" viewBox="4 -182 382 188" aria-hidden="true"><path transform="translate(1.92 0) scale(0.11719 -0.11719)" d="M646 -24C994 -24 1235 164 1235 420C1235 598 1114 751 898 776V779C1066 807 1189 924 1189 1099C1189 1342 963 1514 646 1514C302 1514 90 1310 90 1038H427C427 1164 517 1248 646 1248C770 1248 857 1171 857 1059C857 950 766 884 618 884H480V632H618C776 632 879 558 879 444C879 328 783 250 643 250C492 250 401 344 401 501H61C61 220 248 -24 646 -24Z" fill="#FBF7F0"/><path transform="translate(145.54 0) scale(0.11719 -0.11719)" d="M96 0H761C1092 0 1279 174 1279 421C1279 632 1136 768 950 780V782C1118 819 1227 940 1227 1112C1227 1335 1047 1490 716 1490H96ZM447 276V623H704C833 623 912 555 912 447C912 340 832 276 702 276ZM447 885V1214H682C797 1214 868 1150 868 1050C868 949 797 885 682 885Z" fill="#E4694B"/><circle cx="363.69" cy="-148.8" r="18" fill="#3FB394"/><circle cx="363.69" cy="-88.8" r="18" fill="#E4694B"/><circle cx="363.69" cy="-28.8" r="18" fill="#F5B700"/></svg>
+      <span style="font-size: 14px; font-weight: 600; color: #C9D1CF">Backoffice</span>
+    </span>
+    <nav aria-label="Backoffice" style="display: flex; flex-direction: column; gap: 2px; font-size: 15px">
+      <a href="BO_Tablero.dc.html" aria-current="page" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; background: rgba(251,247,240,0.12); color: #FFFFFF; text-decoration: none; font-weight: 600"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 8h6V4h-6z"/></svg>Tablero</a>
+      <span style="padding: 14px 12px 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #8C9A96">Operación</span>
+      <a href="BO_Aprobaciones.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 11l2 2 4-4"/></svg>Aprobaciones<span style="margin-left: auto; height: 22px; padding: 0 8px; border-radius: 11px; background: #F5B700; color: #1B2623; font-size: 12px; font-weight: 700; display: flex; align-items: center">[N]</span></a>
+      <a href="BO_Moderacion.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4h12l-2 4 2 4H5"/></svg>Moderación<span style="margin-left: auto; height: 22px; padding: 0 8px; border-radius: 11px; background: rgba(251,247,240,0.16); font-size: 12px; font-weight: 700; display: flex; align-items: center">[N]</span></a>
+      <span style="padding: 14px 12px 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #8C9A96">Cumplimiento</span>
+      <a href="BO_Cumplimiento.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></svg>Reclamos y datos<span style="margin-left: auto; height: 22px; padding: 0 8px; border-radius: 11px; background: #E4694B; color: #1B2623; font-size: 12px; font-weight: 700; display: flex; align-items: center">[N]</span></a>
+      <a href="BO_Auditoria.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>Auditoría</a>
+      <span style="padding: 14px 12px 6px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #8C9A96">Administración</span>
+      <a href="BO_Usuarios.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.3 2.3 3.5 5.5"/></svg>Usuarios y roles</a>
+      <a href="BO_Catalogo.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Catálogo</a>
+      <a href="BO_Auditoria.dc.html" style="height: 44px; padding: 0 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; color: #DDE3E1; text-decoration: none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Parámetros</a>
+    </nav>
+    <div style="margin-top: auto; padding: 14px 12px; border-radius: 12px; background: rgba(251,247,240,0.06); display: flex; flex-direction: column; gap: 6px; font-size: 13px">
+      <b style="font-size: 14px">[Nombre del miembro]</b>
+      <span style="display: flex; gap: 6px; align-items: center"><span style="height: 22px; padding: 0 8px; border-radius: 11px; background: #F5B700; color: #1B2623; font-weight: 700; display: flex; align-items: center">Admin</span><span style="color: #A9B4B1">2FA activo</span></span>
+      <span style="color: #A9B4B1">Sesión vence en [7 h 12 min]</span>
+      <a href="BO_Ingreso.dc.html" style="color: #FBF7F0; font-weight: 600">Cerrar sesión</a>
+    </div>
+  </aside>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+    <header style="padding: 22px 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #E4DCCD; background: #FBF7F0">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px">Tablero</h1>
+        <span style="font-size: 14px; color: #5B6663">Lo que necesita atención hoy y cómo va la plataforma</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px">
+        <label for="bt-rango" style="position: absolute; width: 1px; height: 1px; overflow: hidden">Periodo</label>
+        <select id="bt-rango" style="height: 44px; border-radius: 12px; border: 1.5px solid #CFC6B5; padding: 0 12px; font: 600 14px Inter, sans-serif; color: #1B2623; background: #FFFFFF"><option>Últimos 7 días</option><option>Últimos 30 días</option><option>Este mes</option></select>
+        <button type="button" style="height: 44px; padding: 0 16px; border-radius: 12px; border: 2px solid #1B2623; background: transparent; color: #1B2623; font: 600 14px Inter, sans-serif">Exportar CSV</button>
+      </div>
+    </header>
+
+    <main style="padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 24px">
+      <section aria-label="Pendientes" style="display: flex; flex-wrap: wrap; gap: 14px">
+        <a href="BO_Aprobaciones.dc.html" style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #1B2623">
+          <span style="font-size: 14px; font-weight: 600; color: #5B6663">Proveedores por aprobar</span>
+          <b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums">[N]</b>
+          <span style="font-size: 13px; color: #6B4E00">El más antiguo espera [N] días</span>
+        </a>
+        <a href="BO_Moderacion.dc.html" style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #1B2623">
+          <span style="font-size: 14px; font-weight: 600; color: #5B6663">Reportes por moderar</span>
+          <b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums">[N]</b>
+          <span style="font-size: 13px; color: #5B6663">Meta: atender en 48 h</span>
+        </a>
+        <a href="BO_Cumplimiento.dc.html" style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #F0C9BE; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #1B2623">
+          <span style="font-size: 14px; font-weight: 600; color: #5B6663">Reclamos y solicitudes abiertos</span>
+          <b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums">[N]</b>
+          <span style="font-size: 13px; font-weight: 600; color: #8A2A18">[N] vencen en menos de 2 días hábiles</span>
+        </a>
+        <div style="flex: 1 1 220px; background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 600; color: #5B6663">Contactos a WhatsApp</span>
+          <b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 40px; line-height: 1; color: #0F6B5C; font-variant-numeric: tabular-nums">[N]</b>
+          <span style="font-size: 13px; color: #5B6663">[N] % terminaron en reseña</span>
+        </div>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+        <section style="flex: 2 1 480px; min-width: 0; background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap">
+            <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px">Contactos por categoría</h2>
+            <span style="font-size: 13px; color: #5B6663">Barras ilustrativas · datos reales al conectar</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px">
+            <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 12px; align-items: center"><span>Hogar</span><span style="height: 14px; border-radius: 7px; background: #EFE8DA"><span style="display: block; width: 78%; height: 14px; border-radius: 7px; background: #0F6B5C"></span></span><span style="text-align: right; font-variant-numeric: tabular-nums">[N]</span></div>
+            <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 12px; align-items: center"><span>Clases y refuerzo</span><span style="height: 14px; border-radius: 7px; background: #EFE8DA"><span style="display: block; width: 46%; height: 14px; border-radius: 7px; background: #0F6B5C"></span></span><span style="text-align: right; font-variant-numeric: tabular-nums">[N]</span></div>
+            <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 12px; align-items: center"><span>Acarreos</span><span style="height: 14px; border-radius: 7px; background: #EFE8DA"><span style="display: block; width: 30%; height: 14px; border-radius: 7px; background: #0F6B5C"></span></span><span style="text-align: right; font-variant-numeric: tabular-nums">[N]</span></div>
+            <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 56px; gap: 12px; align-items: center"><span>Servicios varios</span><span style="height: 14px; border-radius: 7px; background: #EFE8DA"><span style="display: block; width: 22%; height: 14px; border-radius: 7px; background: #0F6B5C"></span></span><span style="text-align: right; font-variant-numeric: tabular-nums">[N]</span></div>
+          </div>
+          <h3 style="margin: 8px 0 0; font-size: 15px">Localidades con más contactos</h3>
+          <div style="overflow-x: auto">
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums">
+              <thead><tr style="text-align: left; color: #5B6663"><th style="padding: 8px 0; font-weight: 600">Localidad</th><th style="padding: 8px 0; font-weight: 600; text-align: right">Contactos</th><th style="padding: 8px 0; font-weight: 600; text-align: right">Proveedores activos</th><th style="padding: 8px 0; font-weight: 600; text-align: right">Contactos por proveedor</th></tr></thead>
+              <tbody>
+                <tr style="border-top: 1px solid #F1EBDF"><td style="padding: 10px 0">Suba</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td></tr>
+                <tr style="border-top: 1px solid #F1EBDF"><td style="padding: 10px 0">Kennedy</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td></tr>
+                <tr style="border-top: 1px solid #F1EBDF"><td style="padding: 10px 0">Engativá</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td></tr>
+                <tr style="border-top: 1px solid #F1EBDF"><td style="padding: 10px 0">Usaquén</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td><td style="text-align: right">[N]</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+          <section style="background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px">Proveedores por estado</h2>
+            <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 14px; font-variant-numeric: tabular-nums">
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #0F6B5C"></span>Aprobado</span><b>[N]</b></li>
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #F5B700"></span>Pendiente</span><b>[N]</b></li>
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #E4694B"></span>En revisión</span><b>[N]</b></li>
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #9AA3A0"></span>Pausado / pausado por RUT</span><b>[N] / [N]</b></li>
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #1B2623"></span>Suspendido</span><b>[N]</b></li>
+              <li style="display: flex; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 5px; border: 2px solid #9AA3A0; box-sizing: border-box"></span>Borrador / rechazado</span><b>[N] / [N]</b></li>
+            </ul>
+          </section>
+
+          <section style="background: #FFFFFF; border: 1px solid #EAE3D5; border-radius: 20px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+            <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px">Alertas</h2>
+            <a href="BO_Cumplimiento.dc.html" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #F9E1DB; color: #8A2A18; text-decoration: none; font-size: 14px; line-height: 1.4"><b style="flex: none">Plazo</b>Solicitud de supresión [ID] vence mañana (80 % del plazo usado)</a>
+            <a href="BO_Revision.dc.html" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #FFF1C7; color: #6B4E00; text-decoration: none; font-size: 14px; line-height: 1.4"><b style="flex: none">Insignia</b>[N] insignias "Apto para menores" vencen en 15 días</a>
+            <a href="BO_Revision.dc.html" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #FFF1C7; color: #6B4E00; text-decoration: none; font-size: 14px; line-height: 1.4"><b style="flex: none">RUT</b>[N] independientes sin RUT a menos de 5 días de pausa</a>
+            <a href="BO_Auditoria.dc.html" style="display: flex; gap: 10px; padding: 12px; border-radius: 12px; background: #F4F0E8; color: #3E4A47; text-decoration: none; font-size: 14px; line-height: 1.4"><b style="flex: none">Auditoría</b>Un verificador abrió más de 30 documentos en una hora</a>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

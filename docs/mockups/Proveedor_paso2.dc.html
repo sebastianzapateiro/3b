@@ -15,7 +15,7 @@ body{margin:0}
 a{color:#0F6B5C}a:hover{color:#0A4D42}
 </style>
 </helmet>
-<div style="width: 390px; height: 1560px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 12px 24px 28px">
+<div style="width: 390px; height: 1620px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 12px 24px 28px">
 
   <div style="display: flex; align-items: center; justify-content: space-between">
     <a href="Proveedor_paso1.dc.html" aria-label="Volver al paso 1" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2623; margin-left: -10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
@@ -43,6 +43,11 @@ a{color:#0F6B5C}a:hover{color:#0A4D42}
         <label style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1.5px solid #CFC6B5; background: #FFFFFF; display: flex; align-items: center; gap: 8px; font-size: 14px; box-sizing: border-box"><input type="checkbox" style="margin: 0; accent-color: #0F6B5C">Pintura</label>
         <button type="button" style="height: 40px; padding: 0 12px; border: none; background: transparent; color: #0F6B5C; font: 600 14px Inter, sans-serif">Ver más</button>
       </div>
+      <div role="note" style="margin-top: 4px; border-radius: 14px; background: #F9E1DB; padding: 12px 14px; display: flex; gap: 10px; font-size: 14px; line-height: 1.45; color: #6E2213">
+        <svg style="flex: none; margin-top: 1px" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20z"/><path d="M12 10v4M12 17.5h.01"/></svg>
+        <span><b>Gas es una categoría de riesgo alto.</b> Para aparecer en ella necesitas RUT y matrícula vigente desde el registro. Te los pedimos en el paso 3.</span>
+      </div>
+      <span style="font-size: 13px; color: #5B6663; line-height: 1.45">Si eliges Clases o Cuidado de personas, te pediremos firmar la autorización de la Ley 1918 para consultar el registro de inhabilidades.</span>
     </fieldset>
 
     <fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 8px">
@@ -98,7 +103,7 @@ a{color:#0F6B5C}a:hover{color:#0A4D42}
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1620}}'>
 class Component extends DCLogic {
 renderVals() {
 return {};
