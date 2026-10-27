@@ -3,7 +3,7 @@
  * verification, two_factor) más los roles de la plataforma (usuario_roles).
  * Si agregas un plugin de Better Auth, corre `npx @better-auth/cli generate` y compara.
  */
-import { boolean, pgEnum, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, integer, pgEnum, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
   id: text().primaryKey(),
@@ -65,6 +65,10 @@ export const twoFactor = pgTable("two_factor", {
   secret: text().notNull(),
   backupCodes: text().notNull(),
   userId: text().notNull().references(() => user.id, { onDelete: "cascade" }),
+  // Campos del plugin twoFactor de Better Auth 1.7 (bloqueo tras intentos fallidos).
+  verified: boolean().default(true),
+  failedVerificationCount: integer().default(0),
+  lockedUntil: timestamp({ withTimezone: true }),
 });
 
 /** Un usuario tiene un conjunto de roles, no un tipo de cuenta único. */

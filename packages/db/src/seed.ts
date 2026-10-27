@@ -1,5 +1,5 @@
 /**
- * Semillas: 20 localidades, taxonomía inicial e insignias.
+ * Semillas: 20 localidades, taxonomía inicial, insignias y políticas borrador.
  * Fuente: "Catálogo y especificación de casos de uso", sección 5.7 (diccionario de búsqueda).
  * Uso: pnpm db:seed (idempotente: no duplica si ya existen).
  */
@@ -64,9 +64,16 @@ const INSIGNIAS = [
   { clave: "certificado", nombre: "Certificado en su oficio", vigenciaMeses: 12 },
 ];
 
+/** Versiones borrador para registrar consentimientos (RF-19). Reemplazar por los textos de Drive ("Textos legales"). */
+const POLITICAS_BORRADOR = [
+  { tipo: "terminos_compradores", version: "0.1-borrador" },
+  { tipo: "tratamiento_datos", version: "0.1-borrador" },
+] as const;
+
 async function main() {
   const { db } = await import("./index");
-  const { categorias, localidades, terminosBusqueda, insignias } = await import("./schema/index");
+  const { categorias, localidades, terminosBusqueda, insignias, politicas } = await import("./schema/index");
+  const { eq } = await import("drizzle-orm");
 
   await db
     .insert(localidades)
@@ -105,7 +112,19 @@ async function main() {
     }
   }
 
-  console.log("Semillas cargadas: localidades, insignias y taxonomía.");
+  for (const p of POLITICAS_BORRADOR) {
+    const existe = await db.select({ id: politicas.id }).from(politicas).where(eq(politicas.tipo, p.tipo)).limit(1);
+    if (existe.length === 0) {
+      await db.insert(politicas).values({
+        ...p,
+        contenidoMd: "Texto pendiente: ver carpeta \"Textos legales\" del Drive.",
+        esencial: true,
+        vigenteDesde: new Date(),
+      });
+    }
+  }
+
+  console.log("Semillas cargadas: localidades, insignias, taxonomía y políticas.");
   process.exit(0);
 }
 

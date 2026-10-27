@@ -16,12 +16,12 @@ export function Monograma({ oscuro = false, className }: { oscuro?: boolean; cla
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({ oscuro = false, className }: { oscuro?: boolean; className?: string }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
-      <Monograma className="h-6 w-auto" />
+      <Monograma oscuro={oscuro} className="h-6 w-auto" />
       <span className="font-display text-[22px] font-extrabold tracking-tight">
-        LasTres<span className="text-ladrillo">B</span>
+        LasTres<span className={oscuro ? "text-ladrillo-claro" : "text-ladrillo"}>B</span>
       </span>
       <span className="sr-only">Las 3B</span>
     </span>
