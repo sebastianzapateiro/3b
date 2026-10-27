@@ -1,0 +1,4 @@
+{
+  "extends": "@las3b/config/tsconfig.base.json",
+  "include": ["src"]
+}

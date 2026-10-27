@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* Identidad Las 3B: ver docs/05-marca.md y packages/shared/src/marca.ts */
+@theme {
+  --color-verde: #0f6b5c;
+  --color-verde-oscuro: #0a4d42;
+  --color-verde-claro: #e3f1ec;
+  --color-ladrillo: #c2452d;
+  --color-ladrillo-claro: #e4694b;
+  --color-ladrillo-suave: #f9e1db;
+  --color-amarillo: #f5b700;
+  --color-amarillo-suave: #fff1c7;
+  --color-tinta: #1b2623;
+  --color-tinta-2: #3e4a47;
+  --color-gris: #5b6663;
+  --color-crema: #fbf7f0;
+  --color-borde: #e4dccd;
+  --color-borde-campo: #cfc6b5;
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  --radius-campo: 14px;
+  --radius-tarjeta: 20px;
+}
+
+html {
+  background: var(--color-crema);
+  color: var(--color-tinta);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-amarillo);
+  outline-offset: 2px;
+}
