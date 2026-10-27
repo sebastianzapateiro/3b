@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
+import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
 import { Logo } from "@/components/Logo";
 import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
+import { jsonLdSitio } from "@/lib/seo";
 
 /** Home (CU-01, CU-03). Diseño de referencia: docs/mockups/Home_web.dc.html y Home_movil.dc.html. */
+export const metadata: Metadata = { alternates: { canonical: "/" } };
+
 const LOCALIDAD_INICIAL = "suba";
 
 const CATEGORIAS = [
@@ -122,6 +127,7 @@ export default function Home() {
 
   return (
     <>
+      <JsonLd datos={jsonLdSitio()} />
       <header className="sm:border-b sm:border-borde">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3.5 pl-5 pr-4 sm:flex-wrap sm:px-6 sm:py-4">
           <Link href="/" aria-label="Las 3B, inicio" className="text-tinta">

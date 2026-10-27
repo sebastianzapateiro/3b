@@ -44,6 +44,8 @@ pnpm db:studio
 - Home con buscador por localidad (`apps/web/src/app/page.tsx`), logo y tokens de marca.
 - Páginas base sin datos: `/[slug]` (portafolio), `/admin`, `/api/v1/health`, handler de Better Auth.
 - Home completa según mockups web y móvil, con recomendados de ejemplo (`apps/web/src/lib/demo.ts`).
+- SEO base: metadatos, Open Graph/X con imagen generada, `robots.ts`, `sitemap.ts`, JSON-LD (`lib/seo.ts`), íconos PNG, GA4. Solo se indexa y mide con `VERCEL_ENV=production`.
+- `/[slug]` resuelve en base (`lib/portafolio.ts`): 301 desde slugs anteriores, "no disponible" si pausado, 404 si no publicado.
 - P1 cuenta: `/ingresar`, `/registro` (mayoría de edad + consentimiento con versión/IP), `/recuperar`, `/nueva-clave`. Migración `0001` (columnas 2FA de Better Auth 1.7) aplicada.
 
 **Pendiente, en orden sugerido**
