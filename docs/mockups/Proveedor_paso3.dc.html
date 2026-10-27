@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Alta de proveedor, paso 3</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="width: 390px; height: 1560px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 12px 24px 28px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Proveedor_paso2.dc.html" aria-label="Volver al paso 2" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2623; margin-left: -10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+    <span style="font-size: 14px; font-weight: 600; color: #3E4A47">Paso 3 de 3</span>
+    <a href="Home_movil.dc.html" style="height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 600">Guardar y salir</a>
+  </div>
+  <div role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="3" aria-label="Progreso del registro" style="display: flex; gap: 6px; margin-top: 6px">
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #0F6B5C"></span>
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #C2452D"></span>
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #F5B700"></span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 26px">
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px; line-height: 1.1">Último paso: verifícate</h1>
+    <p style="margin: 0; font-size: 16px; color: #3E4A47; line-height: 1.5">La verificación es lo que hace que los clientes confíen en ti.</p>
+  </div>
+
+  <form style="display: flex; flex-direction: column; gap: 22px; margin-top: 24px">
+    <fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 10px">
+      <legend style="font-size: 14px; font-weight: 600; margin-bottom: 8px">Código enviado a tu WhatsApp +57 300 *** **00</legend>
+      <div style="display: flex; gap: 8px">
+        <input aria-label="Dígito 1" inputmode="numeric" maxlength="1" value="4" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 1.5px solid #0F6B5C; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+        <input aria-label="Dígito 2" inputmode="numeric" maxlength="1" value="8" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 1.5px solid #0F6B5C; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+        <input aria-label="Dígito 3" inputmode="numeric" maxlength="1" value="1" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 1.5px solid #0F6B5C; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+        <input aria-label="Dígito 4" inputmode="numeric" maxlength="1" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 2px solid #1B2623; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+        <input aria-label="Dígito 5" inputmode="numeric" maxlength="1" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 1.5px solid #CFC6B5; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+        <input aria-label="Dígito 6" inputmode="numeric" maxlength="1" style="width: 0; flex: 1; height: 56px; border-radius: 12px; border: 1.5px solid #CFC6B5; background: #FFFFFF; text-align: center; font: 700 22px Inter, sans-serif; color: #1B2623">
+      </div>
+      <span style="font-size: 14px; color: #5B6663">¿No te llegó? Reenviar en <b style="font-variant-numeric: tabular-nums">0:42</b></span>
+    </fieldset>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <b style="font-size: 15px">Tu documento</b>
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 0 0 96px; display: flex; flex-direction: column; gap: 6px">
+          <label for="p3-tipo" style="font-size: 14px; font-weight: 600">Tipo</label>
+          <select id="p3-tipo" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; padding: 0 10px; font: 16px Inter, sans-serif; color: #1B2623; background: #FFFFFF"><option>CC</option><option>CE</option><option>NIT</option></select>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <label for="p3-num" style="font-size: 14px; font-weight: 600">Número</label>
+          <input id="p3-num" type="text" inputmode="numeric" placeholder="Sin puntos" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 14px; font: 16px Inter, sans-serif; color: #1B2623">
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <div style="flex: 1; height: 96px; border-radius: 14px; background: #E3F1EC; border: 1.5px solid #0F6B5C; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; color: #0A4D42"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Frente cargado</div>
+        <label for="p3-rev" style="flex: 1; height: 96px; border-radius: 14px; background: #FFFFFF; border: 1.5px dashed #CFC6B5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; color: #1B2623; box-sizing: border-box"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Foto del reverso<input id="p3-rev" type="file" accept="image/*" style="position: absolute; width: 1px; height: 1px; opacity: 0"></label>
+      </div>
+      <span style="font-size: 13px; color: #5B6663; line-height: 1.45">Se guarda cifrada y solo la ve nuestro equipo de verificación. Nunca aparece en tu página.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="p3-dir" style="font-size: 14px; font-weight: 600">Dirección para notificaciones</label>
+      <input id="p3-dir" type="text" autocomplete="street-address" placeholder="Ej: Cl. 145 # 91-19, Suba" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 16px; font: 16px Inter, sans-serif; color: #1B2623">
+      <span style="font-size: 13px; color: #5B6663">Privada. Solo para avisos legales.</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <b style="font-size: 15px">Suma confianza <span style="font-weight: 400; color: #5B6663">(opcional)</span></b>
+      <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 16px; padding: 12px 14px">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Formalizado</b><span style="font-size: 13px; color: #5B6663">Sube tu RUT</span></span>
+        <label for="p3-rut" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1.5px solid #CFC6B5; display: flex; align-items: center; font-size: 14px; font-weight: 600; box-sizing: border-box">Subir<input id="p3-rut" type="file" style="position: absolute; width: 1px; height: 1px; opacity: 0"></label>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 16px; padding: 12px 14px">
+        <span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Certificado</b><span style="font-size: 13px; color: #5B6663">Matrícula o certificación de tu oficio</span></span>
+        <label for="p3-cert" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1.5px solid #CFC6B5; display: flex; align-items: center; font-size: 14px; font-weight: 600; box-sizing: border-box">Subir<input id="p3-cert" type="file" style="position: absolute; width: 1px; height: 1px; opacity: 0"></label>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: #3E4A47"><input type="checkbox" style="width: 20px; height: 20px; margin: 0; flex: none; accent-color: #0F6B5C">Acepto los <a href="#">Términos para proveedores</a> y entiendo que el servicio, el precio y la garantía los acuerdo con cada cliente.</label>
+      <label style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; color: #3E4A47"><input type="checkbox" style="width: 20px; height: 20px; margin: 0; flex: none; accent-color: #0F6B5C">Autorizo el tratamiento de mis datos según la <a href="#">Política de Datos Personales</a>.</label>
+    </div>
+  </form>
+
+  <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px; padding-top: 24px">
+    <button type="button" style="height: 56px; border: none; border-radius: 14px; background: #1B2623; color: #FFFFFF; font: 600 17px Inter, sans-serif">Enviar a revisión</button>
+    <span style="font-size: 13px; color: #5B6663; text-align: center">Te avisamos por WhatsApp y correo cuando tu página esté publicada.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

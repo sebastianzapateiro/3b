@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Alta de proveedor, paso 1</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="width: 390px; height: 900px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 12px 24px 28px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Login_movil.dc.html" aria-label="Volver" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2623; margin-left: -10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+    <span style="font-size: 14px; font-weight: 600; color: #3E4A47">Paso 1 de 3</span>
+    <a href="Home_movil.dc.html" style="height: 44px; display: flex; align-items: center; font-size: 14px; font-weight: 600">Guardar y salir</a>
+  </div>
+  <div role="progressbar" aria-valuemin="1" aria-valuemax="3" aria-valuenow="1" aria-label="Progreso del registro" style="display: flex; gap: 6px; margin-top: 6px">
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #0F6B5C"></span>
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #E4DCCD"></span>
+    <span style="flex: 1; height: 8px; border-radius: 4px; background: #E4DCCD"></span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 26px">
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px; line-height: 1.1">Empecemos por lo básico</h1>
+    <p style="margin: 0; font-size: 16px; color: #3E4A47; line-height: 1.5">Toma un minuto. Tu documento lo pedimos al final, cuando ya hayas armado tu página.</p>
+  </div>
+
+  <form style="display: flex; flex-direction: column; gap: 18px; margin-top: 24px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="p1-nombre" style="font-size: 14px; font-weight: 600">Nombre que verán tus clientes</label>
+      <input id="p1-nombre" type="text" placeholder="Ej: Jorge Ramírez Plomería" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 16px; font: 16px Inter, sans-serif; color: #1B2623">
+    </div>
+    <fieldset style="margin: 0; padding: 0; border: none; display: flex; flex-direction: column; gap: 8px">
+      <legend style="font-size: 14px; font-weight: 600; margin-bottom: 6px">Te registras como</legend>
+      <div style="display: flex; gap: 10px">
+        <label style="flex: 1; height: 52px; border-radius: 14px; border: 2px solid #0F6B5C; background: #E3F1EC; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 15px; font-weight: 600; box-sizing: border-box"><input type="radio" name="p1-tipo" checked style="width: 18px; height: 18px; margin: 0; accent-color: #0F6B5C">Persona</label>
+        <label style="flex: 1; height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 15px; font-weight: 500; box-sizing: border-box"><input type="radio" name="p1-tipo" style="width: 18px; height: 18px; margin: 0; accent-color: #0F6B5C">Empresa</label>
+      </div>
+    </fieldset>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="p1-wa" style="font-size: 14px; font-weight: 600">WhatsApp donde te escribirán</label>
+      <div style="display: flex; align-items: center; height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; overflow: hidden">
+        <span style="height: 100%; padding: 0 14px; display: flex; align-items: center; background: #F4F0E8; font-weight: 600; border-right: 1.5px solid #CFC6B5">+57</span>
+        <input id="p1-wa" type="tel" placeholder="300 000 0000" style="flex: 1; min-width: 0; height: 100%; border: none; outline: none; padding: 0 14px; font: 16px Inter, sans-serif; color: #1B2623; background: transparent">
+      </div>
+      <span style="font-size: 13px; color: #5B6663">Te enviaremos un código para confirmarlo.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="p1-email" style="font-size: 14px; font-weight: 600">Correo electrónico</label>
+      <input id="p1-email" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 16px; font: 16px Inter, sans-serif; color: #1B2623">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="p1-clave" style="font-size: 14px; font-weight: 600">Crea una clave</label>
+      <input id="p1-clave" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 16px; font: 16px Inter, sans-serif; color: #1B2623">
+    </div>
+  </form>
+
+  <a href="Proveedor_paso2.dc.html" style="margin-top: auto; height: 56px; border-radius: 14px; background: #1B2623; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; text-decoration: none">Continuar</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

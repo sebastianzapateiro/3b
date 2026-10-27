@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Home web</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FBF7F0}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif">
+
+  <header style="border-bottom: 1px solid #E4DCCD; background: #FBF7F0">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <a href="Home_web.dc.html" aria-label="Las 3B, inicio" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #1B2623">
+        <svg width="56" height="28" viewBox="4 -182 382 188" aria-hidden="true"><path transform="translate(1.92 0) scale(0.11719 -0.11719)" d="M646 -24C994 -24 1235 164 1235 420C1235 598 1114 751 898 776V779C1066 807 1189 924 1189 1099C1189 1342 963 1514 646 1514C302 1514 90 1310 90 1038H427C427 1164 517 1248 646 1248C770 1248 857 1171 857 1059C857 950 766 884 618 884H480V632H618C776 632 879 558 879 444C879 328 783 250 643 250C492 250 401 344 401 501H61C61 220 248 -24 646 -24Z" fill="#1B2623"/><path transform="translate(145.54 0) scale(0.11719 -0.11719)" d="M96 0H761C1092 0 1279 174 1279 421C1279 632 1136 768 950 780V782C1118 819 1227 940 1227 1112C1227 1335 1047 1490 716 1490H96ZM447 276V623H704C833 623 912 555 912 447C912 340 832 276 702 276ZM447 885V1214H682C797 1214 868 1150 868 1050C868 949 797 885 682 885Z" fill="#C2452D"/><circle cx="363.69" cy="-148.8" r="18" fill="#0F6B5C"/><circle cx="363.69" cy="-88.8" r="18" fill="#C2452D"/><circle cx="363.69" cy="-28.8" r="18" fill="#F5B700"/></svg>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.8px">LasTres<span style="color: #C2452D">B</span></span>
+      </a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px">
+        <a href="#categorias" style="height: 44px; padding: 0 14px; display: flex; align-items: center; font-weight: 500; font-size: 15px; color: #1B2623; text-decoration: none">Categorías</a>
+        <a href="#como" style="height: 44px; padding: 0 14px; display: flex; align-items: center; font-weight: 500; font-size: 15px; color: #1B2623; text-decoration: none">Cómo funciona</a>
+        <a href="Proveedor_web_paso1.dc.html" style="height: 44px; padding: 0 14px; display: flex; align-items: center; font-weight: 500; font-size: 15px; color: #1B2623; text-decoration: none">Soy proveedor</a>
+        <a href="Login_web.dc.html" style="height: 44px; padding: 0 18px; margin-left: 6px; border: 2px solid #1B2623; border-radius: 12px; box-sizing: border-box; display: flex; align-items: center; font-weight: 600; font-size: 15px; color: #1B2623; text-decoration: none">Ingresar</a>
+      </nav>
+    </div>
+  </header>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 56px 24px 64px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center">
+    <div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+      <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E4DCCD; font-size: 14px; font-weight: 600; color: #3E4A47">
+        <span style="display: flex; gap: 3px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #0F6B5C"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #C2452D"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #F5B700"></span></span>
+        Gratis · Sin comisiones · Hecho en Bogotá
+      </span>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 3.6rem; line-height: 1.02; letter-spacing: -2px; text-wrap: balance">Encuentra quién te ayude, <span style="color: #0F6B5C">cerca de ti.</span></h1>
+      <p style="margin: 0; font-size: 18px; line-height: 1.55; color: #3E4A47; max-width: 540px">Plomeros, profesores particulares, acarreos y oficios de confianza en tu localidad. Compara reseñas reales y escríbeles directo por WhatsApp.</p>
+
+      <form style="display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #FFFFFF; border-radius: 22px; padding: 16px; box-shadow: 0 8px 30px rgba(27,38,35,0.08)">
+        <div style="flex: 2 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <label for="hw-q" style="font-size: 13px; font-weight: 600; color: #5B6663">Servicio o clase</label>
+          <input id="hw-q" type="text" placeholder="Ej: plomero, clases de inglés" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; padding: 0 14px; font: 16px Inter, sans-serif; color: #1B2623; background: #FFFFFF">
+        </div>
+        <div style="flex: 1 1 160px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <label for="hw-loc" style="font-size: 13px; font-weight: 600; color: #5B6663">Localidad</label>
+          <select id="hw-loc" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; padding: 0 12px; font: 16px Inter, sans-serif; color: #1B2623; background: #FFFFFF">
+            <option>Suba</option><option>Usaquén</option><option>Chapinero</option><option>Engativá</option><option>Kennedy</option><option>Teusaquillo</option>
+          </select>
+        </div>
+        <a href="Resultados_web.dc.html" style="flex: 0 0 auto; height: 52px; padding: 0 28px; border-radius: 14px; background: #1B2623; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; text-decoration: none">Buscar</a>
+      </form>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+        <span style="font-size: 14px; color: #5B6663">Populares:</span>
+        <a href="Resultados_web.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; color: #1B2623; text-decoration: none">Plomería</a>
+        <a href="Resultados_web.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; color: #1B2623; text-decoration: none">Inglés</a>
+        <a href="Resultados_web.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; color: #1B2623; text-decoration: none">Mudanzas</a>
+        <a href="Resultados_web.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; color: #1B2623; text-decoration: none">Cerrajería</a>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 14px; align-items: stretch">
+      <div style="background: #1B2623; border-radius: 28px; padding: 28px; display: flex; flex-direction: column; gap: 18px; color: #FFFFFF">
+        <div style="display: flex; gap: 10px">
+          <span style="flex: 1; height: 10px; border-radius: 5px; background: #3FB394"></span>
+          <span style="flex: 1; height: 10px; border-radius: 5px; background: #E4694B"></span>
+          <span style="flex: 1; height: 10px; border-radius: 5px; background: #F5B700"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; font-size: 14px">
+          <div style="display: flex; flex-direction: column; gap: 4px"><b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; color: #3FB394">Bueno</b><span style="color: #C9D1CF; line-height: 1.4">Identidad verificada</span></div>
+          <div style="display: flex; flex-direction: column; gap: 4px"><b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; color: #E4694B">Bonito</b><span style="color: #C9D1CF; line-height: 1.4">Fotos de trabajos reales</span></div>
+          <div style="display: flex; flex-direction: column; gap: 4px"><b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 22px; color: #F5B700">Barato</b><span style="color: #C9D1CF; line-height: 1.4">Precios a la vista</span></div>
+        </div>
+      </div>
+      <article style="background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 8px 30px rgba(27,38,35,0.06)">
+        <a href="Perfil_web.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+          <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #D7E8E2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #0A4D42">JR</span>
+          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 16px">[Nombre del proveedor]</b>
+            <span style="font-size: 14px; color: #5B6663">Plomería · Suba, Usaquén</span>
+          </span>
+          <span style="margin-left: auto; display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,8]</span>
+        </a>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #3E4A47">«[Reseña de un cliente real sobre el trabajo]»</p>
+        <span style="font-size: 13px; color: #5B6663">[Nombre del cliente] · Suba</span>
+      </article>
+    </div>
+  </section>
+
+  <section id="categorias" style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 56px; display: flex; flex-direction: column; gap: 20px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.8px">Categorías</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <a href="Resultados_web.dc.html" style="flex: 1 1 240px; min-height: 160px; border-radius: 22px; background: #E3F1EC; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; text-decoration: none; color: #0A4D42">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 18px">Hogar</b><span style="font-size: 14px; line-height: 1.4">Plomería, electricidad, pintura, cerrajería</span></span>
+      </a>
+      <a href="Resultados_web.dc.html" style="flex: 1 1 240px; min-height: 160px; border-radius: 22px; background: #FFF1C7; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; text-decoration: none; color: #6B4E00">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-4a2 2 0 0 0-2 2"/><path d="M20 5v13h-6"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 18px">Clases y refuerzo</b><span style="font-size: 14px; line-height: 1.4">Matemáticas, inglés, música, tareas</span></span>
+      </a>
+      <a href="Resultados_web.dc.html" style="flex: 1 1 240px; min-height: 160px; border-radius: 22px; background: #F9E1DB; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; text-decoration: none; color: #8A2A18">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h11v9H2z"/><path d="M13 10h4l4 3v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 18px">Acarreos</b><span style="font-size: 14px; line-height: 1.4">Mudanzas de barrio, objetos pesados</span></span>
+      </a>
+      <a href="Resultados_web.dc.html" style="flex: 1 1 240px; min-height: 160px; border-radius: 22px; background: #ECE7DC; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 16px; text-decoration: none; color: #1B2623">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 18px">Servicios varios</b><span style="font-size: 14px; line-height: 1.4">Costura, mascotas, jardines, electrodomésticos</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 0 24px 56px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.8px">Recomendados en Suba</h2>
+      <a href="Resultados_web.dc.html" style="font-size: 15px; font-weight: 600">Ver todos los resultados</a>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 16px">
+      <article style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 14px; border: 1px solid #EFE8DA">
+        <a href="Perfil_web.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+          <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #D7E8E2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #0A4D42">JR</span>
+          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 16px">[Nombre del proveedor]</b>
+            <span style="font-size: 14px; color: #5B6663">Plomería · Suba, Usaquén</span>
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,8] <span style="font-weight: 400; color: #5B6663">([N] reseñas)</span></span>
+          </span>
+        </a>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #E3F1EC; color: #0A4D42; font-size: 12px; font-weight: 600; display: flex; align-items: center">Verificado</span>
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #FFF1C7; color: #6B4E00; font-size: 12px; font-weight: 600; display: flex; align-items: center">Formalizado</span>
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #F4F0E8; color: #3E4A47; font-size: 12px; font-weight: 600; display: flex; align-items: center">Desde [$ precio]</span>
+        </div>
+        <a href="#" style="margin-top: auto; height: 48px; border-radius: 14px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>Escribir por WhatsApp</a>
+      </article>
+      <article style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 14px; border: 1px solid #EFE8DA">
+        <a href="Perfil_web.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+          <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #FCE8C2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #6B4E00">LM</span>
+          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 16px">[Nombre del proveedor]</b>
+            <span style="font-size: 14px; color: #5B6663">Clases de inglés · Suba, Chapinero</span>
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,9] <span style="font-weight: 400; color: #5B6663">([N] reseñas)</span></span>
+          </span>
+        </a>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #E3F1EC; color: #0A4D42; font-size: 12px; font-weight: 600; display: flex; align-items: center">Verificado</span>
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #F9E1DB; color: #8A2A18; font-size: 12px; font-weight: 600; display: flex; align-items: center">Apto para menores</span>
+        </div>
+        <a href="#" style="margin-top: auto; height: 48px; border-radius: 14px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>Escribir por WhatsApp</a>
+      </article>
+      <article style="flex: 1 1 300px; min-width: 0; background: #FFFFFF; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 14px; border: 1px solid #EFE8DA">
+        <a href="Perfil_web.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+          <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #F6DCD5; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #8A2A18">CP</span>
+          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+            <b style="font-size: 16px">[Nombre del proveedor]</b>
+            <span style="font-size: 14px; color: #5B6663">Acarreos · Suba, Engativá</span>
+            <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,7] <span style="font-weight: 400; color: #5B6663">([N] reseñas)</span></span>
+          </span>
+        </a>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #E3F1EC; color: #0A4D42; font-size: 12px; font-weight: 600; display: flex; align-items: center">Verificado</span>
+          <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #F4F0E8; color: #3E4A47; font-size: 12px; font-weight: 600; display: flex; align-items: center">Desde [$ precio]</span>
+        </div>
+        <a href="#" style="margin-top: auto; height: 48px; border-radius: 14px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>Escribir por WhatsApp</a>
+      </article>
+    </div>
+  </section>
+
+  <section id="como" style="background: #FFFFFF; border-top: 1px solid #EFE8DA; border-bottom: 1px solid #EFE8DA">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 56px 24px; display: flex; flex-direction: column; gap: 28px">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 32px; letter-spacing: -0.8px">Así de fácil</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 28px">
+        <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px">
+          <span style="width: 44px; height: 44px; border-radius: 22px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px">1</span>
+          <b style="font-size: 19px">Busca</b>
+          <span style="font-size: 16px; color: #3E4A47; line-height: 1.5">Dinos qué necesitas y en qué localidad estás.</span>
+        </div>
+        <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px">
+          <span style="width: 44px; height: 44px; border-radius: 22px; background: #C2452D; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px">2</span>
+          <b style="font-size: 19px">Compara</b>
+          <span style="font-size: 16px; color: #3E4A47; line-height: 1.5">Mira reseñas reales, fotos de trabajos e insignias de verificación.</span>
+        </div>
+        <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 12px">
+          <span style="width: 44px; height: 44px; border-radius: 22px; background: #F5B700; color: #1B2623; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px">3</span>
+          <b style="font-size: 19px">Escribe por WhatsApp</b>
+          <span style="font-size: 16px; color: #3E4A47; line-height: 1.5">Acuerdas precio y fecha directo con el proveedor. Sin intermediarios.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 56px 24px; display: flex; flex-wrap: wrap; gap: 16px">
+    <div style="flex: 1 1 300px; display: flex; gap: 14px; align-items: flex-start; padding: 4px 0">
+      <svg style="flex: none" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0F6B5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+      <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 17px">Identidad verificada</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.5">Revisamos el documento y el WhatsApp de cada proveedor antes de publicarlo.</span></span>
+    </div>
+    <div style="flex: 1 1 300px; display: flex; gap: 14px; align-items: flex-start; padding: 4px 0">
+      <svg style="flex: none" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C2452D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 17px">Reseñas de clientes reales</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.5">Solo califica quien contactó al proveedor desde Las 3B.</span></span>
+    </div>
+    <div style="flex: 1 1 300px; display: flex; gap: 14px; align-items: flex-start; padding: 4px 0">
+      <svg style="flex: none" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9A6F00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2s1 1.7 3 2 3 .9 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v2M12 16v2"/></svg>
+      <span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 17px">Sin comisiones</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.5">Lo que pagas va completo al proveedor. Las 3B no cobra por contactar.</span></span>
+    </div>
+  </section>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 0 24px 56px">
+    <div style="border-radius: 32px; background: #1B2623; color: #FFFFFF; padding: 44px 40px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center">
+      <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #F5B700; text-transform: uppercase; letter-spacing: 1px"><span style="display: flex; gap: 3px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #3FB394"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #E4694B"></span><span style="width: 8px; height: 8px; border-radius: 4px; background: #F5B700"></span></span>Para proveedores</span>
+        <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; line-height: 1.05; letter-spacing: -1px; text-wrap: balance">¿Ofreces un servicio? Crea gratis tu página web.</h2>
+        <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #D5DCDA; max-width: 520px">Tu portafolio con dirección propia, código QR para tus volantes y reseñas de tus clientes. Compártelo por WhatsApp y redes, y mira cuántos te visitan.</p>
+        <a href="Proveedor_web_paso1.dc.html" style="align-self: flex-start; height: 54px; padding: 0 28px; border-radius: 14px; background: #F5B700; color: #1B2623; display: flex; align-items: center; font-weight: 700; font-size: 16px; text-decoration: none">Registrarme como proveedor</a>
+      </div>
+      <div style="flex: 0 1 360px; min-width: 0; background: #FBF7F0; color: #1B2623; border-radius: 22px; padding: 18px; display: flex; gap: 16px; align-items: center">
+        <svg style="flex: none" width="96" height="96" viewBox="0 0 21 21" role="img" aria-label="Ejemplo de código QR"><rect width="21" height="21" fill="#FFFFFF"/><path d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z" fill="#1B2623"/><path d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z" fill="#FFFFFF"/><path d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2z" fill="#1B2623"/><path d="M8 1h1v2H8zM10 0h2v1h-2zM9 4h3v1H9zM8 6h1v3H8zM11 7h2v2h-2zM14 8h3v1h-3zM18 8h2v2h-2zM8 10h4v1H8zM13 10h1v3h-1zM15 11h2v2h-2zM19 12h2v1h-2zM8 13h2v2H8zM11 14h1v3h-1zM14 15h2v1h-2zM17 15h1v3h-1zM9 17h1v3H9zM12 18h3v1h-3zM19 17h2v2h-2zM14 20h4v1h-4zM1 8h4v1H1zM3 10h2v2H3zM0 12h2v1H0z" fill="#1B2623"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
+          <b style="font-size: 15px">Tu dirección propia</b>
+          <span style="font-family: ui-monospace, monospace; font-size: 14px; color: #0A4D42; overflow-wrap: anywhere">lastresb.com.co/tu-nombre</span>
+          <span style="font-size: 13px; color: #5B6663; line-height: 1.4">Imprímelo en volantes, tarjetas o el vidrio de tu carro.</span>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width: 1200px; margin: 0 auto; padding: 0 24px 56px; display: flex; flex-direction: column; gap: 16px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px">Busca por localidad</h2>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px">
+      <a href="Resultados_web.dc.html">Usaquén</a><a href="Resultados_web.dc.html">Chapinero</a><a href="Resultados_web.dc.html">Santa Fe</a><a href="Resultados_web.dc.html">San Cristóbal</a><a href="Resultados_web.dc.html">Usme</a><a href="Resultados_web.dc.html">Tunjuelito</a><a href="Resultados_web.dc.html">Bosa</a><a href="Resultados_web.dc.html">Kennedy</a><a href="Resultados_web.dc.html">Fontibón</a><a href="Resultados_web.dc.html">Engativá</a><a href="Resultados_web.dc.html">Suba</a><a href="Resultados_web.dc.html">Barrios Unidos</a><a href="Resultados_web.dc.html">Teusaquillo</a><a href="Resultados_web.dc.html">Los Mártires</a><a href="Resultados_web.dc.html">Antonio Nariño</a><a href="Resultados_web.dc.html">Puente Aranda</a><a href="Resultados_web.dc.html">La Candelaria</a><a href="Resultados_web.dc.html">Rafael Uribe Uribe</a><a href="Resultados_web.dc.html">Ciudad Bolívar</a><a href="Resultados_web.dc.html">Sumapaz</a>
+    </div>
+  </section>
+
+  <footer style="border-top: 1px solid #E4DCCD">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 28px 24px 36px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; font-size: 14px; color: #5B6663">
+      <span style="max-width: 560px; line-height: 1.5">Las 3B es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.</span>
+      <div style="display: flex; gap: 18px; flex-wrap: wrap">
+        <a href="#">Términos</a><a href="#">Datos personales</a><a href="#">Política de reseñas</a><a href="#">Presentar un reclamo</a>
+      </div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2080}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

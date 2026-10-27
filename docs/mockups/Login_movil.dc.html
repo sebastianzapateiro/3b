@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Ingresar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; padding: 16px 24px 28px">
+
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <a href="Home_movil.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #1B2623; margin-left: -10px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+    <span style="display: flex; align-items: center; gap: 8px">
+      <svg width="44" height="22" viewBox="4 -182 382 188" aria-hidden="true"><path transform="translate(1.92 0) scale(0.11719 -0.11719)" d="M646 -24C994 -24 1235 164 1235 420C1235 598 1114 751 898 776V779C1066 807 1189 924 1189 1099C1189 1342 963 1514 646 1514C302 1514 90 1310 90 1038H427C427 1164 517 1248 646 1248C770 1248 857 1171 857 1059C857 950 766 884 618 884H480V632H618C776 632 879 558 879 444C879 328 783 250 643 250C492 250 401 344 401 501H61C61 220 248 -24 646 -24Z" fill="#1B2623"/><path transform="translate(145.54 0) scale(0.11719 -0.11719)" d="M96 0H761C1092 0 1279 174 1279 421C1279 632 1136 768 950 780V782C1118 819 1227 940 1227 1112C1227 1335 1047 1490 716 1490H96ZM447 276V623H704C833 623 912 555 912 447C912 340 832 276 702 276ZM447 885V1214H682C797 1214 868 1150 868 1050C868 949 797 885 682 885Z" fill="#C2452D"/><circle cx="363.69" cy="-148.8" r="18" fill="#0F6B5C"/><circle cx="363.69" cy="-88.8" r="18" fill="#C2452D"/><circle cx="363.69" cy="-28.8" r="18" fill="#F5B700"/></svg>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.6px">LasTres<span style="color: #C2452D">B</span></span>
+    </span>
+    <span style="width: 44px" aria-hidden="true"></span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 28px">
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1px; line-height: 1.1">Hola de nuevo</h1>
+    <p style="margin: 0; font-size: 16px; color: #3E4A47; line-height: 1.5">Ingresa para calificar a quienes contactaste o gestionar tu página de proveedor.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 28px">
+    <button type="button" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; color: #1B2623; font: 600 16px Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px"><span aria-hidden="true" style="width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid #CFC6B5; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px">G</span>Continuar con Google</button>
+    <button type="button" style="height: 52px; border-radius: 14px; border: none; background: #1B2623; color: #FFFFFF; font: 600 16px Inter, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3c0 2-1.5 3.5-3.5 3.5"/><path d="M12 7c-4 0-6 3-6 6.5S8.5 21 10.5 21c1 0 1.5-.5 2.5-.5s1.5.5 2.5.5c2 0 4-4 4-5.5-2-1-2.5-4.5 0-6-1-1.5-2.5-2.5-4-2.5-1.5 0-2.5.5-3.5.5z"/></svg>Continuar con Apple</button>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; color: #5B6663; font-size: 14px">
+    <span style="flex: 1; height: 1px; background: #E4DCCD"></span>o con tu correo<span style="flex: 1; height: 1px; background: #E4DCCD"></span>
+  </div>
+
+  <form style="display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <label for="lg-email" style="font-size: 14px; font-weight: 600">Correo electrónico</label>
+      <input id="lg-email" type="email" autocomplete="email" placeholder="tucorreo@ejemplo.com" style="height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 16px; font: 16px Inter, sans-serif; color: #1B2623">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <label for="lg-pass" style="font-size: 14px; font-weight: 600">Clave</label>
+        <a href="#" style="font-size: 14px; font-weight: 600">¿La olvidaste?</a>
+      </div>
+      <div style="display: flex; align-items: center; height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; background: #FFFFFF; padding: 0 6px 0 16px">
+        <input id="lg-pass" type="password" autocomplete="current-password" placeholder="Tu clave" style="flex: 1; min-width: 0; border: none; outline: none; font: 16px Inter, sans-serif; color: #1B2623; background: transparent">
+        <button type="button" aria-label="Mostrar clave" style="width: 44px; height: 44px; border: none; background: transparent; color: #5B6663; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+    </div>
+    <button type="submit" style="height: 54px; border: none; border-radius: 14px; background: #1B2623; color: #FFFFFF; font: 600 17px Inter, sans-serif; margin-top: 6px">Ingresar</button>
+  </form>
+
+  <p style="margin: 20px 0 0; text-align: center; font-size: 15px; color: #3E4A47">¿No tienes cuenta? <a href="#" style="font-weight: 600">Crear cuenta</a></p>
+
+  <a href="Proveedor_paso1.dc.html" style="margin-top: auto; border-radius: 18px; background: #FFF1C7; padding: 16px; display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1B2623">
+    <span style="flex: none; width: 40px; height: 40px; border-radius: 12px; background: #F5B700; display: flex; align-items: center; justify-content: center; color: #1B2623"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>
+    <span style="display: flex; flex-direction: column; gap: 2px; flex: 1"><b style="font-size: 15px">¿Ofreces servicios?</b><span style="font-size: 14px; color: #6B4E00">Regístrate gratis como proveedor</span></span>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

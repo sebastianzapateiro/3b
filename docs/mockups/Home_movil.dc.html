@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Las 3B · Home móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0F6B5C}a:hover{color:#0A4D42}
+</style>
+</helmet>
+<div style="width: 390px; height: 2080px; box-sizing: border-box; background: #FBF7F0; color: #1B2623; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 14px 20px">
+    <a href="Home_movil.dc.html" aria-label="Las 3B, inicio" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1B2623">
+      <svg width="48" height="24" viewBox="4 -182 382 188" aria-hidden="true"><path transform="translate(1.92 0) scale(0.11719 -0.11719)" d="M646 -24C994 -24 1235 164 1235 420C1235 598 1114 751 898 776V779C1066 807 1189 924 1189 1099C1189 1342 963 1514 646 1514C302 1514 90 1310 90 1038H427C427 1164 517 1248 646 1248C770 1248 857 1171 857 1059C857 950 766 884 618 884H480V632H618C776 632 879 558 879 444C879 328 783 250 643 250C492 250 401 344 401 501H61C61 220 248 -24 646 -24Z" fill="#1B2623"/><path transform="translate(145.54 0) scale(0.11719 -0.11719)" d="M96 0H761C1092 0 1279 174 1279 421C1279 632 1136 768 950 780V782C1118 819 1227 940 1227 1112C1227 1335 1047 1490 716 1490H96ZM447 276V623H704C833 623 912 555 912 447C912 340 832 276 702 276ZM447 885V1214H682C797 1214 868 1150 868 1050C868 949 797 885 682 885Z" fill="#C2452D"/><circle cx="363.69" cy="-148.8" r="18" fill="#0F6B5C"/><circle cx="363.69" cy="-88.8" r="18" fill="#C2452D"/><circle cx="363.69" cy="-28.8" r="18" fill="#F5B700"/></svg>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.6px">LasTres<span style="color: #C2452D">B</span></span>
+    </a>
+    <div style="display: flex; align-items: center; gap: 2px">
+      <a href="Login_movil.dc.html" style="height: 44px; padding: 0 12px; display: flex; align-items: center; font-weight: 600; font-size: 15px; text-decoration: none; color: #1B2623">Ingresar</a>
+      <button type="button" aria-label="Abrir menú" style="width: 44px; height: 44px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #1B2623"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </header>
+
+  <section style="padding: 10px 20px 28px; display: flex; flex-direction: column; gap: 18px">
+    <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 15px; background: #FFFFFF; border: 1px solid #E4DCCD; font-size: 13px; font-weight: 600; color: #3E4A47">
+      <span style="display: flex; gap: 3px"><span style="width: 7px; height: 7px; border-radius: 4px; background: #0F6B5C"></span><span style="width: 7px; height: 7px; border-radius: 4px; background: #C2452D"></span><span style="width: 7px; height: 7px; border-radius: 4px; background: #F5B700"></span></span>
+      Bueno, bonito y barato en Bogotá
+    </span>
+    <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; line-height: 1.05; letter-spacing: -1.2px">Encuentra quién te ayude, <span style="color: #0F6B5C">cerca de ti.</span></h1>
+    <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #3E4A47">Plomeros, profesores, acarreos y oficios de confianza en tu localidad. Escríbeles directo por WhatsApp, sin comisiones.</p>
+
+    <form style="display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border-radius: 20px; padding: 14px; box-shadow: 0 6px 24px rgba(27,38,35,0.08)">
+      <label for="hm-q" style="font-size: 13px; font-weight: 600; color: #5B6663">¿Qué servicio o clase necesitas?</label>
+      <div style="display: flex; align-items: center; gap: 10px; height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; padding: 0 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6663" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="hm-q" type="text" placeholder="Ej: plomero, clases de inglés" style="flex: 1; min-width: 0; border: none; outline: none; font: 16px Inter, sans-serif; color: #1B2623; background: transparent">
+      </div>
+      <label for="hm-loc" style="font-size: 13px; font-weight: 600; color: #5B6663">Localidad</label>
+      <div style="display: flex; align-items: center; gap: 10px; height: 52px; border-radius: 14px; border: 1.5px solid #CFC6B5; padding: 0 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6663" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+        <select id="hm-loc" style="flex: 1; border: none; outline: none; font: 16px Inter, sans-serif; color: #1B2623; background: transparent">
+          <option>Suba</option><option>Usaquén</option><option>Chapinero</option><option>Engativá</option><option>Kennedy</option>
+        </select>
+      </div>
+      <a href="Resultados_movil.dc.html" style="height: 52px; border-radius: 14px; background: #1B2623; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; text-decoration: none; margin-top: 4px">Buscar</a>
+    </form>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+      <span style="font-size: 13px; color: #5B6663">Populares:</span>
+      <a href="Resultados_movil.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #1B2623; text-decoration: none">Plomería</a>
+      <a href="Resultados_movil.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #1B2623; text-decoration: none">Inglés</a>
+      <a href="Resultados_movil.dc.html" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid #E4DCCD; background: #FFFFFF; display: flex; align-items: center; font-size: 14px; font-weight: 500; color: #1B2623; text-decoration: none">Mudanzas</a>
+    </div>
+  </section>
+
+  <section style="padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px">Categorías</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+      <a href="Resultados_movil.dc.html" style="height: 124px; border-radius: 18px; background: #E3F1EC; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #0A4D42">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Hogar</b><span style="font-size: 12px">Plomería, luz, pintura</span></span>
+      </a>
+      <a href="Resultados_movil.dc.html" style="height: 124px; border-radius: 18px; background: #FFF1C7; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #6B4E00">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z"/><path d="M20 5h-4a2 2 0 0 0-2 2"/><path d="M20 5v13h-6"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Clases y refuerzo</b><span style="font-size: 12px">Inglés, mate, música</span></span>
+      </a>
+      <a href="Resultados_movil.dc.html" style="height: 124px; border-radius: 18px; background: #F9E1DB; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #8A2A18">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h11v9H2z"/><path d="M13 10h4l4 3v3h-8"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Acarreos</b><span style="font-size: 12px">Mudanzas de barrio</span></span>
+      </a>
+      <a href="Resultados_movil.dc.html" style="height: 124px; border-radius: 18px; background: #ECE7DC; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: #1B2623">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Servicios varios</b><span style="font-size: 12px">Costura, mascotas, jardín</span></span>
+      </a>
+    </div>
+  </section>
+
+  <section style="padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: baseline; justify-content: space-between">
+      <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px">Recomendados en Suba</h2>
+      <a href="Resultados_movil.dc.html" style="font-size: 14px; font-weight: 600">Ver todos</a>
+    </div>
+
+    <article style="background: #FFFFFF; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #EFE8DA">
+      <a href="Perfil_movil.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+        <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #D7E8E2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #0A4D42">JR</span>
+        <span style="display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0">
+          <b style="font-size: 16px">[Nombre del proveedor]</b>
+          <span style="font-size: 14px; color: #5B6663">Plomería · Suba, Usaquén</span>
+          <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,8] <span style="font-weight: 400; color: #5B6663">([N] reseñas)</span></span>
+        </span>
+      </a>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #E3F1EC; color: #0A4D42; font-size: 12px; font-weight: 600; display: flex; align-items: center">Verificado</span>
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #FFF1C7; color: #6B4E00; font-size: 12px; font-weight: 600; display: flex; align-items: center">Formalizado</span>
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #F4F0E8; color: #3E4A47; font-size: 12px; font-weight: 600; display: flex; align-items: center">Desde [$ precio]</span>
+      </div>
+      <a href="#" style="height: 48px; border-radius: 14px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>Escribir por WhatsApp</a>
+    </article>
+
+    <article style="background: #FFFFFF; border-radius: 20px; padding: 14px; display: flex; flex-direction: column; gap: 12px; border: 1px solid #EFE8DA">
+      <a href="Perfil_movil.dc.html" style="display: flex; gap: 12px; align-items: center; text-decoration: none; color: #1B2623">
+        <span aria-hidden="true" style="flex: none; width: 56px; height: 56px; border-radius: 16px; background: #FCE8C2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 20px; color: #6B4E00">LM</span>
+        <span style="display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0">
+          <b style="font-size: 16px">[Nombre del proveedor]</b>
+          <span style="font-size: 14px; color: #5B6663">Clases de inglés · Suba, Chapinero</span>
+          <span style="display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" stroke-width="1.5" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>[4,9] <span style="font-weight: 400; color: #5B6663">([N] reseñas)</span></span>
+        </span>
+      </a>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #E3F1EC; color: #0A4D42; font-size: 12px; font-weight: 600; display: flex; align-items: center">Verificado</span>
+        <span style="height: 26px; padding: 0 10px; border-radius: 13px; background: #F9E1DB; color: #8A2A18; font-size: 12px; font-weight: 600; display: flex; align-items: center">Apto para menores</span>
+      </div>
+      <a href="#" style="height: 48px; border-radius: 14px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; font-size: 16px; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z"/></svg>Escribir por WhatsApp</a>
+    </article>
+  </section>
+
+  <section style="padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 16px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px">Así de fácil</h2>
+    <div style="display: flex; gap: 14px; align-items: flex-start">
+      <span style="flex: none; width: 36px; height: 36px; border-radius: 18px; background: #0F6B5C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700">1</span>
+      <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Busca</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.45">Dinos qué necesitas y en qué localidad.</span></span>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: flex-start">
+      <span style="flex: none; width: 36px; height: 36px; border-radius: 18px; background: #C2452D; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 700">2</span>
+      <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Compara</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.45">Mira reseñas reales, fotos de trabajos e insignias de verificación.</span></span>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: flex-start">
+      <span style="flex: none; width: 36px; height: 36px; border-radius: 18px; background: #F5B700; color: #1B2623; display: flex; align-items: center; justify-content: center; font-weight: 700">3</span>
+      <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 16px">Escribe por WhatsApp</b><span style="font-size: 15px; color: #3E4A47; line-height: 1.45">Acuerdas precio y fecha directo con el proveedor. Sin intermediarios.</span></span>
+    </div>
+  </section>
+
+  <section style="padding: 8px 20px 28px; display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px">Por qué confiar</h2>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 16px; padding: 14px">
+        <svg style="flex: none" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F6B5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Identidad verificada</b><span style="font-size: 14px; color: #3E4A47; line-height: 1.45">Revisamos el documento y el WhatsApp de cada proveedor.</span></span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 16px; padding: 14px">
+        <svg style="flex: none" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C2452D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Reseñas de clientes reales</b><span style="font-size: 14px; color: #3E4A47; line-height: 1.45">Solo califica quien contactó al proveedor desde Las 3B.</span></span>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: flex-start; background: #FFFFFF; border: 1px solid #EFE8DA; border-radius: 16px; padding: 14px">
+        <svg style="flex: none" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9A6F00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2s1 1.7 3 2 3 .9 3 2-1.3 2-3 2c-1.4 0-2.5-.5-3-1.5M12 6v2M12 16v2"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Sin comisiones</b><span style="font-size: 14px; color: #3E4A47; line-height: 1.45">Lo que pagas va completo al proveedor.</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin: 4px 20px 28px; border-radius: 24px; background: #1B2623; color: #FFFFFF; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px">
+    <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: #F5B700; text-transform: uppercase; letter-spacing: 1px"><span style="display: flex; gap: 3px"><span style="width: 7px; height: 7px; border-radius: 4px; background: #3FB394"></span><span style="width: 7px; height: 7px; border-radius: 4px; background: #E4694B"></span><span style="width: 7px; height: 7px; border-radius: 4px; background: #F5B700"></span></span>Para proveedores</span>
+    <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px; line-height: 1.1">¿Ofreces un servicio? Crea gratis tu página web.</h2>
+    <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #D5DCDA">Tu portafolio con dirección propia, código QR para tus volantes y reseñas de tus clientes.</p>
+    <span style="align-self: flex-start; font-family: ui-monospace, monospace; font-size: 14px; color: #1B2623; background: #F5B700; border-radius: 8px; padding: 6px 10px">lastresb.com.co/tu-nombre</span>
+    <a href="Proveedor_paso1.dc.html" style="height: 52px; border-radius: 14px; background: #FBF7F0; color: #1B2623; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; text-decoration: none; margin-top: 4px">Registrarme como proveedor</a>
+  </section>
+
+  <footer style="margin-top: auto; padding: 24px 20px 32px; border-top: 1px solid #E4DCCD; display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #5B6663">
+    <div style="display: flex; gap: 16px; flex-wrap: wrap">
+      <a href="#">Términos</a><a href="#">Datos personales</a><a href="#">Política de reseñas</a><a href="#">Presentar un reclamo</a>
+    </div>
+    <span style="line-height: 1.45">Las 3B es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.</span>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2080}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

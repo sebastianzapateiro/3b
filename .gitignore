@@ -14,3 +14,6 @@ next-env.d.ts
 
 .DS_Store
 *.log
+
+# Variables para pegar en Vercel (contiene secretos)
+vercel.txt
