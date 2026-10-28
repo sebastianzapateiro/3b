@@ -55,9 +55,11 @@ pnpm db:studio
 - Middleware: redirige a usuarios autenticados sin consentimientos a `/cuenta/consentimiento`.
 - `seed.ts`: textos de políticas versión 1.0 (reemplazar por textos definitivos del Drive).
 - Alta de proveedor en 3 pasos (P3): `/proveedores/registro` con wizard (datos básicos → qué ofreces y dónde → verificación + OTP), guardado vía Server Actions, estados `borrador → pendiente`. RUT obligatorio para segmento empresa o categoría de riesgo alto; independientes sin RUT tienen 30 días para cargar (→ `pausado_por_rut`).
+- Backoffice `/admin` con protección sesión + rol + 2FA y cola de aprobación (`buscarPendientes`, actions `aprobar/rechazar`, API `/api/v1/admin/*`).
 
 **Pendiente, en orden sugerido**
-1. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
+1. Migración SQL manual: revocar UPDATE/DELETE sobre `auditoria`; extensiones `unaccent` y `pg_trgm`.
+2. Páginas legales (`/terminos`, `/privacidad`, `/reclamos`) con los textos del Drive (carpeta "Textos legales").
 5. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
 6. Migración SQL manual: revocar UPDATE/DELETE sobre `auditoria`; extensiones `unaccent` y `pg_trgm`.
 7. Páginas legales (`/terminos`, `/privacidad`, `/reclamos`) con los textos del Drive (carpeta "Textos legales").
