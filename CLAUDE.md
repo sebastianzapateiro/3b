@@ -48,10 +48,10 @@ pnpm db:studio
 - `/[slug]` resuelve en base (`lib/portafolio.ts`): 301 desde slugs anteriores, "no disponible" si pausado, 404 si no publicado.
 - P1 cuenta: `/ingresar`, `/registro` (mayoría de edad + consentimiento con versión/IP), `/recuperar`, `/nueva-clave`. Migración `0001` (columnas 2FA de Better Auth 1.7) aplicada.
 - Página `/buscar` con búsqueda de proveedores (P2): full-text en español (`unaccent` + `pg_trgm`), sinónimos de `terminos_busqueda`, orden coincidencia → cobertura de localidad → calificación (CU-01), resultados según mockup "Resultados". Migración `0002_busqueda` aplicada (extensiones y regla de auditoría sobre `auditoria`).
+- Página `/[slug]` con portafolio completo (P7): datos reales del proveedor, servicios con precios, galería de fotos, insignias, reseñas y botón WhatsApp, según mockups Perfil_web/Perfil_movil. JSON-LD LocalBusiness y Open Graph por proveedor.
 
 **Pendiente, en orden sugerido**
-1. **P7 Portafolio** `/[slug]`: cargar proveedor `aprobado`/`en_revision`, 301 desde `slugs_historial`, "no disponible" si `pausado`, 404 si `suspendido`/`rechazado`, Open Graph (RF-37–43). Mockup "Perfil público".
-2. **P4 Contacto**: ruta `/api/v1/contactos` que registra el clic y redirige a `wa.me` (`enlaceWhatsApp` de `@las3b/shared`).
+1. **P4 Contacto**: ruta `/api/v1/contactos` que registra el clic y redirige a `wa.me` (`enlaceWhatsApp` de `@las3b/shared`).
 3. **P1 pendientes**: conectar proveedor de correo en `apps/web/src/lib/correo.ts` (hoy los enlaces salen en consola); al primer ingreso con Google pedir mayoría de edad + consentimiento; textos reales de políticas (hoy `0.1-borrador`).
 4. **P3 Alta de proveedor** en 3 pasos (datos básicos → qué ofreces y dónde → verificación con OTP, documento y dirección). Segmentos y RUT diferido 30 días (ver `docs/02-casos-de-uso.md`).
 5. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
