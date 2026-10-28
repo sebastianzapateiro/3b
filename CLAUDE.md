@@ -47,16 +47,16 @@ pnpm db:studio
 - SEO base: metadatos, Open Graph/X con imagen generada, `robots.ts`, `sitemap.ts`, JSON-LD (`lib/seo.ts`), íconos PNG, GA4. Solo se indexa y mide con `VERCEL_ENV=production`.
 - `/[slug]` resuelve en base (`lib/portafolio.ts`): 301 desde slugs anteriores, "no disponible" si pausado, 404 si no publicado.
 - P1 cuenta: `/ingresar`, `/registro` (mayoría de edad + consentimiento con versión/IP), `/recuperar`, `/nueva-clave`. Migración `0001` (columnas 2FA de Better Auth 1.7) aplicada.
+- Página `/buscar` con búsqueda de proveedores (P2): full-text en español (`unaccent` + `pg_trgm`), sinónimos de `terminos_busqueda`, orden coincidencia → cobertura de localidad → calificación (CU-01), resultados según mockup "Resultados". Migración `0002_busqueda` aplicada (extensiones y regla de auditoría sobre `auditoria`).
 
 **Pendiente, en orden sugerido**
-1. **P2 Búsqueda** `/buscar?q=&localidad=&categoria=`: full-text en español sin tildes (`unaccent` + `pg_trgm`), sinónimos de `terminos_busqueda`, orden: coincidencia → cobertura de localidad → calificación (CU-01). Página de resultados según mockup "Resultados".
-2. **P7 Portafolio** `/[slug]`: cargar proveedor `aprobado`/`en_revision`, 301 desde `slugs_historial`, "no disponible" si `pausado`, 404 si `suspendido`/`rechazado`, Open Graph (RF-37–43). Mockup "Perfil público".
-3. **P4 Contacto**: ruta `/api/v1/contactos` que registra el clic y redirige a `wa.me` (`enlaceWhatsApp` de `@las3b/shared`).
-4. **P1 pendientes**: conectar proveedor de correo en `apps/web/src/lib/correo.ts` (hoy los enlaces salen en consola); al primer ingreso con Google pedir mayoría de edad + consentimiento; textos reales de políticas (hoy `0.1-borrador`).
-5. **P3 Alta de proveedor** en 3 pasos (datos básicos → qué ofreces y dónde → verificación con OTP, documento y dirección). Segmentos y RUT diferido 30 días (ver `docs/02-casos-de-uso.md`).
-6. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
-7. Migración SQL manual: revocar UPDATE/DELETE sobre `auditoria`; extensiones `unaccent` y `pg_trgm`.
-8. Páginas legales (`/terminos`, `/privacidad`, `/reclamos`) con los textos del Drive (carpeta "Textos legales").
+1. **P7 Portafolio** `/[slug]`: cargar proveedor `aprobado`/`en_revision`, 301 desde `slugs_historial`, "no disponible" si `pausado`, 404 si `suspendido`/`rechazado`, Open Graph (RF-37–43). Mockup "Perfil público".
+2. **P4 Contacto**: ruta `/api/v1/contactos` que registra el clic y redirige a `wa.me` (`enlaceWhatsApp` de `@las3b/shared`).
+3. **P1 pendientes**: conectar proveedor de correo en `apps/web/src/lib/correo.ts` (hoy los enlaces salen en consola); al primer ingreso con Google pedir mayoría de edad + consentimiento; textos reales de políticas (hoy `0.1-borrador`).
+4. **P3 Alta de proveedor** en 3 pasos (datos básicos → qué ofreces y dónde → verificación con OTP, documento y dirección). Segmentos y RUT diferido 30 días (ver `docs/02-casos-de-uso.md`).
+5. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
+6. Migración SQL manual: revocar UPDATE/DELETE sobre `auditoria`; extensiones `unaccent` y `pg_trgm`.
+7. Páginas legales (`/terminos`, `/privacidad`, `/reclamos`) con los textos del Drive (carpeta "Textos legales").
 
 **Diseño de referencia:** `docs/mockups/` (copia del lienzo "Las 3B — Mockups v0.3"; índice y rutas en `docs/mockups/README.md`). Implementa cada pantalla siguiendo su mockup: layout, copia, colores y tamaños. Faltan login y alta de proveedor en versión escritorio. Logos vectoriales en `~/Descargas/logos-Las3B_banco-de-imagenes/svg`.
 
