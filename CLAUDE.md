@@ -58,9 +58,10 @@ pnpm db:studio
 - Backoffice `/admin` con protección sesión + rol + 2FA y cola de aprobación (`buscarPendientes`, actions `aprobar/rechazar`, API `/api/v1/admin/*`).
 - Páginas legales (`/terminos`, `/privacidad`, `/reclamos`): creadas con texto vigente que exime a Las 3B de responsabilidad por la prestación del servicio — es solo plataforma de tráfico que verifica datos básicos; la responsabilidad y conversación contractual son entre proveedor y cliente.
 - Textos legales definitivos (redacción del modelo, pendiente de tu revisión): versiones 1.0 en `seed.ts` (`terminos_compradores`, `tratamiento_datos`) y contenido en `/terminos`, `/privacidad`, `/reclamos`.
+- Variables locales: `BETTER_AUTH_SECRET` generado (`openssl rand -base64 32`); build de producción sin errores de BetterAuth.
 
 **Pendiente, en orden sugerido**
-1. Configurar dominio `lastresb.com.co` y despliegue (Vercel/Supabase); variables de entorno (`BETTER_AUTH_SECRET`, `RESEND_API_KEY`).
+1. Completar variables de entorno restantes (`RESEND_API_KEY`, `SUPABASE_*`, `GOOGLE_*`) y deploy en Vercel con dominio `lastresb.com.co`.
 
 **Diseño de referencia:** `docs/mockups/` (copia del lienzo "Las 3B — Mockups v0.3"; índice y rutas en `docs/mockups/README.md`). Implementa cada pantalla siguiendo su mockup: layout, copia, colores y tamaños. Faltan login y alta de proveedor en versión escritorio. Logos vectoriales en `~/Descargas/logos-Las3B_banco-de-imagenes/svg`.
 
