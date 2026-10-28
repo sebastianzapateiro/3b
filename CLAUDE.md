@@ -50,10 +50,13 @@ pnpm db:studio
 - Página `/buscar` con búsqueda de proveedores (P2): full-text en español (`unaccent` + `pg_trgm`), sinónimos de `terminos_busqueda`, orden coincidencia → cobertura de localidad → calificación (CU-01), resultados según mockup "Resultados". Migración `0002_busqueda` aplicada (extensiones y regla de auditoría sobre `auditoria`).
 - Página `/[slug]` con portafolio completo (P7): datos reales del proveedor, servicios con precios, galería de fotos, insignias, reseñas y botón WhatsApp, según mockups Perfil_web/Perfil_movil. JSON-LD LocalBusiness y Open Graph por proveedor.
 - Ruta `POST /api/v1/contactos` (P4, CU-05): registra el clic en tabla `contactos` (compradorId si hay sesión, anonimoId si no) y redirige 302 a `wa.me` con mensaje prellenado (`enlaceWhatsApp` de `@las3b/shared`). Cookie `anonimo_id` de 30 días para visitantes anónimos.
+- `apps/web/src/lib/correo.ts`: envío real vía Resend (fetch a API de Resend si `RESEND_API_KEY` está definida), fallback a consola si no.
+- Página `/cuenta/consentimiento` (P1 pendientes, RF-19, CU-76): aceptar mayoría de edad y políticas esenciales con casillas no premarcadas. API `GET /api/v1/politicas/vigentes` y `POST /api/v1/consentimientos`.
+- Middleware: redirige a usuarios autenticados sin consentimientos a `/cuenta/consentimiento`.
+- `seed.ts`: textos de políticas versión 1.0 (reemplazar por textos definitivos del Drive).
 
 **Pendiente, en orden sugerido**
-1. **P1 pendientes**: conectar proveedor de correo en `apps/web/src/lib/correo.ts` (hoy los enlaces salen en consola); al primer ingreso con Google pedir mayoría de edad + consentimiento; textos reales de políticas (hoy `0.1-borrador`).
-4. **P3 Alta de proveedor** en 3 pasos (datos básicos → qué ofreces y dónde → verificación con OTP, documento y dirección). Segmentos y RUT diferido 30 días (ver `docs/02-casos-de-uso.md`).
+1. **P3 Alta de proveedor** en 3 pasos (datos básicos → qué ofreces y dónde → verificación con OTP, documento y dirección). Segmentos y RUT diferido 30 días (ver `docs/02-casos-de-uso.md`).
 5. **Backoffice** `/admin`: proteger con sesión + rol + 2FA; cola de aprobación (B1).
 6. Migración SQL manual: revocar UPDATE/DELETE sobre `auditoria`; extensiones `unaccent` y `pg_trgm`.
 7. Páginas legales (`/terminos`, `/privacidad`, `/reclamos`) con los textos del Drive (carpeta "Textos legales").

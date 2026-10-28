@@ -64,10 +64,22 @@ const INSIGNIAS = [
   { clave: "certificado", nombre: "Certificado en su oficio", vigenciaMeses: 12 },
 ];
 
-/** Versiones borrador para registrar consentimientos (RF-19). Reemplazar por los textos de Drive ("Textos legales"). */
+/** Textos de políticas iniciales (RF-19). Reemplazar por los textos definitivos del Drive ("Textos legales"). */
 const POLITICAS_BORRADOR = [
-  { tipo: "terminos_compradores", version: "0.1-borrador" },
-  { tipo: "tratamiento_datos", version: "0.1-borrador" },
+  {
+    tipo: "terminos_compradores",
+    version: "1.0",
+    contenidoMd:
+      "# Términos de uso (compradores)\n\nLas 3B es un directorio de contacto gratuito. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor. Las 3B no interviene en el pago ni garantiza el resultado del servicio. Al registrarte declaras ser mayor de edad y aceptas estos términos.",
+    esencial: true,
+  },
+  {
+    tipo: "tratamiento_datos",
+    version: "1.0",
+    contenidoMd:
+      "# Tratamiento de datos personales\n\nTus datos se usan para crear tu cuenta, enviarte notificaciones y registrar tus contactos con proveedores. No se venden ni se ceden a terceros. Puedes consultar, rectificar o solicitar su supresión escribiendo a Las 3B. Conservamos los datos bloqueados 5 años tras eliminar la cuenta.",
+    esencial: true,
+  },
 ] as const;
 
 async function main() {
