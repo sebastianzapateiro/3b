@@ -53,13 +53,14 @@ pnpm db:studio
 - `apps/web/src/lib/correo.ts`: envío real vía Resend (fetch a API de Resend si `RESEND_API_KEY` está definida), fallback a consola si no.
 - Página `/cuenta/consentimiento` (P1 pendientes, RF-19, CU-76): aceptar mayoría de edad y políticas esenciales con casillas no premarcadas. API `GET /api/v1/politicas/vigentes` y `POST /api/v1/consentimientos`.
 - Middleware: redirige a usuarios autenticados sin consentimientos a `/cuenta/consentimiento`.
-- `seed.ts`: textos de políticas versión 1.0 (reemplazar por textos definitivos del Drive).
+- `seed.ts`: textos de políticas versión 1.0 con redacción definitiva (exoneración de responsabilidad: plataforma de tráfico; responsable y conversación entre proveedor y cliente).
 - Alta de proveedor en 3 pasos (P3): `/proveedores/registro` con wizard (datos básicos → qué ofreces y dónde → verificación + OTP), guardado vía Server Actions, estados `borrador → pendiente`. RUT obligatorio para segmento empresa o categoría de riesgo alto; independientes sin RUT tienen 30 días para cargar (→ `pausado_por_rut`).
 - Backoffice `/admin` con protección sesión + rol + 2FA y cola de aprobación (`buscarPendientes`, actions `aprobar/rechazar`, API `/api/v1/admin/*`).
 - Páginas legales (`/terminos`, `/privacidad`, `/reclamos`): creadas con texto vigente que exime a Las 3B de responsabilidad por la prestación del servicio — es solo plataforma de tráfico que verifica datos básicos; la responsabilidad y conversación contractual son entre proveedor y cliente.
+- Textos legales definitivos (redacción del modelo, pendiente de tu revisión): versiones 1.0 en `seed.ts` (`terminos_compradores`, `tratamiento_datos`) y contenido en `/terminos`, `/privacidad`, `/reclamos`.
 
 **Pendiente, en orden sugerido**
-1. Textos legales definitivos del Drive (carpeta "Textos legales"): actualizar `packages/db/src/seed.ts` y el contenido de `/terminos`, `/privacidad`, `/reclamos` con la redacción final. Posición vigente ya registrada: Las 3B es plataforma de tráfico, exonerada de la responsabilidad sobre la prestación.
+1. Configurar dominio `lastresb.com.co` y despliegue (Vercel/Supabase); variables de entorno (`BETTER_AUTH_SECRET`, `RESEND_API_KEY`).
 
 **Diseño de referencia:** `docs/mockups/` (copia del lienzo "Las 3B — Mockups v0.3"; índice y rutas en `docs/mockups/README.md`). Implementa cada pantalla siguiendo su mockup: layout, copia, colores y tamaños. Faltan login y alta de proveedor en versión escritorio. Logos vectoriales en `~/Descargas/logos-Las3B_banco-de-imagenes/svg`.
 

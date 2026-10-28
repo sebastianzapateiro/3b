@@ -70,14 +70,14 @@ const POLITICAS_BORRADOR = [
     tipo: "terminos_compradores",
     version: "1.0",
     contenidoMd:
-      "# Términos de uso (compradores)\n\nLas 3B es una plataforma de contacto gratuita. Al registrarte declaras ser mayor de edad y aceptas estos términos. Las 3B verifica datos básicos para inscripción (mayoría de edad, consentimientos), pero es solo una plataforma de tráfico: no prestamos el servicio, no interviene en el pago ni se hace responsable de la prestación del mismo. La responsabilidad civil y la conversación contractual (precio, fecha, garantías) quedan entre el proveedor y el cliente. No cobramos comisiones y no somos intermediario de pagos, empleador ni garante del servicio.",
+      "# Términos de uso (compradores)\n\n**Versión 1.0 — Vigencia: 27 de octubre de 2026.**\n\n## 1. Objeto\n\nLas 3B es un directorio y plataforma de contacto gratuito. El comprador describe un servicio u oficio y contacta al proveedor por WhatsApp; el servicio, el precio, la fecha y las garantías se acuerdan entre el proveedor y el comprador.\n\n## 2. Exención de responsabilidad\n\nLas 3B es una plataforma de tráfico que verifica datos básicos para la inscripción (mayoría de edad, consentimientos). Queda exonerada de responsabilidad por la prestación del servicio, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La responsabilidad civil y la conversación contractual son entre el proveedor y el cliente; Las 3B no interviene en pagos, no cobra comisiones, no es intermediario de pagos, empleador ni garante.\n\n## 3. Elegibilidad\n\nEl servicio está dirigido a personas mayores de 18 años con capacidad legal para contratar.\n\nAl registrarse en Las 3B se aceptan estos términos.",
     esencial: true,
   },
   {
     tipo: "tratamiento_datos",
     version: "1.0",
     contenidoMd:
-      "# Tratamiento de datos personales\n\nTus datos se usan para crear tu cuenta, enviarte notificaciones y registrar tus contactos con proveedores. No se venden ni se ceden a terceros. Puedes consultar, rectificar o solicitar su supresión escribiendo a Las 3B. Conservamos los datos bloqueados 5 años tras eliminar la cuenta.",
+      "# Tratamiento de datos personales\n\n**Versión 1.0 — Vigencia: 27 de octubre de 2026.**\n\n## 1. Datos que tratamos\n\nDatos de la cuenta (nombre, correo, datos de verificación y consentimientos) y datos privados de proveedores (documento cifrado, dirección de notificaciones, RUT, fecha de nacimiento) que no salen del portafolio público.\n\n## 2. Consentimientos\n\nAl registrarse se requiere casilla no premarcada de mayoría de edad y aceptación de los términos y el tratamiento de datos; se guarda versión, fecha e IP.\n\n## 3. Conservación y derechos\n\nConsultas, rectificaciones, supresiones o exportaciones conforme a la Ley 1581 de 2012.\n\n## 4. Reseñas\n\nUna reseña por contacto y solo con un clic previo; se conservan bloqueadas 5 años tras eliminar la cuenta.",
     esencial: true,
   },
 ] as const;
