@@ -13,6 +13,7 @@ Copia del lienzo "Las 3B — Mockups v0.3" (claude.ai). Cada archivo es una pant
 | BO_Ingreso | Backoffice: ingreso con 2FA | `/admin/ingresar` |
 | BO_Tablero | Tablero y alertas (B7) | `/admin` |
 | BO_Aprobaciones | Cola de aprobación (B1, CU-50) | `/admin/aprobaciones` |
+| BO_NuevoProveedor | Registrar proveedor desde el backoffice (alta asistida con invitación) | `/admin/proveedores/nuevo` |
 | BO_Revision | Revisión de proveedor, documentos, decisión e insignias (B1, B2) | `/admin/proveedores/[id]` |
 | BO_Moderacion | Moderación de contenido (B3) | `/admin/moderacion` |
 | BO_Cumplimiento | Reclamos, solicitudes de datos y políticas (B6) | `/admin/cumplimiento` |
