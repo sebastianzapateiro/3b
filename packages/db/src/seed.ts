@@ -70,7 +70,7 @@ const POLITICAS_BORRADOR = [
     tipo: "terminos_compradores",
     version: "1.0",
     contenidoMd:
-      "# Términos de uso (compradores)\n\nLas 3B es un directorio de contacto gratuito. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor. Las 3B no interviene en el pago ni garantiza el resultado del servicio. Al registrarte declaras ser mayor de edad y aceptas estos términos.",
+      "# Términos de uso (compradores)\n\nLas 3B es una plataforma de contacto gratuita. Al registrarte declaras ser mayor de edad y aceptas estos términos. Las 3B verifica datos básicos para inscripción (mayoría de edad, consentimientos), pero es solo una plataforma de tráfico: no prestamos el servicio, no interviene en el pago ni se hace responsable de la prestación del mismo. La responsabilidad civil y la conversación contractual (precio, fecha, garantías) quedan entre el proveedor y el cliente. No cobramos comisiones y no somos intermediario de pagos, empleador ni garante del servicio.",
     esencial: true,
   },
   {
