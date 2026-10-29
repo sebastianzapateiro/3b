@@ -252,6 +252,7 @@ export async function obtenerRevision(id: string) {
 
   return {
     id: p.id,
+    usuarioId: p.usuarioId,
     estado: p.estado,
     nombre: p.nombrePublico,
     slug: p.slug,
@@ -267,6 +268,8 @@ export async function obtenerRevision(id: string) {
     mayorDeEdad: edad !== null ? edad >= 18 : null,
     direccion: p.direccionNotificaciones,
     whatsappMascara: tel ? `+${tel.slice(0, 2)} ${tel.slice(2, 5)} ••• ••${tel.slice(-2)}` : "—",
+    // Solo para armar el enlace de invitación por WhatsApp; en pantalla se muestra la máscara.
+    whatsapp: p.whatsapp,
     correo: u?.correo ?? null,
     correoVerificado: Boolean(u?.correoVerificado),
     categorias: cats,

@@ -1,7 +1,10 @@
-import { asc, eq, isNotNull } from "drizzle-orm";
+import { asc, desc, eq, isNotNull } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
-import { crearProveedorAsistido } from "@/app/admin/actions";
-import { Aviso, campoAdmin, Encabezado, tarjeta } from "@/components/admin/Ui";
+import Link from "next/link";
+import { crearProveedorAsistido, reenviarInvitacion } from "@/app/admin/actions";
+import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
+import { esCorreoFicticio, estadoInvitaciones } from "@/lib/invitaciones";
+import { parametro } from "@/lib/parametros";
 
 /** B1 · Alta asistida de un proveedor (CU-51). Mockup: docs/mockups/BO_NuevoProveedor.dc.html. */
 const grupo = "flex flex-col gap-1.5";
@@ -15,12 +18,14 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
     db.select({ id: schema.categorias.id, nombre: schema.categorias.nombre }).from(schema.categorias).where(isNotNull(schema.categorias.padreId)).orderBy(asc(schema.categorias.nombre)),
     db.select({ id: schema.localidades.id, nombre: schema.localidades.nombre }).from(schema.localidades).where(eq(schema.localidades.activa, true)).orderBy(asc(schema.localidades.numero)),
     db
-      .select({ id: schema.proveedores.id, nombre: schema.proveedores.nombrePublico, estado: schema.proveedores.estado })
+      .select({ id: schema.proveedores.id, usuarioId: schema.proveedores.usuarioId, nombre: schema.proveedores.nombrePublico, correo: schema.user.email })
       .from(schema.proveedores)
+      .innerJoin(schema.user, eq(schema.user.id, schema.proveedores.usuarioId))
       .where(eq(schema.proveedores.estado, "borrador"))
-      .orderBy(schema.proveedores.createdAt)
-      .limit(6),
+      .orderBy(desc(schema.proveedores.createdAt))
+      .limit(8),
   ]);
+  const [invitaciones, horas] = await Promise.all([estadoInvitaciones(recientes.map((r) => r.usuarioId)), parametro("invitacion_vigencia_h")]);
 
   return (
     <>
@@ -103,7 +108,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <h2 className="font-display text-xl font-bold"><span className="text-verde">4.</span> Documentos</h2>
             <p className="rounded-xl bg-piedra px-3.5 py-3 text-sm text-tinta-2">
-              El proveedor sube la cédula (y el RUT, matrícula o autorización si aplican) desde su propio enlace. La carga de archivos desde el backoffice se habilita cuando se conecte el almacenamiento privado.
+              Al guardar te llevamos a la ficha del proveedor: ahí cargas las fotos de su documento (y RUT, matrícula o autorización si aplican), o dejas que las suba él desde su enlace de invitación.
             </p>
           </section>
         </div>
@@ -112,24 +117,47 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
           <section className="flex flex-col gap-3.5 rounded-[20px] border-2 border-tinta bg-white p-[22px]">
             <h2 className="font-display text-xl font-bold">Lo que hace el proveedor</h2>
             <ol className="flex flex-col gap-3 text-sm leading-[1.45]">
-              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-verde font-bold text-white">1</span>Recibe un enlace por WhatsApp (y correo si lo tiene). Vence en 72 horas.</li>
-              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-ladrillo font-bold text-white">2</span>Confirma su WhatsApp con el código y revisa los datos que llenaste.</li>
-              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-amarillo font-bold text-tinta">3</span>Acepta términos y autorización de datos, firma la Ley 1918 si aplica y crea su clave.</li>
+              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-verde font-bold text-white">1</span>Recibe el enlace en su correo, y por WhatsApp si se lo envías desde su ficha. Vence en {horas} horas.</li>
+              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-ladrillo font-bold text-white">2</span>Crea su clave y revisa los datos que llenaste.</li>
+              <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-amarillo font-bold text-tinta">3</span>Sube lo que falte, acepta términos y autorización de datos, firma la Ley 1918 si aplica y envía su perfil a revisión.</li>
             </ol>
             <p className="rounded-xl bg-amarillo-suave px-3.5 py-3 text-sm leading-[1.45] text-amarillo-oscuro">El equipo no puede aceptar términos ni autorizaciones por el proveedor (Ley 1581). Hasta que lo haga, el perfil queda en borrador.</p>
             <label htmlFor="origen" className="text-sm font-semibold">Cómo llegó</label>
             <select id="origen" name="origen" className={campoAdmin}><option>En persona</option><option>Por teléfono</option><option>Jornada de registro en barrio</option><option>Referido por otro proveedor</option></select>
-            <button type="submit" className="h-[50px] rounded-xl bg-tinta text-base font-bold text-white">Guardar borrador</button>
-            <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría como alta asistida por ti. El envío automático de la invitación por WhatsApp y correo se activa cuando se conecte el proveedor de mensajería. Otro verificador hace la aprobación final.</span>
+            <button type="submit" name="accion" value="invitar" className="h-[50px] rounded-xl bg-tinta text-base font-bold text-white">Crear y enviar invitación</button>
+            <button type="submit" name="accion" value="borrador" className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white text-sm font-semibold">Guardar borrador</button>
+            <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría como alta asistida por ti. Para invitar, el proveedor necesita correo: con él ingresará. Otro verificador hace la aprobación final.</span>
           </section>
 
           <section className={`${tarjeta} flex flex-col gap-2.5 p-[22px]`}>
-            <h2 className="font-display text-lg font-bold">Borradores recientes</h2>
+            <h2 className="font-display text-lg font-bold">Invitaciones</h2>
             {recientes.length === 0 ? (
-              <p className="text-sm text-gris">Aún no hay borradores.</p>
+              <p className="text-sm text-gris">Aún no hay altas asistidas en borrador.</p>
             ) : (
-              <ul className="flex flex-col gap-2.5 text-sm">
-                {recientes.map((r) => <li key={r.id} className="flex justify-between gap-2"><span>{r.nombre}</span><span className="font-semibold text-amarillo-oscuro">Borrador</span></li>)}
+              <ul className="flex flex-col text-sm">
+                {recientes.map((r) => {
+                  const inv = invitaciones.get(r.usuarioId);
+                  const sinCorreo = esCorreoFicticio(r.correo);
+                  return (
+                    <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-borde-suave py-2.5 first:border-0">
+                      <Link href={`/admin/proveedores/${r.id}`} className="font-semibold hover:underline">{r.nombre}</Link>
+                      <span className="flex items-center gap-2">
+                        {sinCorreo ? <Chip tono="gris">Sin correo</Chip>
+                          : inv?.estado === "acepto" ? <Chip tono="verde">Aceptó · completa su perfil</Chip>
+                          : inv?.estado === "esperando" ? <Chip tono="amarillo">Esperando</Chip>
+                          : inv?.estado === "vencio" ? <Chip tono="rojo">Venció</Chip>
+                          : <Chip tono="gris">Sin enviar</Chip>}
+                        {!sinCorreo && (inv?.estado === "vencio" || inv?.estado === "sin_invitacion") && (
+                          <form action={reenviarInvitacion}>
+                            <input type="hidden" name="proveedorId" value={r.id} />
+                            <input type="hidden" name="vuelta" value="nuevo" />
+                            <button type="submit" className="font-semibold text-verde hover:text-verde-oscuro">{inv?.estado === "vencio" ? "Reenviar" : "Invitar"}</button>
+                          </form>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

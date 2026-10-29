@@ -79,6 +79,8 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 7. Backoffice: acceso y cola de aprobación (B1)
 
+> **Alta asistida (29 oct):** «Crear y enviar invitación» (correo + botón de WhatsApp con el mensaje listo, vence en `invitacion_vigencia_h`), panel de invitaciones (esperando / aceptó / venció · reenviar), carga de documentos por el equipo desde la ficha (auditada) y `/panel/confirmar` para que el proveedor revise, acepte términos y envíe a revisión. Pendiente: editar el correo de un borrador sin correo; envío automático por WhatsApp.
+>
 > **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Además: crear usuarios con invitación por correo y QR para el 2FA (29 oct). «Abrir» documento ya usa `/admin/documentos/[id]`: URL firmada (minutos en `configuracion`) y registro en `auditoria` por cada apertura. Sesión del equipo de 8 h, 2FA desde `/ingresar` y códigos de respaldo hechos (29 oct).
 
 

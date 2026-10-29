@@ -6,8 +6,8 @@ const { auditoria, user } = schema;
 
 export const FILTROS_ACCION: Record<string, { texto: string; acciones?: string[]; prefijo?: string }> = {
   todas: { texto: "Todas las acciones" },
-  documento: { texto: "Abrir documento", acciones: ["documento_abierto"] },
-  decision: { texto: "Aprobar / rechazar", acciones: ["proveedor_aprobado", "proveedor_rechazado", "alta_asistida"] },
+  documento: { texto: "Documentos", acciones: ["documento_abierto", "documento_cargado_equipo"] },
+  decision: { texto: "Aprobar / rechazar", acciones: ["proveedor_aprobado", "proveedor_rechazado", "alta_asistida", "invitacion_reenviada"] },
   moderar: { texto: "Moderar", prefijo: "moderacion_" },
   rol: { texto: "Cambiar rol", acciones: ["roles_actualizados", "admin_creado_por_script", "usuario_creado", "exigencia_2fa_actualizada"] },
   suspender: { texto: "Suspender", acciones: ["usuario_suspendido", "aviso_suspension", "dos_factor_restablecido"] },
@@ -21,6 +21,8 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   proveedor_aprobado: "Aprobar proveedor",
   proveedor_rechazado: "Rechazar proveedor",
   alta_asistida: "Alta asistida",
+  invitacion_reenviada: "Reenviar invitación",
+  documento_cargado_equipo: "Cargar documento (equipo)",
   roles_actualizados: "Asignar rol",
   usuario_creado: "Crear usuario",
   exigencia_2fa_actualizada: "Cambiar exigencia de 2FA",

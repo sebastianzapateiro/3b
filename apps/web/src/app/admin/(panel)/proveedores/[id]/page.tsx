@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation";
-import { aprobarProveedor, rechazarProveedor } from "@/app/admin/actions";
+import { aprobarProveedor, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
+import { CargaDocumentosEquipo } from "@/components/admin/CargaDocumentosEquipo";
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
 import { etiquetaSegmento, obtenerRevision } from "@/lib/admin";
-import { documentosExigidos } from "@/lib/documentos";
+import { documentosExigidos, estadoDocumentos } from "@/lib/documentos";
+import { enlaceVigente, esCorreoFicticio, estadoInvitaciones, invitacionPorWhatsApp } from "@/lib/invitaciones";
 import { MOTIVOS_RECHAZO } from "@/lib/motivos-rechazo";
 
 /** B1, B2 · Revisión de proveedor, documentos, decisión e insignias. Mockup: docs/mockups/BO_Revision.dc.html. */
@@ -38,6 +40,14 @@ export default async function Revision({ params, searchParams }: { params: Promi
   const aplicaMenores = p.categorias.some((c) => c.menores);
   const tieneRut = p.insignias.some((i) => i.clave === "formalizado");
   const puedeDecidir = p.estado === "pendiente" || p.estado === "en_revision" || p.estado === "borrador";
+  const borrador = p.estado === "borrador";
+  const [docs, invitaciones, enlace] = await Promise.all([
+    estadoDocumentos(p.id),
+    borrador ? estadoInvitaciones([p.usuarioId]) : null,
+    borrador ? enlaceVigente(p.usuarioId, "/panel/confirmar") : null,
+  ]);
+  const invitacion = invitaciones?.get(p.usuarioId);
+  const sinCorreo = !p.correo || esCorreoFicticio(p.correo);
 
   return (
     <>
@@ -60,6 +70,35 @@ export default async function Revision({ params, searchParams }: { params: Promi
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
         <div className="flex min-w-0 flex-[2_1_520px] flex-col gap-5">
           <Aviso ok={sp.ok} error={sp.error} />
+
+          {borrador && invitacion && (
+            <section className="flex flex-col gap-3 rounded-[20px] border-2 border-tinta bg-white p-[22px]">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 className="font-display text-xl font-bold">Invitación al proveedor</h2>
+                <Chip tono={invitacion.estado === "acepto" ? "verde" : invitacion.estado === "esperando" ? "amarillo" : "rojo"}>
+                  {invitacion.estado === "acepto" ? "Aceptó · creó su clave" : invitacion.estado === "esperando" ? `Esperando · vence ${fecha(invitacion.vence!)}` : invitacion.estado === "vencio" ? "Venció" : "Sin enviar"}
+                </Chip>
+              </div>
+              <p className="text-sm leading-[1.45] text-tinta-2">
+                {invitacion.estado === "acepto"
+                  ? "Ya entró: debe revisar sus datos, aceptar los términos y enviar su perfil a revisión desde su panel."
+                  : "Con el enlace crea su clave, revisa los datos que llenaste, acepta términos y autorizaciones (Ley 1581) y envía su perfil a revisión."}
+              </p>
+              {sinCorreo ? (
+                <p className="rounded-xl bg-amarillo-suave px-3.5 py-3 text-sm text-amarillo-oscuro">No tiene correo: lo necesita para ingresar. Pídeselo y regístralo para poder invitarlo.</p>
+              ) : invitacion.estado !== "acepto" && (
+                <div className="flex flex-wrap gap-2.5">
+                  {enlace && p.whatsapp && (
+                    <a href={invitacionPorWhatsApp(p.whatsapp, p.nombre, enlace.url, Math.max(1, Math.round((+enlace.vence - Date.now()) / 3_600_000)))} target="_blank" rel="noopener noreferrer" className="inline-flex h-11 items-center rounded-xl bg-verde px-4 text-sm font-semibold text-white hover:bg-verde-oscuro">Enviar por WhatsApp</a>
+                  )}
+                  <form action={reenviarInvitacion}>
+                    <input type="hidden" name="proveedorId" value={p.id} />
+                    <button type="submit" className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-4 text-sm font-semibold">{invitacion.estado === "sin_invitacion" ? "Enviar invitación por correo" : "Reenviar (enlace nuevo)"}</button>
+                  </form>
+                </div>
+              )}
+            </section>
+          )}
 
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <h2 className="font-display text-xl font-bold">Datos del alta</h2>
@@ -100,6 +139,11 @@ export default async function Revision({ params, searchParams }: { params: Promi
                 );
               })}
             </div>
+            <details className="rounded-2xl bg-piedra px-4 py-3" open={borrador && p.documentos.length === 0}>
+              <summary className="text-sm font-semibold">Cargar o cambiar documentos a nombre del proveedor</summary>
+              <p className="mb-3 mt-2 text-[13px] leading-[1.45] text-gris">Para el alta en persona o si te los mandó por WhatsApp. Quedan en el bucket privado y cada carga se registra en la auditoría con tu nombre.</p>
+              <CargaDocumentosEquipo proveedorId={p.id} documentos={docs.lista} />
+            </details>
           </section>
 
           <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>

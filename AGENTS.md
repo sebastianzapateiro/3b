@@ -50,7 +50,7 @@ apps/web/src/
     [slug]/                P7 portafolio, calificar (P5), OG por proveedor
     servicios/, categorias/, localidades/, guias/   Páginas SEO por oficio y localidad
     proveedores/registro/  P3 alta en 3 pasos (borrador → pendiente)
-    panel/                 Panel del proveedor: perfil, servicios, reseñas, verificación
+    panel/                 Panel del proveedor: perfil, servicios, reseñas, verificación; confirmar (borrador → revisa, acepta términos y envía)
     reclamos/, reportar/   Formularios públicos (CU-10/11, reportes)
     terminos/, terminos-proveedores/, privacidad/, cookies/, resenas/, retiro-de-contenido/   Legales
     admin/ingresar/        Ingreso del equipo: clave + 2FA (QR la primera vez)
@@ -58,8 +58,8 @@ apps/web/src/
                            usuarios (crear, roles, suspender), catalogo, cumplimiento, auditoria
     api/auth/[...all]      Better Auth
     admin/documentos/[id]  Abre un documento privado: auditoría + redirección a URL firmada
-    api/v1/                health, yo, yo/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
-  lib/                     Lógica de negocio (regla 7): documentos (requisitos, subida, apertura), almacenamiento (Storage REST), busqueda, portafolio(-completo), resenas, panel, admin,
+    api/v1/                health, yo, yo/documentos (+ /subida), admin/proveedores/[id]/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
+  lib/                     Lógica de negocio (regla 7): documentos (requisitos, subida, apertura), almacenamiento (Storage REST), invitaciones (enlace de clave, estado, WhatsApp), busqueda, portafolio(-completo), resenas, panel, admin,
                            moderacion, cumplimiento, auditoria(-consulta), parametros, verificacion (guardia backoffice),
                            consentimientos, correo (Resend o consola), seo, seo-servicios, publicacion, guias, faqs
   components/              UI pública; components/admin/ para el backoffice

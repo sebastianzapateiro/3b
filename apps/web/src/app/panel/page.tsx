@@ -31,7 +31,7 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
       )}
       {(p.estado === "pendiente" || p.estado === "borrador") && (
         <div className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">
-          {p.estado === "pendiente" ? "Tu perfil está en revisión. Te avisamos cuando quede publicado." : "Tu perfil es un borrador. Completa los pasos de abajo para enviarlo a revisión."}
+          {p.estado === "pendiente" ? "Tu perfil está en revisión. Te avisamos cuando quede publicado." : <>Tu perfil es un borrador. <Link href="/panel/confirmar" className="font-semibold underline">Revisa tus datos y envíalo a revisión</Link>.</>}
         </div>
       )}
       {p.rutFechaLimite && p.segmento === "independiente_sin_rut" && (

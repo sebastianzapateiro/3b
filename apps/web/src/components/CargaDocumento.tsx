@@ -32,7 +32,8 @@ async function json(r: Response) {
   return d;
 }
 
-export function CargaDocumento({ doc, onCargado }: { doc: DocumentoRequerido; onCargado?: (tipo: string, cargado: { mime: string; bytes: number }) => void }) {
+/** `api`: base de las rutas de carga. Por defecto, la del proveedor con sesión; el backoffice pasa la suya. */
+export function CargaDocumento({ doc, onCargado, api = "/api/v1/yo/documentos" }: { doc: DocumentoRequerido; onCargado?: (tipo: string, cargado: { mime: string; bytes: number }) => void; api?: string }) {
   const id = useId();
   const [cargado, setCargado] = useState(doc.cargado);
   const [estado, setEstado] = useState<"quieto" | "subiendo">("quieto");
@@ -44,12 +45,12 @@ export function CargaDocumento({ doc, onCargado }: { doc: DocumentoRequerido; on
     try {
       const mime = mimeDe(archivo);
       const { camino, url } = (await json(
-        await fetch("/api/v1/yo/documentos/subida", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: doc.tipo, mime, bytes: archivo.size }) }),
+        await fetch(`${api}/subida`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: doc.tipo, mime, bytes: archivo.size }) }),
       )) as { camino: string; url: string };
       const subida = await fetch(url, { method: "PUT", headers: { "Content-Type": mime }, body: archivo });
       if (!subida.ok) throw new Error("No pudimos subir el archivo. Revisa tu conexión e intenta de nuevo.");
       const listo = (await json(
-        await fetch("/api/v1/yo/documentos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: doc.tipo, camino }) }),
+        await fetch(api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tipo: doc.tipo, camino }) }),
       )) as { mime: string; bytes: number };
       setCargado({ mime: listo.mime, bytes: listo.bytes });
       onCargado?.(doc.tipo, { mime: listo.mime, bytes: listo.bytes });
