@@ -6,6 +6,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
+import { ComoFunciona } from "@/components/ComoFunciona";
 import { Faq } from "@/components/Faq";
 import { FAQ_HOME } from "@/lib/faqs";
 
@@ -21,7 +22,6 @@ const PASOS = [
   { titulo: "Compara", texto: "Mira reseñas reales, fotos de trabajos e insignias de verificación.", tono: "bg-ladrillo text-white" },
   { titulo: "Escribe por WhatsApp", texto: "Acuerdas precio y fecha directo con el proveedor. Sin intermediarios.", tono: "bg-amarillo text-tinta" },
 ];
-
 const CONFIANZA = [
   {
     titulo: "Identidad verificada",
@@ -238,7 +238,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="como" className="scroll-mt-4 sm:border-y sm:border-borde-suave sm:bg-white">
+                <section id="como" className="scroll-mt-4 sm:border-y sm:border-borde-suave sm:bg-white">
           <div className="mx-auto flex max-w-[1200px] flex-col gap-4 px-5 pb-7 pt-2 sm:gap-7 sm:px-6 sm:py-14">
             <h2 className={h2}>Así de fácil</h2>
             <ol className="flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:gap-7">
