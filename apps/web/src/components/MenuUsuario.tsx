@@ -34,7 +34,7 @@ export function MenuUsuario({ compacto = false }: { compacto?: boolean }) {
       );
     }
     return (
-      <Link href="/ingresar" className="flex h-11 items-center rounded-xl border-2 border-tinta px-[18px] text-[15px] font-semibold text-tinta max-sm:border-0 max-sm:px-3">
+      <Link href="/ingresar" className="flex h-11 items-center rounded-xl bg-tinta px-5 text-[15px] font-semibold text-white hover:bg-verde-oscuro">
         Iniciar sesión
       </Link>
     );

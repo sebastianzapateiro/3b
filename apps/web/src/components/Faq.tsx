@@ -18,7 +18,7 @@ export function Faq({ preguntas, titulo = "Preguntas frecuentes", lateral = fals
       <JsonLd datos={datos} />
       {lateral && <span aria-hidden="true" className="hidden font-display text-lg font-bold lg:block">FAQ</span>}
       <div className="flex flex-col gap-3">
-      <h2 id="faq" className="font-display text-[22px] font-bold sm:text-[28px]">{titulo}</h2>
+      <h2 id="faq" className="scroll-mt-24 font-display text-[22px] font-bold sm:text-[28px]">{titulo}</h2>
       <div className="flex flex-col gap-2.5">
         {preguntas.map((p) => (
           <details key={p.pregunta} className="group rounded-2xl border border-borde-suave bg-white">
