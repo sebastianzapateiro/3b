@@ -1,5 +1,5 @@
 /** P2 / B5 · Catálogo: categorías de dos niveles, localidades y diccionario de búsqueda. */
-import { type AnyPgColumn, boolean, integer, pgTable, real, serial, text, unique } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, integer, pgEnum, pgTable, real, serial, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 export const categorias = pgTable("categorias", {
   id: serial().primaryKey(),
@@ -11,6 +11,12 @@ export const categorias = pgTable("categorias", {
   exigeInsigniaMenores: boolean().notNull().default(false),
   exigeRutDesdeAlta: boolean().notNull().default(false),
   exigeMatricula: boolean().notNull().default(false),
+  /** Oficio de los más buscados: va en «Lo más buscado» de /categorias. */
+  popular: boolean().notNull().default(false),
+  /** Sus proveedores suelen atender urgencias: habilita /servicios/[oficio]/urgente. */
+  atiendeUrgencias: boolean().notNull().default(false),
+  /** Subgrupo dentro de la categoría (solo Hogar). */
+  subgrupo: text(),
   activa: boolean().notNull().default(true),
 });
 
@@ -41,4 +47,24 @@ export const barrios = pgTable("barrios", {
   id: serial().primaryKey(),
   nombre: text().notNull(),
   localidadId: integer().notNull().references(() => localidades.id),
+});
+
+export const estadoSolicitudServicioEnum = pgEnum("estado_solicitud_servicio", ["nueva", "avisada"]);
+
+/**
+ * Demanda sin cubrir: alguien pidió un servicio sin proveedores suficientes y dejó su WhatsApp (opcional)
+ * para que le avisemos. Se muestra en el backoffice (B7). El WhatsApp es dato personal: solo se guarda con autorización.
+ */
+export const solicitudesServicio = pgTable("solicitudes_servicio", {
+  id: uuid().primaryKey().defaultRandom(),
+  /** Oficio elegido (slug) o null si escribió texto libre. */
+  oficioSlug: text(),
+  textoLibre: text(),
+  localidadId: integer().references(() => localidades.id),
+  whatsapp: text(),
+  autorizaDatos: boolean().notNull().default(false),
+  estado: estadoSolicitudServicioEnum().notNull().default("nueva"),
+  /** false si el texto menciona un servicio que LasTresB no ofrece: se guarda pero no cuenta como demanda a cubrir. */
+  cuentaComoDemanda: boolean().notNull().default(true),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });

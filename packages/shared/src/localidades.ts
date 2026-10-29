@@ -47,3 +47,38 @@ export const LOCALIDADES_VECINAS: Record<LocalidadSlug, LocalidadSlug[]> = {
   "ciudad-bolivar": ["bosa", "tunjuelito", "usme", "sumapaz"],
   sumapaz: ["usme", "ciudad-bolivar"],
 };
+
+/** Barrios principales por localidad: se mencionan en el texto de las páginas SEO por oficio y localidad. */
+export const BARRIOS_PRINCIPALES: Record<LocalidadSlug, string[]> = {
+  usaquen: ["Cedritos", "Usaquén centro", "Santa Bárbara", "Toberín"],
+  chapinero: ["Chapinero Alto", "El Chicó", "El Retiro", "Quinta Camacho"],
+  "santa-fe": ["La Macarena", "Las Nieves", "Las Cruces", "Germania"],
+  "san-cristobal": ["San Blas", "Los Libertadores", "Sosiego", "20 de Julio"],
+  usme: ["Usme centro", "Danubio", "La Fiscala", "Santa Librada"],
+  tunjuelito: ["Tunjuelito", "Venecia", "San Carlos", "Isla del Sol"],
+  bosa: ["Bosa Centro", "El Porvenir", "Bosa Nova", "San Bernardino"],
+  kennedy: ["Castilla", "Timiza", "Patio Bonito", "Carvajal"],
+  fontibon: ["Fontibón centro", "Modelia", "Hayuelos", "Capellanía"],
+  engativa: ["Engativá centro", "Santa Cecilia", "Boyacá Real", "Garcés Navas"],
+  suba: ["Suba centro", "Niza", "La Gaitana", "Prado Veraniego"],
+  "barrios-unidos": ["Siete de Agosto", "Los Alcázares", "Río Negro", "Doce de Octubre"],
+  teusaquillo: ["La Soledad", "Teusaquillo", "Galerías", "Park Way"],
+  "los-martires": ["Santa Fe", "La Favorita", "Ricaurte", "Eduardo Santos"],
+  "antonio-narino": ["Restrepo", "Ciudad Jardín", "Santander", "Villa Mayor"],
+  "puente-aranda": ["Puente Aranda", "Zona Industrial", "Pensilvania", "Salazar Gómez"],
+  "la-candelaria": ["La Candelaria centro", "Egipto", "Belén", "Las Aguas"],
+  "rafael-uribe-uribe": ["Quiroga", "Marruecos", "San José", "Molinos"],
+  "ciudad-bolivar": ["Lucero", "Ismael Perdomo", "San Francisco", "Arborizadora"],
+  sumapaz: ["San Juan de Sumapaz", "Nazareth", "Betania", "La Unión"],
+};
+
+/** Localidades con más demanda: se priorizan en enlaces y en el pie. */
+export const LOCALIDADES_PRIORITARIAS: LocalidadSlug[] = ["suba", "kennedy", "engativa", "bosa", "usaquen", "ciudad-bolivar", "fontibon", "chapinero", "teusaquillo", "barrios-unidos"];
+
+/** Centro aproximado de cada localidad (lat, lng): sirve para sugerir «los más cercanos» con la ubicación del navegador. */
+export const CENTROS_LOCALIDADES: Record<LocalidadSlug, [number, number]> = {
+  usaquen: [4.7, -74.03], chapinero: [4.653, -74.062], "santa-fe": [4.6, -74.06], "san-cristobal": [4.56, -74.09], usme: [4.48, -74.12],
+  tunjuelito: [4.57, -74.13], bosa: [4.6, -74.19], kennedy: [4.63, -74.15], fontibon: [4.68, -74.145], engativa: [4.7, -74.11],
+  suba: [4.74, -74.09], "barrios-unidos": [4.67, -74.08], teusaquillo: [4.64, -74.08], "los-martires": [4.61, -74.09], "antonio-narino": [4.59, -74.1],
+  "puente-aranda": [4.62, -74.12], "la-candelaria": [4.597, -74.073], "rafael-uribe-uribe": [4.57, -74.11], "ciudad-bolivar": [4.51, -74.15], sumapaz: [4.0, -74.2],
+};

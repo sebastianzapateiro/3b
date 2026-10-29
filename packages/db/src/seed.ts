@@ -6,7 +6,7 @@
 import { config } from "dotenv";
 config({ path: "../../.env" });
 
-import { aMarkdown, CATEGORIAS, LOCALIDADES_BOGOTA, POLITICAS_VERSIONADAS } from "@las3b/shared";
+import { aMarkdown, CATEGORIAS, LOCALIDADES_BOGOTA, PARAMETROS, POLITICAS_VERSIONADAS } from "@las3b/shared";
 
 const INSIGNIAS = [
   { clave: "verificado", nombre: "Verificado", vigenciaMeses: null },
@@ -21,7 +21,7 @@ const POLITICAS_BORRADOR = [
     tipo: "terminos_compradores",
     version: "1.0",
     contenidoMd:
-      "# Términos de uso (compradores)\n\n**Versión 1.0 — Vigencia: 27 de octubre de 2026.**\n\n## 1. Objeto\n\nLas 3B es un directorio y plataforma de contacto gratuito. El comprador describe un servicio u oficio y contacta al proveedor por WhatsApp; el servicio, el precio, la fecha y las garantías se acuerdan entre el proveedor y el comprador.\n\n## 2. Exención de responsabilidad\n\nLas 3B es una plataforma de tráfico que verifica datos básicos para la inscripción (mayoría de edad, consentimientos). Queda exonerada de responsabilidad por la prestación del servicio, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La responsabilidad civil y la conversación contractual son entre el proveedor y el cliente; Las 3B no interviene en pagos, no cobra comisiones, no es intermediario de pagos, empleador ni garante.\n\n## 3. Elegibilidad\n\nEl servicio está dirigido a personas mayores de 18 años con capacidad legal para contratar.\n\nAl registrarse en Las 3B se aceptan estos términos.",
+      "# Términos de uso (compradores)\n\n**Versión 1.0 — Vigencia: 27 de octubre de 2026.**\n\n## 1. Objeto\n\nLasTresB es un directorio y plataforma de contacto gratuito. El comprador describe un servicio u oficio y contacta al proveedor por WhatsApp; el servicio, el precio, la fecha y las garantías se acuerdan entre el proveedor y el comprador.\n\n## 2. Exención de responsabilidad\n\nLasTresB es una plataforma de tráfico que verifica datos básicos para la inscripción (mayoría de edad, consentimientos). Queda exonerada de responsabilidad por la prestación del servicio, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La responsabilidad civil y la conversación contractual son entre el proveedor y el cliente; LasTresB no interviene en pagos, no cobra comisiones, no es intermediario de pagos, empleador ni garante.\n\n## 3. Elegibilidad\n\nEl servicio está dirigido a personas mayores de 18 años con capacidad legal para contratar.\n\nAl registrarse en LasTresB se aceptan estos términos.",
     esencial: true,
   },
   {
@@ -35,8 +35,8 @@ const POLITICAS_BORRADOR = [
 
 async function main() {
   const { db } = await import("./index");
-  const { categorias, localidades, terminosBusqueda, insignias, politicas } = await import("./schema/index");
-  const { eq } = await import("drizzle-orm");
+  const { categorias, configuracion, localidades, terminosBusqueda, insignias, politicas } = await import("./schema/index");
+  const { eq, sql } = await import("drizzle-orm");
 
   await db
     .insert(localidades)
@@ -46,35 +46,65 @@ async function main() {
   await db.insert(insignias).values(INSIGNIAS).onConflictDoNothing({ target: insignias.clave });
 
   let orden = 0;
+  const slugsVigentes: string[] = [];
   for (const { nombre, slug, icono, subcategorias } of CATEGORIAS) {
+    slugsVigentes.push(slug);
     const [padre] = await db
       .insert(categorias)
       .values({ nombre, slug, icono, orden: orden++ })
-      .onConflictDoUpdate({ target: categorias.slug, set: { nombre } })
+      .onConflictDoUpdate({ target: categorias.slug, set: { nombre, icono, activa: true } })
       .returning({ id: categorias.id });
 
     for (const [i, sub] of subcategorias.entries()) {
+      slugsVigentes.push(sub.slug);
+      const datos = {
+        padreId: padre!.id,
+        nombre: sub.nombre,
+        orden: i,
+        exigeInsigniaMenores: sub.exigeInsigniaMenores,
+        exigeRutDesdeAlta: sub.exigeRutDesdeAlta,
+        popular: sub.popular,
+        atiendeUrgencias: sub.atiendeUrgencias,
+        subgrupo: sub.subgrupo ?? null,
+        activa: true,
+      };
       const [hija] = await db
         .insert(categorias)
-        .values({
-          padreId: padre!.id,
-          nombre: sub.nombre,
-          slug: sub.slug,
-          orden: i,
-          exigeInsigniaMenores: sub.exigeInsigniaMenores,
-          exigeRutDesdeAlta: sub.exigeRutDesdeAlta,
-        })
-        .onConflictDoUpdate({ target: categorias.slug, set: { nombre: sub.nombre } })
+        .values({ slug: sub.slug, ...datos })
+        .onConflictDoUpdate({ target: categorias.slug, set: datos })
         .returning({ id: categorias.id });
 
+      // Los sinónimos se reemplazan por completo para que no queden términos viejos (p. ej. de oficios que ya no existen).
       const terminos = [sub.nombre, ...sub.claves.split(",")].map((t) => t.trim().toLowerCase()).filter(Boolean);
-      await db
-        .insert(terminosBusqueda)
-        .values([...new Set(terminos)].map((termino) => ({ termino, categoriaId: hija!.id })))
-        .onConflictDoNothing();
+      await db.delete(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, hija!.id));
+      await db.insert(terminosBusqueda).values([...new Set(terminos)].map((termino) => ({ termino, categoriaId: hija!.id })));
     }
   }
 
+  // Limpieza: categorías que ya no existen en la taxonomía (p. ej. «Cuidado de personas», que LasTresB no ofrece).
+  // Se borran si nada las usa; si tienen proveedores, servicios o contactos se desactivan y se avisa.
+  const todas = await db.select({ id: categorias.id, slug: categorias.slug, padreId: categorias.padreId }).from(categorias);
+  const obsoletas = todas.filter((c) => !slugsVigentes.includes(c.slug)).sort((a, b) => Number(b.padreId !== null) - Number(a.padreId !== null));
+  for (const c of obsoletas) {
+    const [uso] = (await db.execute(sql`SELECT
+      (SELECT count(*)::int FROM proveedor_categorias WHERE categoria_id = ${c.id}) +
+      (SELECT count(*)::int FROM servicios_proveedor WHERE categoria_id = ${c.id}) +
+      (SELECT count(*)::int FROM contactos WHERE categoria_id = ${c.id}) +
+      (SELECT count(*)::int FROM categorias WHERE padre_id = ${c.id}) AS n`)) as unknown as { n: number }[];
+    if ((uso?.n ?? 0) === 0) {
+      await db.delete(categorias).where(eq(categorias.id, c.id));
+      console.log(`Categoría eliminada: ${c.slug}`);
+    } else {
+      await db.update(categorias).set({ activa: false }).where(eq(categorias.id, c.id));
+      console.warn(`ATENCIÓN: ${c.slug} tiene datos asociados; quedó desactivada. Revísala a mano.`);
+    }
+  }
+
+  // Parámetros configurables (regla 8): solo se crean si no existen, para no pisar cambios hechos en el backoffice.
+  await db
+    .insert(configuracion)
+    .values(PARAMETROS.filter((p) => p.defecto !== null).map((p) => ({ clave: p.clave, valor: p.defecto })))
+    .onConflictDoNothing({ target: configuracion.clave });
   // Políticas versionadas (fuente: packages/shared/src/politicas.ts). Se inserta cada versión que aún no exista.
   const existentes = await db.select({ tipo: politicas.tipo, version: politicas.version }).from(politicas);
   for (const p of [...POLITICAS_BORRADOR.filter((b) => !POLITICAS_VERSIONADAS.some((v) => v.tipo === b.tipo)), ...POLITICAS_VERSIONADAS]) {

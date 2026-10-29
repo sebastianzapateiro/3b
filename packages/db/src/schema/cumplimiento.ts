@@ -4,7 +4,7 @@ import { user } from "./auth";
 import { proveedores } from "./proveedores";
 
 export const tipoPoliticaEnum = pgEnum("tipo_politica", [
-  "terminos_compradores", "terminos_proveedores", "tratamiento_datos", "aviso_privacidad", "cookies", "resenas", "autorizacion_ley_1918",
+  "terminos_compradores", "terminos_proveedores", "tratamiento_datos", "aviso_privacidad", "cookies", "resenas", "autorizacion_ley_1918", "declaracion_servicios_no_permitidos",
 ]);
 
 export const politicas = pgTable("politicas", {

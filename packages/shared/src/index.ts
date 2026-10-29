@@ -4,3 +4,6 @@ export * from "./slug";
 export * from "./categorias";
 export * from "./whatsapp";
 export * from "./politicas";
+export * from "./motivos";
+export * from "./habiles";
+export * from "./parametros";

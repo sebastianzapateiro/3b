@@ -28,6 +28,10 @@ export const proveedores = pgTable("proveedores", {
   paginaWeb: text(),
   emiteFactura: boolean().default(false),
   ofreceGarantia: boolean().default(false),
+  /** «Atiendo urgencias el mismo día». Lo declara el proveedor; LasTresB no presta el servicio ni promete tiempos. */
+  atiendeUrgencias: boolean().notNull().default(false),
+  /** «Atiendo 24 horas, incluidos fines de semana y festivos». Lo declara el proveedor. */
+  disponible24h: boolean("disponible_24h").notNull().default(false),
   formasPago: text().array(),
   // Privados (RF-10: nunca en el perfil público)
   tipoDocumento: tipoDocumentoEnum(),

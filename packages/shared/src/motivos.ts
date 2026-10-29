@@ -1,0 +1,2 @@
+/** Motivos predefinidos de moderación (B3) y suspensión (B4) relacionados con la regla de negocio de servicios no permitidos. */
+export const MOTIVO_SERVICIOS_NO_PERMITIDOS = "Ofrece servicios no permitidos (transporte de personas, salud o cuidado de personas)";

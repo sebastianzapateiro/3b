@@ -9,7 +9,7 @@ export type SeccionLegal = { titulo: string; parrafos?: string[]; lista?: string
 
 export type TextoLegal = {
   /** Valor del enum `tipo_politica`; ausente si el texto no requiere aceptación (p. ej. el procedimiento de retiro). */
-  tipo?: "terminos_compradores" | "terminos_proveedores" | "tratamiento_datos" | "autorizacion_ley_1918";
+  tipo?: "terminos_compradores" | "terminos_proveedores" | "tratamiento_datos" | "autorizacion_ley_1918" | "declaracion_servicios_no_permitidos";
   version: string;
   vigenteDesde: string;
   titulo: string;
@@ -32,7 +32,7 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
   version: "2.0",
   vigenteDesde: "2026-10-28",
   titulo: "Política de tratamiento de datos personales",
-  introduccion: "Esta política explica qué datos personales trata Las 3B, para qué, quién los recibe y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y sus normas reglamentarias.",
+  introduccion: "Esta política explica qué datos personales trata LasTresB, para qué, quién los recibe y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y sus normas reglamentarias.",
   pendientes: ["Razón social, NIT y correo de datos personales del responsable.", "Revisión de un abogado (finalidades, transferencias y plazos de conservación).", "Definir si aplica la inscripción en el Registro Nacional de Bases de Datos (SIC)."],
   secciones: [
     {
@@ -70,7 +70,7 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
       titulo: "5. Datos sensibles y de menores",
       parrafos: [
         "La información sobre antecedentes de la Ley 1918 es un dato sensible. Solo la tratamos si el proveedor lo autoriza de forma expresa, es voluntario y es necesario únicamente para otorgar la insignia «Apto para menores». Responder o no es opcional, pero sin ello no se puede publicar en categorías con menores.",
-        "Las 3B está dirigida a mayores de 18 años y no recolecta datos de menores de edad.",
+        "LasTresB está dirigida a mayores de 18 años y no recolecta datos de menores de edad.",
       ],
     },
     {
@@ -116,24 +116,25 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
 
 export const TERMINOS_PROVEEDORES: TextoLegal = {
   tipo: "terminos_proveedores",
-  version: "1.0",
+  version: "1.1",
   vigenteDesde: "2026-10-28",
   titulo: "Términos de uso para proveedores",
-  introduccion: "Estos términos aplican a quien publica su portafolio en Las 3B para ofrecer servicios u oficios. Al registrarte los aceptas; complementan los términos de uso generales y la política de tratamiento de datos.",
+  introduccion: "Estos términos aplican a quien publica su portafolio en LasTresB para ofrecer servicios u oficios. Al registrarte los aceptas; complementan los términos de uso generales y la política de tratamiento de datos.",
   pendientes: ["Razón social y datos del titular del portal.", "Revisión de un abogado (licencia de contenido, exoneración de responsabilidad y régimen de suspensión).", "Confirmar el plazo para presentar el RUT y los descargos antes de una suspensión."],
   secciones: [
-    { titulo: "1. Qué es Las 3B", parrafos: ["Las 3B es un portal de contacto: muestra tu portafolio y permite que las personas te escriban por WhatsApp. No es tu empleador, mandatario, agente ni socio, no presta los servicios, no interviene en los pagos y no garantiza el resultado de ningún trabajo."] },
+    { titulo: "1. Qué es LasTresB", parrafos: ["LasTresB es un portal de contacto: muestra tu portafolio y permite que las personas te escriban por WhatsApp. No es tu empleador, mandatario, agente ni socio, no presta los servicios, no interviene en los pagos y no garantiza el resultado de ningún trabajo."] },
     { titulo: "2. Quién puede registrarse", lista: ["Personas mayores de 18 años con capacidad legal, o empresas legalmente constituidas.", "Una persona o empresa, un perfil.", "La información que entregas debe ser veraz y estar actualizada. Responderás por suplantación o datos falsos."] },
+    { titulo: "2A. Servicios que no se ofrecen en LasTresB", parrafos: ["Por su nivel de riesgo, LasTresB no ofrece transporte de personas (en carro, moto ni ningún otro vehículo) ni servicios de salud o cuidado de personas. No puedes publicar ni ofrecer esos servicios, ni en tu categoría ni registrándote en otra. Los fletes, trasteos y mudanzas transportan solo carga, nunca pasajeros.", "Si un perfil los ofrece, puede ser ocultado y la cuenta suspendida: normalmente con aviso y 5 días hábiles para dar tu versión, o de inmediato y de forma provisional cuando haya riesgo para las personas."] },
     { titulo: "3. Verificación e insignias", parrafos: ["Revisamos tu documento, tu mayoría de edad y tu WhatsApp antes de publicarte. Algunos servicios exigen RUT desde el alta; en otros tienes un plazo para presentarlo y, si vence, el perfil se pausa. Para servicios con menores se exige la autorización y verificación de la Ley 1918. Las insignias indican qué se revisó; no son una garantía de calidad ni de idoneidad de tu trabajo."] },
     { titulo: "4. Tu contenido y la licencia que nos das", parrafos: ["Tus fotos, textos y precios siguen siendo tuyos. Nos autorizas, de forma no exclusiva, gratuita y mientras tengas perfil, a mostrarlos en el portal y a compartirlos en redes sociales y buscadores para promocionar tu perfil. Declaras que tienes los derechos sobre lo que subes y que no infringe derechos de terceros, no muestra a menores ni incluye datos personales ajenos."], lista: ["Si crees que un contenido infringe tus derechos, usa el procedimiento de retiro de contenido.", "Podemos ocultar contenido que incumpla estos términos."] },
     { titulo: "5. Conducta prohibida", lista: ["Suplantar a otra persona o empresa.", "Publicar precios o servicios engañosos o ilegales.", "Pedir, ofrecer o comprar reseñas, o intentar borrarlas o alterarlas.", "Acosar, discriminar o amenazar a clientes o a otros proveedores.", "Usar los datos de contacto de los clientes para fines distintos a prestar el servicio solicitado."] },
-    { titulo: "6. Reseñas", parrafos: ["Las reseñas provienen de personas que te contactaron desde Las 3B. No puedes borrarlas ni editarlas; puedes responder cada una una sola vez y reportar las que incumplan la política de reseñas."] },
-    { titulo: "7. Precios y pagos", parrafos: ["Acuerdas precio, fecha y garantía directamente con tus clientes. Las 3B no cobra comisiones ni recibe dinero por tus servicios. Los precios del portafolio son orientativos. Si en el futuro se ofrecen servicios pagos, se avisará con anticipación y requerirán tu aceptación."] },
+    { titulo: "6. Reseñas", parrafos: ["Las reseñas provienen de personas que te contactaron desde LasTresB. No puedes borrarlas ni editarlas; puedes responder cada una una sola vez y reportar las que incumplan la política de reseñas."] },
+    { titulo: "7. Precios y pagos", parrafos: ["Acuerdas precio, fecha y garantía directamente con tus clientes. LasTresB no cobra comisiones ni recibe dinero por tus servicios. Los precios del portafolio son orientativos. Si en el futuro se ofrecen servicios pagos, se avisará con anticipación y requerirán tu aceptación."] },
     { titulo: "8. Tus obligaciones como prestador", parrafos: ["Eres el único responsable de la calidad y la garantía de tu trabajo, de tus obligaciones tributarias, de seguridad social y laborales, y de contar con los permisos, matrículas o licencias que tu oficio exija."] },
     { titulo: "9. Datos de tus clientes", parrafos: ["Los datos que un cliente te comparte para contratarte los tratas tú como responsable, conforme a la Ley 1581 de 2012. Úsalos solo para prestar el servicio."] },
-    { titulo: "10. Reclamos de consumidores", parrafos: ["Si un consumidor presenta un reclamo sobre tu servicio, Las 3B podrá recibirlo, trasladártelo y entregarle tus datos de identificación y contacto cuando la ley lo exija (Ley 1480 de 2011). Aceptas esto al registrarte."] },
+    { titulo: "10. Reclamos de consumidores", parrafos: ["Si un consumidor presenta un reclamo sobre tu servicio, LasTresB podrá recibirlo, trasladártelo y entregarle tus datos de identificación y contacto cuando la ley lo exija (Ley 1480 de 2011). Aceptas esto al registrarte."] },
     { titulo: "11. Suspensión y terminación", parrafos: ["Podemos pausar o suspender tu perfil si incumples estos términos. Normalmente te avisaremos el motivo y tendrás 5 días hábiles para dar tu versión. En casos de fraude, amenazas o riesgo para las personas, la suspensión puede ser inmediata y provisional. Puedes pausar o cerrar tu perfil cuando quieras desde tu panel."] },
-    { titulo: "12. Exoneración de responsabilidad", parrafos: ["Las 3B queda exonerada de responsabilidad por la prestación de tus servicios, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La relación contractual y la responsabilidad civil son entre tú y tu cliente."] },
+    { titulo: "12. Exoneración de responsabilidad", parrafos: ["LasTresB queda exonerada de responsabilidad por la prestación de tus servicios, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La relación contractual y la responsabilidad civil son entre tú y tu cliente."] },
     { titulo: "13. Cambios y ley aplicable", parrafos: ["Podemos actualizar estos términos y te avisaremos; si continúas usando el portal después del aviso, se entiende que los aceptas, salvo que la ley exija una nueva autorización. Se rigen por las leyes de Colombia y los jueces de Bogotá D.C."] },
   ],
 };
@@ -148,9 +149,23 @@ export const AUTORIZACION_LEY_1918: TextoLegal = {
     {
       titulo: "Autorización",
       parrafos: [
-        "Autorizo de forma libre, previa, expresa e informada a Las 3B para consultar el registro de inhabilidades por delitos sexuales contra menores de edad con mis datos de identificación, únicamente para decidir si puedo recibir la insignia «Apto para menores» y aparecer en categorías con menores.",
+        "Autorizo de forma libre, previa, expresa e informada a LasTresB para consultar el registro de inhabilidades por delitos sexuales contra menores de edad con mis datos de identificación, únicamente para decidir si puedo recibir la insignia «Apto para menores» y aparecer en categorías con menores.",
         "Sé que es un dato sensible, que responder es voluntario, que el resultado se registra con su soporte, que la insignia dura 6 meses y que puedo revocar esta autorización, lo que implica retirarme de esas categorías.",
       ],
+    },
+  ],
+};
+
+export const DECLARACION_SERVICIOS_NO_PERMITIDOS: TextoLegal = {
+  tipo: "declaracion_servicios_no_permitidos",
+  version: "1.0",
+  vigenteDesde: "2026-10-28",
+  titulo: "Declaración sobre servicios que no se ofrecen",
+  pendientes: ["Revisión de un abogado: alcance de la prohibición y consecuencias de su incumplimiento."],
+  secciones: [
+    {
+      titulo: "Declaración",
+      parrafos: ["Declaro que no ofreceré transporte de personas ni servicios de salud o cuidado de personas, ni en mi categoría ni registrándome en otra, y entiendo que ofrecerlos puede llevar a ocultar mi perfil y a suspender mi cuenta."],
     },
   ],
 };
@@ -159,11 +174,11 @@ export const RETIRO_CONTENIDO: TextoLegal = {
   version: "1.0",
   vigenteDesde: "2026-10-28",
   titulo: "Retiro de contenido y derechos de autor",
-  introduccion: "Si encuentras en Las 3B una foto, texto u otro contenido que infringe tus derechos o que no debería estar publicado, puedes pedir su revisión y retiro.",
+  introduccion: "Si encuentras en LasTresB una foto, texto u otro contenido que infringe tus derechos o que no debería estar publicado, puedes pedir su revisión y retiro.",
   pendientes: ["Revisión de un abogado: procedimiento de notificación y contranotificación (Ley 1915 de 2018), plazos y responsabilidad por reportes de mala fe."],
   secciones: [
     { titulo: "1. Qué puedes reportar", lista: ["Fotos o textos copiados de tu obra sin autorización.", "Contenido que muestra a menores o publica datos personales sin permiso.", "Perfiles que suplantan tu identidad o tu empresa.", "Contenido ilegal o que incumple los términos de uso."] },
-    { titulo: "2. Qué debe incluir tu solicitud", lista: ["Enlace exacto del contenido en Las 3B.", "Qué derecho se infringe y, si es el caso, la obra original.", "Tu nombre y un correo para contactarte.", "La declaración de que actúas de buena fe y de que la información es verdadera."] },
+    { titulo: "2. Qué debe incluir tu solicitud", lista: ["Enlace exacto del contenido en LasTresB.", "Qué derecho se infringe y, si es el caso, la obra original.", "Tu nombre y un correo para contactarte.", "La declaración de que actúas de buena fe y de que la información es verdadera."] },
     { titulo: "3. Qué pasa después", parrafos: ["Revisamos la solicitud y, si el contenido incumple, lo ocultamos y avisamos al proveedor, que puede responder y aportar pruebas de que tiene los derechos. Si hay duda razonable, el contenido puede quedar oculto mientras se aclara. Cuando se trate de un conflicto que no podamos resolver, la decisión final corresponde a las autoridades competentes."] },
     { titulo: "4. Reportes de mala fe", parrafos: ["Presentar reportes falsos o abusivos para dañar a otra persona incumple los términos de uso y puede llevar a medidas sobre la cuenta de quien los presenta."] },
     { titulo: "5. Otras formas de reportar", parrafos: ["Para reportar una reseña, un perfil o una conducta, usa el botón «Reportar este perfil» o la página de reclamos."] },
@@ -183,4 +198,4 @@ export function aMarkdown(t: TextoLegal): string {
 }
 
 /** Textos que se guardan en `politicas` (los que requieren aceptación). */
-export const POLITICAS_VERSIONADAS = [TRATAMIENTO_DATOS, TERMINOS_PROVEEDORES, AUTORIZACION_LEY_1918] as const;
+export const POLITICAS_VERSIONADAS = [TRATAMIENTO_DATOS, TERMINOS_PROVEEDORES, AUTORIZACION_LEY_1918, DECLARACION_SERVICIOS_NO_PERMITIDOS] as const;

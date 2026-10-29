@@ -9,7 +9,8 @@ if (!url && process.env.NODE_ENV !== "production") {
 
 // La conexión es perezosa: no se abre hasta la primera consulta (el build no necesita base).
 // prepare: false es necesario con el pooler de Supabase en modo "transaction".
-const client = postgres(url ?? "postgres://localhost:5432/las3b", { prepare: false });
+// max bajo: el build de Next abre varios procesos en paralelo y el pooler de sesión de Supabase tiene un límite de conexiones.
+const client = postgres(url ?? "postgres://localhost:5432/las3b", { prepare: false, max: Number(process.env.DB_POOL_MAX ?? 3) });
 
 export const db = drizzle(client, { schema, casing: "snake_case" });
 export { schema };

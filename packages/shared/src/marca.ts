@@ -1,6 +1,6 @@
-/** Identidad Las 3B (ver docs/05-marca.md). Compartido por web y app móvil. */
+/** Identidad LasTresB (ver docs/05-marca.md). Compartido por web y app móvil. */
 export const MARCA = {
-  nombre: "Las 3B",
+  nombre: "LasTresB",
   wordmark: "LasTresB",
   lema: "Bueno, bonito y barato en Bogotá",
   dominio: "lastresb.com.co",
