@@ -168,7 +168,7 @@ const ROLES = ["comprador", "proveedor", "verificador", "moderador", "admin"] as
 /**
  * CU-72 · Crear usuario desde el backoffice (solo admin). La cuenta nace sin clave: la persona recibe
  * un enlace de invitación a /nueva-clave (token de Better Auth, vigencia en `configuracion`).
- * Al primer ingreso el middleware le pide mayoría de edad y aceptar políticas (regla 5).
+ * Al primer ingreso el proxy le pide mayoría de edad y aceptar políticas (regla 5).
  */
 export async function crearUsuario(formData: FormData) {
   const actor = await exigirBackoffice(true);

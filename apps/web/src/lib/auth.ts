@@ -56,7 +56,7 @@ export const auth = betterAuth({
   },
   socialProviders: google,
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el backoffice usa 8 h, ver middleware
+    expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el backoffice usa 8 h, ver proxy.ts
     updateAge: 60 * 60 * 24,
   },
   user: {
