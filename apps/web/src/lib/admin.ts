@@ -5,7 +5,7 @@
  */
 import { documentosExigidos } from "@/lib/documentos";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, proveedorInsignias, categorias, localidades, documentos, insignias, user, usuarioRoles, auditoria, terminosBusqueda } = schema;
 
@@ -24,10 +24,10 @@ export async function datosTablero(rango: RangoTablero) {
   const desde = desdeRango(rango);
 
   const [pend] = filas<{ n: number; antiguo: Date | null }>(
-    await db.execute(sql`SELECT count(*)::int AS n, min(created_at) AS antiguo FROM proveedores WHERE estado = 'pendiente'`),
+    await consultar(sql`SELECT count(*)::int AS n, min(created_at) AS antiguo FROM proveedores WHERE estado = 'pendiente'`),
   );
   const [recl] = filas<{ n: number; pronto: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT count(*)::int AS n, count(*) FILTER (WHERE fecha_limite <= current_date + 2)::int AS pronto
       FROM (
         SELECT fecha_limite FROM reclamos WHERE estado IN ('abierto','en_proceso')
@@ -35,18 +35,18 @@ export async function datosTablero(rango: RangoTablero) {
         SELECT fecha_limite FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')
       ) t`),
   );
-  const [cont] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM contactos WHERE created_at >= ${desde}`));
-  const [res] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM resenas WHERE created_at >= ${desde}`));
+  const [cont] = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM contactos WHERE created_at >= ${desde}`));
+  const [res] = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM resenas WHERE created_at >= ${desde}`));
 
   const porCategoria = filas<{ nombre: string; n: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT coalesce(p.nombre, c.nombre) AS nombre, count(*)::int AS n
       FROM contactos k JOIN categorias c ON c.id = k.categoria_id LEFT JOIN categorias p ON p.id = c.padre_id
       WHERE k.created_at >= ${desde}
       GROUP BY 1 ORDER BY 2 DESC`),
   );
   const porLocalidad = filas<{ nombre: string; contactos: number; activos: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT l.nombre,
              count(k.id)::int AS contactos,
              (SELECT count(*)::int FROM proveedor_localidades pl JOIN proveedores pr ON pr.id = pl.proveedor_id
@@ -55,29 +55,29 @@ export async function datosTablero(rango: RangoTablero) {
       GROUP BY l.id, l.nombre ORDER BY 2 DESC LIMIT 6`),
   );
   const estados = filas<{ estado: string; n: number }>(
-    await db.execute(sql`SELECT estado::text AS estado, count(*)::int AS n FROM proveedores GROUP BY 1`),
+    await consultar(sql`SELECT estado::text AS estado, count(*)::int AS n FROM proveedores GROUP BY 1`),
   );
 
   const [menores] = filas<{ n: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT count(*)::int AS n FROM proveedor_insignias pi JOIN insignias i ON i.id = pi.insignia_id
       WHERE i.clave = 'apto_menores' AND pi.vence BETWEEN current_date AND current_date + 15`),
   );
   const [rut] = filas<{ n: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT count(*)::int AS n FROM proveedores
       WHERE segmento = 'independiente_sin_rut' AND estado IN ('aprobado','en_revision')
         AND rut_fecha_limite BETWEEN current_date AND current_date + 5`),
   );
   const [masivo] = filas<{ n: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT coalesce(max(c), 0)::int AS n FROM (
         SELECT count(*) AS c FROM auditoria WHERE accion = 'documento_abierto' AND created_at >= now() - interval '1 hour' GROUP BY actor_id
       ) t`),
   );
 
   const demanda = filas<{ oficio: string; localidad: string | null; n: number; conWhatsapp: number }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT coalesce(c.nombre, nullif(trim(s.texto_libre), ''), 'Sin especificar') AS oficio, l.nombre AS localidad,
              count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp"
       FROM solicitudes_servicio s
@@ -105,7 +105,7 @@ export async function datosTablero(rango: RangoTablero) {
 
 /** Número que va en la insignia amarilla de «Aprobaciones» en el menú. */
 export async function totalPendientes() {
-  const [r] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM proveedores WHERE estado = 'pendiente'`));
+  const [r] = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM proveedores WHERE estado = 'pendiente'`));
   return r?.n ?? 0;
 }
 
@@ -139,7 +139,7 @@ function espera(desde: Date) {
 
 export async function contarColas(): Promise<Record<Cola, number>> {
   const [r] = filas<Record<Cola, number>>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT
         (SELECT count(*)::int FROM proveedores WHERE estado = 'pendiente') AS pendientes,
         (SELECT count(*)::int FROM proveedores WHERE estado = 'en_revision') AS reputacion,
@@ -295,7 +295,7 @@ export async function listarUsuarios(q?: string) {
     .select({ id: usuarioRoles.usuarioId, rol: usuarioRoles.rol })
     .from(usuarioRoles)
     .where(inArray(usuarioRoles.usuarioId, lista.map((l) => l.id)));
-  const ultimo = await db.execute(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
+  const ultimo = await consultar(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
   const mapaUltimo = new Map(filas<{ id: string; ultimo: Date }>(ultimo).map((u) => [u.id, u.ultimo]));
   return lista.map((l) => ({
     ...l,
@@ -309,7 +309,7 @@ export async function listarUsuarios(q?: string) {
 export async function listarCatalogo() {
   const todas = await db.select().from(categorias).orderBy(asc(categorias.orden), asc(categorias.nombre));
   const conteo = filas<{ id: number; n: number }>(
-    await db.execute(sql`SELECT categoria_id AS id, count(*)::int AS n FROM proveedor_categorias GROUP BY 1`),
+    await consultar(sql`SELECT categoria_id AS id, count(*)::int AS n FROM proveedor_categorias GROUP BY 1`),
   );
   const mapa = new Map(conteo.map((c) => [c.id, c.n]));
   const padres = todas.filter((c) => c.padreId === null);
@@ -323,13 +323,13 @@ export async function obtenerSubcategoria(id: number) {
   const [c] = await db.select().from(categorias).where(eq(categorias.id, id)).limit(1);
   if (!c) return null;
   const terminos = await db.select({ id: terminosBusqueda.id, termino: terminosBusqueda.termino }).from(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, id)).orderBy(asc(terminosBusqueda.termino));
-  const [conteo] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM proveedor_categorias WHERE categoria_id = ${id}`));
+  const [conteo] = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM proveedor_categorias WHERE categoria_id = ${id}`));
   return { ...c, terminos, proveedores: conteo?.n ?? 0 };
 }
 
 export async function listarLocalidades() {
   const locs = await db.select().from(localidades).orderBy(asc(localidades.numero));
-  const barrios = filas<{ id: number; n: number }>(await db.execute(sql`SELECT localidad_id AS id, count(*)::int AS n FROM barrios GROUP BY 1`));
+  const barrios = filas<{ id: number; n: number }>(await consultar(sql`SELECT localidad_id AS id, count(*)::int AS n FROM barrios GROUP BY 1`));
   const mapa = new Map(barrios.map((b) => [b.id, b.n]));
   return locs.map((l) => ({ ...l, barrios: mapa.get(l.id) ?? 0 }));
 }

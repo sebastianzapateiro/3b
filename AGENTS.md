@@ -28,7 +28,7 @@ Fuente de verdad del negocio: Drive del proyecto (enlace en `docs/README.md`). E
 
 - Monorepo **pnpm 10 + Turborepo**, Node 22 (`.nvmrc`). Rama de trabajo: `develop`; producción: `main`.
 - `apps/web`: **Next.js 16** (App Router, TypeScript, Tailwind 4, alias `@/*` → `src/*`). Público + `/admin` + `/api/v1` + `/api/auth`.
-- `packages/db`: **Drizzle ORM** sobre Postgres en **Supabase**, `casing: "snake_case"`, driver `postgres` con `prepare: false`. Migraciones en `packages/db/drizzle/`.
+- `packages/db`: **Drizzle ORM** sobre Postgres en **Supabase**, `casing: "snake_case"`, driver **node-postgres (`pg`)**, no postgres.js: con el pooler de Supabase, postgres.js entrevera consultas («invalid frontend message type») y se cuelgan. SQL a mano con `consultar<T>(sql`…`)` de `@las3b/db` (devuelve filas con fechas como `Date`; `db.execute` las devuelve como texto). Migraciones en `packages/db/drizzle/`.
 - Auth: **Better Auth** (correo + clave, Google, 2FA TOTP para backoffice). Config: `apps/web/src/lib/auth.ts`, cliente en `lib/auth-client.ts`.
 - `packages/shared`: marca, localidades, categorías, `slugSchema`, `enlaceWhatsApp`, `PARAMETROS`, días hábiles. Lo usarán web y Expo (sin dependencias de Node).
 - Storage: **Supabase Storage**, buckets `privado` (documentos, sin políticas: solo el servidor con service role) y `publico` (fotos). Probados el 29 oct 2026.
@@ -97,8 +97,9 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - `drizzle-kit migrate` no muestra errores de conexión; los avisos `NOTICE ... already exists, skipping` son normales.
 - `next/font/google` necesita internet en el build.
 - Sin `RESEND_API_KEY`: los enlaces de verificación, recuperación e invitación salen en la consola de `pnpm dev`.
-- **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver `postgres` no conecta («Failed to get session»).
+- **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver de Postgres no conecta («Failed to get session»).
 - Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».
+- La instancia de Supabase es pequeña (~0,5 GB): pocas conexiones. En `next build` cada proceso usa 1 conexión; en Vercel `DATABASE_URL` va por el puerto **6543** (modo transacción). Si el modo sesión (5432) se llena (`EMAXCONNSESSION`), cerrar conexiones inactivas viejas desde el SQL Editor de Supabase.
 
 ## Estado
 

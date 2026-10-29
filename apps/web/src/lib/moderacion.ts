@@ -3,7 +3,7 @@
  * detalle y aplicación de decisiones. Una reseña no se oculta por ser negativa.
  */
 import { and, desc, eq, sql } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 import { recalcularReputacion } from "@/lib/resenas";
 
 const { reportes, resenas, respuestasResena, portafolioFotos, serviciosProveedor, proveedores, user } = schema;
@@ -33,7 +33,7 @@ const esEnlace = (id: string) => /^https?:\/\//i.test(id);
 /** Reportes sin resolver, agrupados por contenido y ordenados por número de reportes y antigüedad. */
 export async function colaModeracion(tipo: TipoCola): Promise<ItemCola[]> {
   const grupos = filas<{ tipo: string; objeto_id: string; n: number; primero: Date; motivos: string[] }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT tipo_objeto::text AS tipo, objeto_id, count(*)::int AS n, min(created_at) AS primero, array_agg(DISTINCT motivo) AS motivos
       FROM reportes WHERE NOT resuelto GROUP BY 1, 2 ORDER BY n DESC, primero ASC LIMIT 100`),
   );
@@ -93,7 +93,7 @@ export async function detalleModeracion(tipo: string, id: string) {
       .limit(1);
     if (r) contenido = { cliente: r.cliente, proveedor: r.proveedor, slug: r.slug, fecha: r.fecha, notas: [r.a, r.b, r.c, r.d], texto: r.texto, respuesta: r.respuesta, estado: r.estado, verificada: r.verificada };
   }
-  const antes = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM acciones_moderacion WHERE tipo_objeto::text = ${tipo} AND objeto_id = ${id}`));
+  const antes = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM acciones_moderacion WHERE tipo_objeto::text = ${tipo} AND objeto_id = ${id}`));
   return { reportes: reps, contenido, accionesPrevias: antes[0]?.n ?? 0 };
 }
 
@@ -134,7 +134,7 @@ export async function aplicarDecision(tipo: string, id: string, decision: Decisi
 /** Tres contenidos ocultos en la ventana de reputación pasan el perfil del proveedor a «en revisión». */
 export async function revisarReincidencia(proveedorId: string, ventanaDias: number, umbral = 3) {
   const [r] = filas<{ n: number }>(
-    await db.execute(sql`SELECT count(*)::int AS n FROM auditoria WHERE accion IN ('moderacion_ocultar','moderacion_eliminar') AND metadatos->>'proveedorId' = ${proveedorId} AND created_at >= now() - make_interval(days => ${ventanaDias})`),
+    await consultar(sql`SELECT count(*)::int AS n FROM auditoria WHERE accion IN ('moderacion_ocultar','moderacion_eliminar') AND metadatos->>'proveedorId' = ${proveedorId} AND created_at >= now() - make_interval(days => ${ventanaDias})`),
   );
   if ((r?.n ?? 0) >= umbral) {
     await db.update(proveedores).set({ estado: "en_revision", updatedAt: new Date() }).where(and(eq(proveedores.id, proveedorId), eq(proveedores.estado, "aprobado")));
@@ -144,6 +144,6 @@ export async function revisarReincidencia(proveedorId: string, ventanaDias: numb
 }
 
 export async function totalReportesPendientes() {
-  const [r] = filas<{ n: number }>(await db.execute(sql`SELECT count(DISTINCT (tipo_objeto, objeto_id))::int AS n FROM reportes WHERE NOT resuelto`));
+  const [r] = filas<{ n: number }>(await consultar(sql`SELECT count(DISTINCT (tipo_objeto, objeto_id))::int AS n FROM reportes WHERE NOT resuelto`));
   return r?.n ?? 0;
 }

@@ -19,11 +19,12 @@
   "dependencies": {
     "@las3b/shared": "workspace:*",
     "drizzle-orm": "^0.45.4",
-    "postgres": "^3.4.9"
+    "pg": "^8.13.1"
   },
   "devDependencies": {
     "@las3b/config": "workspace:*",
     "@types/node": "^22",
+    "@types/pg": "^8.11.10",
     "dotenv": "^17",
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.23.15",

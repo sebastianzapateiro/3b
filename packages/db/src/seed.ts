@@ -34,7 +34,7 @@ const POLITICAS_BORRADOR = [
 ] as const;
 
 async function main() {
-  const { db } = await import("./index");
+  const { db, consultar } = await import("./index");
   const { categorias, configuracion, localidades, terminosBusqueda, insignias, politicas } = await import("./schema/index");
   const { eq, sql } = await import("drizzle-orm");
 
@@ -86,7 +86,7 @@ async function main() {
   const todas = await db.select({ id: categorias.id, slug: categorias.slug, padreId: categorias.padreId }).from(categorias);
   const obsoletas = todas.filter((c) => !slugsVigentes.includes(c.slug)).sort((a, b) => Number(b.padreId !== null) - Number(a.padreId !== null));
   for (const c of obsoletas) {
-    const [uso] = (await db.execute(sql`SELECT
+    const [uso] = (await consultar(sql`SELECT
       (SELECT count(*)::int FROM proveedor_categorias WHERE categoria_id = ${c.id}) +
       (SELECT count(*)::int FROM servicios_proveedor WHERE categoria_id = ${c.id}) +
       (SELECT count(*)::int FROM contactos WHERE categoria_id = ${c.id}) +

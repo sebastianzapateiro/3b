@@ -1,6 +1,6 @@
 /** B8 · Consulta del registro de auditoría (solo lectura) y alertas de uso anómalo. */
 import { and, desc, eq, gte, ilike, or, sql, type SQL } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 
 const { auditoria, user } = schema;
 
@@ -68,7 +68,7 @@ export async function listarAuditoria(f: FiltroAuditoria, limite = 200) {
 
 /** Quien abrió más documentos de los permitidos por hora en las últimas 24 h (umbral: 30). */
 export async function alertaDocumentos(umbral = 30) {
-  const r = (await db.execute(sql`
+  const r = (await consultar(sql`
     SELECT u.name AS nombre, count(*)::int AS n, min(a.created_at) AS desde, max(a.created_at) AS hasta
     FROM auditoria a LEFT JOIN "user" u ON u.id = a.actor_id
     WHERE a.accion = 'documento_abierto' AND a.created_at >= now() - interval '24 hours'
