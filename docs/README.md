@@ -17,4 +17,4 @@ Carpeta raíz del Drive: https://drive.google.com/drive/folders/1EU7gtl4B9jtJ7yu
 
 > Los documentos del Drive todavía dicen "BBB Bogotá" y `bbbbogota.com`. El nombre vigente es **LasTresB** (antes «Las 3B») y el dominio **lastresb.com.co**.
 >
-> El estado al día está en el doc **«LasTresB — Estado del sistema y decisiones v0.2 (29 oct 2026)»** en la raíz del Drive; la v0.1 queda como histórico.
+> El estado al día está en [«LasTresB — Estado del sistema y decisiones v0.2 (29 oct 2026)»](https://docs.google.com/document/d/1G8aBV85A6o4zH1WaN3rDeFJB7p69D5-T_T3uq4893YM/edit), en la raíz del Drive; la v0.1 queda como histórico.
