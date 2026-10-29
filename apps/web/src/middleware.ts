@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { OFICIOS_ELIMINADOS, OFICIOS_RENOMBRADOS } from "@las3b/shared";
 
 const { user, consentimientos, politicas } = schema;
 
@@ -35,8 +36,24 @@ function esRutaPublica(pathname: string): boolean {
   return !privada;
 }
 
+/** 301 de URLs que cambiaron de oficio o de categoría (SEO): conservan su posicionamiento. */
+function redireccionPermanente(url: URL): URL | null {
+  const { pathname } = url;
+  if (pathname === "/categorias/acarreos") return new URL("/categorias/acarreos-y-transporte", url);
+  if (pathname === "/guias/seguridad-al-contratar-clases-o-cuidado-con-menores") return new URL("/guias/seguridad-al-contratar-clases-con-menores", url);
+  const m = pathname.match(/^\/servicios\/([^/]+)(\/.*)?$/);
+  if (!m) return null;
+  const [, oficio, resto = ""] = m;
+  if (OFICIOS_ELIMINADOS.includes(oficio!)) return new URL("/categorias", url);
+  const nuevo = OFICIOS_RENOMBRADOS[oficio!];
+  return nuevo ? new URL(`/servicios/${nuevo}${resto}`, url) : null;
+}
+
 export async function middleware(request: Request) {
-  const { pathname } = new URL(request.url);
+  const url = new URL(request.url);
+  const { pathname } = url;
+  const destinoPermanente = redireccionPermanente(url);
+  if (destinoPermanente) return NextResponse.redirect(destinoPermanente, 301);
 
   if (esRutaPublica(pathname)) {
     return NextResponse.next();

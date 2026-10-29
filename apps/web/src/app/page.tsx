@@ -37,7 +37,7 @@ const CONFIANZA = [
   },
   {
     titulo: "Reseñas de clientes reales",
-    texto: "Solo califica quien contactó al proveedor desde Las 3B",
+    texto: "Solo califica quien contactó al proveedor desde LasTresB",
     extra: "",
     color: "#C2452D",
     icono: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
@@ -45,7 +45,7 @@ const CONFIANZA = [
   {
     titulo: "Sin comisiones",
     texto: "Lo que pagas va completo al proveedor",
-    extra: ". Las 3B no cobra por contactar",
+    extra: ". LasTresB no cobra por contactar",
     color: "#9A6F00",
     icono: (
       <>

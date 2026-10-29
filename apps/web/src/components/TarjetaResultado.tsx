@@ -49,15 +49,17 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
                 <span className="font-normal text-gris">({r.totalResenas})</span>
               </>
             ) : (
-              <span className="text-tinta-2">Nuevo en Las 3B</span>
+              <span className="text-tinta-2">Nuevo en LasTresB</span>
             )}
             {r.precioDesde != null && <span className="font-normal text-gris sm:hidden">· Desde {pesos.format(r.precioDesde)} la visita</span>}
           </span>
         </span>
       </Link>
 
-      {r.insignias.length > 0 && (
+      {(r.insignias.length > 0 || r.atiendeUrgencias || r.disponible24h) && (
         <div className="flex flex-wrap gap-1.5 sm:order-last sm:w-full sm:basis-full sm:pl-[98px]">
+          {r.atiendeUrgencias && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">Atiende urgencias</span>}
+          {r.disponible24h && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">24 horas</span>}
           {r.insignias.map((i) => (
             <span key={i.clave} className={`flex h-[26px] items-center rounded-[13px] px-2.5 text-xs font-semibold ${TONO_INSIGNIA[i.clave] ?? "bg-piedra text-tinta-2"}`}>
               {i.nombre}

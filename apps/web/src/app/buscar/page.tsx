@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LOCALIDADES_BOGOTA } from "@las3b/shared";
+import { LOCALIDADES_BOGOTA, subcategoriaPorSlug } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
 import { FiltrosResultados } from "@/components/FiltrosResultados";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
@@ -8,10 +8,15 @@ import { buscarProveedores, INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type
 import { FAQ_BUSCAR } from "@/lib/faqs";
 
 /** Resultados de búsqueda con filtros (P2, CU-01). Mockups: docs/mockups/Resultados_web.dc.html y Resultados_movil.dc.html. */
-export const metadata: Metadata = {
-  title: "Resultados de búsqueda",
-  robots: { index: false, follow: true },
-};
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Params> }): Promise<Metadata> {
+  const categoria = uno((await searchParams).categoria);
+  // Las búsquedas con parámetros no se indexan; apuntan a la página SEO del oficio (si lo hay).
+  return {
+    title: "Resultados de búsqueda",
+    robots: { index: false, follow: true },
+    ...(categoria && subcategoriaPorSlug(categoria) ? { alternates: { canonical: `/servicios/${categoria}` } } : {}),
+  };
+}
 
 type Params = Record<string, string | string[] | undefined>;
 

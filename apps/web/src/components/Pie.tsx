@@ -18,7 +18,7 @@ export function Pie() {
     <footer className="border-t border-borde bg-white">
       <div className="mx-auto grid max-w-[1200px] gap-8 px-5 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-5">
         <div className="flex flex-col gap-3 sm:col-span-2 lg:col-span-1">
-          <Link href="/" aria-label="Las 3B, inicio" className="text-tinta"><Logo /></Link>
+          <Link href="/" aria-label="LasTresB, inicio" className="text-tinta"><Logo /></Link>
           <p className="text-sm leading-normal text-gris">
             Servicios y oficios de confianza en Bogotá. Contacta directo por WhatsApp, gratis y sin comisiones.
           </p>
@@ -49,7 +49,7 @@ export function Pie() {
         </nav>
 
         <nav aria-label="Accesos" className="flex flex-col">
-          <h2 className={titulo}>Las 3B</h2>
+          <h2 className={titulo}>LasTresB</h2>
           <Link href="/como-funciona" className={enlace}>¿Cómo funciona?</Link>
           <Link href="/buscar" className={enlace}>Buscar un servicio</Link>
           <Link href="/proveedores/registro" className={enlace}>Soy proveedor</Link>
@@ -62,7 +62,7 @@ export function Pie() {
       <div className="border-t border-borde-suave">
         <div className="mx-auto flex max-w-[1200px] flex-col-reverse gap-3 px-5 py-6 text-sm text-gris sm:flex-row sm:flex-wrap sm:justify-between sm:px-6">
           <p className="max-w-[560px] leading-normal">
-            Las 3B es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
+            LasTresB es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
           </p>
           <nav aria-label="Legal" className="flex flex-wrap gap-x-5 gap-y-1">
             <Link href="/terminos" className="inline-flex min-h-9 items-center text-verde hover:text-verde-oscuro">Términos</Link>

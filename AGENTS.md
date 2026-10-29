@@ -21,7 +21,7 @@ Dueño: Sebastián Zapateiro. Responde en español, conciso. Analiza y muestra h
    - Commit pequeño en español (ver Convenciones). No hagas push ni merge a `main` sin que el dueño lo pida.
 4. **Si algo no está decidido** (marcado como *Propuesta* en los docs o ausente), constrúyelo como parámetro en la tabla `configuracion` o pregunta; no inventes reglas de negocio.
 
-Fuente de verdad del negocio: Drive del proyecto (enlace en `docs/README.md`). El Drive todavía dice "BBB Bogotá" / `bbbbogota.com`: el nombre vigente es **Las 3B** y el dominio **lastresb.com.co**.
+Fuente de verdad del negocio: Drive del proyecto (enlace en `docs/README.md`). El Drive todavía dice "BBB Bogotá" / `bbbbogota.com`: el nombre vigente es **LasTresB** (antes «Las 3B» en algunos textos) y el dominio **lastresb.com.co**.
 
 ## Stack
 

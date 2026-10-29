@@ -16,7 +16,7 @@ export default function Guias() {
   return (
     <>
       <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Guías", ruta: "/guias" }])} />
-      <JsonLd datos={jsonLdLista("Guías de Las 3B", GUIAS.map((g) => ({ nombre: g.titulo, ruta: `/guias/${g.slug}` })))} />
+      <JsonLd datos={jsonLdLista("Guías de LasTresB", GUIAS.map((g) => ({ nombre: g.titulo, ruta: `/guias/${g.slug}` })))} />
       <main className="mx-auto flex max-w-[1200px] flex-col gap-5 px-5 pb-14 pt-4 sm:gap-7 sm:px-6 sm:pt-10">
         <div className="flex flex-col gap-2">
           <h1 className="font-display text-[32px] font-extrabold tracking-[-1px] sm:text-5xl">Guías</h1>

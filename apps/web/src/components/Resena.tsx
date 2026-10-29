@@ -17,7 +17,7 @@ function haceCuanto(fecha: Date): string {
   return `hace ${a} ${a === 1 ? "año" : "años"}`;
 }
 
-/** Tarjeta de reseña (mockup Perfil_web, sección «Reseñas»). Solo existen reseñas de quien contactó desde Las 3B. */
+/** Tarjeta de reseña (mockup Perfil_web, sección «Reseñas»). Solo existen reseñas de quien contactó desde LasTresB. */
 export function Resena({ resena }: { resena: ResenaPublica }) {
   const n = Math.min(5, Math.max(0, resena.estrellas));
   return (
@@ -30,7 +30,7 @@ export function Resena({ resena }: { resena: ResenaPublica }) {
         {"★".repeat(n)}{"☆".repeat(5 - n)}
       </span>
       {resena.comentario && <p className="text-[15px] leading-[1.55] text-tinta-2">{resena.comentario}</p>}
-      <span className="text-xs font-semibold text-verde-oscuro">Contactó por Las 3B</span>
+      <span className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-verde-oscuro">Contactó por LasTresB</span>{!resena.id.startsWith("demo") && <a href={`/reportar?tipo=resena&id=${resena.id}`} className="inline-flex min-h-9 items-center text-xs font-semibold text-gris hover:text-tinta">Reportar</a>}</span>
       {resena.respuesta && <p className="rounded-xl bg-piedra p-3 text-sm leading-normal text-tinta-2"><b>Respuesta del proveedor:</b> {resena.respuesta}</p>}
     </article>
   );

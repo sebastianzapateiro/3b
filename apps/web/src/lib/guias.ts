@@ -52,7 +52,7 @@ export const GUIAS: Guia[] = [
       {
         titulo: "Recuerda",
         parrafos: [
-          "Las 3B es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con el proveedor. Por eso conviene dejar por escrito lo pactado en el chat de WhatsApp.",
+          "LasTresB es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con el proveedor. Por eso conviene dejar por escrito lo pactado en el chat de WhatsApp.",
         ],
       },
     ],
@@ -123,14 +123,14 @@ export const GUIAS: Guia[] = [
       {
         titulo: "Cuándo no improvisar",
         parrafos: [
-          "Gas y electricidad son trabajos de mayor riesgo. Si huele a gas, ventila y llama a un profesional; no uses interruptores ni llamas. En Las 3B estos servicios exigen RUT verificado desde el alta.",
+          "Gas y electricidad son trabajos de mayor riesgo. Si huele a gas, ventila y llama a un profesional; no uses interruptores ni llamas. En LasTresB estos servicios exigen RUT verificado desde el alta.",
         ],
       },
     ],
   },
   {
-    slug: "seguridad-al-contratar-clases-o-cuidado-con-menores",
-    titulo: "Seguridad al contratar clases o cuidado cuando hay menores",
+    slug: "seguridad-al-contratar-clases-con-menores",
+    titulo: "Seguridad al contratar clases y actividades con menores",
     resumen: "Qué verificar si la persona va a estar a solas con niños o adolescentes en tu casa.",
     fecha: "2026-10-28",
     minutos: 3,
@@ -139,7 +139,7 @@ export const GUIAS: Guia[] = [
       {
         titulo: "Verificación de antecedentes",
         parrafos: [
-          "Cuando un proveedor trabaja con menores, es razonable pedir una verificación de antecedentes vigente. En Las 3B la insignia «Apto para menores» indica que se revisó ese requisito (Ley 1918) y tiene vigencia limitada, por eso conviene mirar que siga activa.",
+          "Cuando un proveedor trabaja con menores, es razonable pedir una verificación de antecedentes vigente. En LasTresB la insignia «Apto para menores» indica que se revisó ese requisito (Ley 1918) y tiene vigencia limitada, por eso conviene mirar que siga activa.",
         ],
       },
       {
@@ -154,7 +154,7 @@ export const GUIAS: Guia[] = [
       {
         titulo: "Si algo no se siente bien",
         parrafos: [
-          "Suspende las clases y reporta lo ocurrido por el canal de reclamos de Las 3B. Ante una situación de riesgo para un menor, acude también a las autoridades.",
+          "Suspende las clases y reporta lo ocurrido por el canal de reclamos de LasTresB. Ante una situación de riesgo para un menor, acude también a las autoridades.",
         ],
       },
     ],
@@ -165,7 +165,7 @@ export const GUIAS: Guia[] = [
     resumen: "Pasos para coordinar el acarreo, evitar sorpresas con el precio y proteger tus cosas.",
     fecha: "2026-10-28",
     minutos: 4,
-    categoria: "acarreos",
+    categoria: "acarreos-y-transporte",
     secciones: [
       {
         titulo: "Antes de cotizar",
@@ -220,9 +220,9 @@ export const GUIAS: Guia[] = [
         ],
       },
       {
-        titulo: "4. Presenta un reclamo en Las 3B",
+        titulo: "4. Presenta un reclamo en LasTresB",
         parrafos: [
-          "Si el proveedor no responde o hay una conducta grave, puedes presentar un reclamo desde la página de reclamos. Las 3B es un directorio de contacto y no garantiza el servicio, pero sí revisa los reportes sobre los perfiles publicados.",
+          "Si el proveedor no responde o hay una conducta grave, puedes presentar un reclamo desde la página de reclamos. LasTresB es un directorio de contacto y no garantiza el servicio, pero sí revisa los reportes sobre los perfiles publicados.",
         ],
       },
     ],

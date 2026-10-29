@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Logo } from "@/components/Logo";
 
 /**
@@ -11,7 +11,7 @@ export default function CuentaLayout({ children }: { children: React.ReactNode }
   return (
     <div className="flex min-h-[calc(100dvh-4.5rem)] lg:p-4">
       <aside className="hidden flex-[1_1_0] flex-col justify-between rounded-[28px] bg-tinta p-12 text-white lg:flex">
-        <Link href="/" aria-label="Las 3B, inicio" className="text-crema">
+        <Link href="/" aria-label="LasTresB, inicio" className="text-crema">
           <Logo oscuro />
         </Link>
         <div className="flex max-w-[480px] flex-col gap-6">
@@ -39,7 +39,7 @@ export default function CuentaLayout({ children }: { children: React.ReactNode }
           </div>
         </div>
         <p className="max-w-[420px] text-sm leading-normal text-[#C9D1CF]">
-          Las 3B es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
+          LasTresB es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
         </p>
       </aside>
 

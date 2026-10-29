@@ -9,7 +9,7 @@ import { authClient, mensajeDeError } from "@/lib/auth-client";
 export default function NuevaClave() {
   return (
     <>
-      <title>Nueva clave · Las 3B</title>
+      <title>Nueva clave · LasTresB</title>
       <Encabezado titulo="Crea una clave nueva" texto="Usa al menos 8 caracteres. Cerraremos tus otras sesiones por seguridad." />
       <div className="mt-7">
         <Suspense>

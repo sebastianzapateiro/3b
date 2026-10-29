@@ -33,7 +33,7 @@ export async function calificarProveedor(formData: FormData) {
 
   const anonimoId = (await cookies()).get("anonimo_id")?.value ?? null;
   const contacto = await contactoSinResena(proveedor.id, session.user.id, anonimoId);
-  if (!contacto) return volver("Solo puedes calificar a quien contactaste desde Las 3B, una vez por contacto.");
+  if (!contacto) return volver("Solo puedes calificar a quien contactaste desde LasTresB, una vez por contacto.");
 
   await crearResena({
     contactoId: contacto.id,

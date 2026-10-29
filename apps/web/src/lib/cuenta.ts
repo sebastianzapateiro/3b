@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc, eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { sumarDiasHabilesColombia } from "@las3b/shared";
 import { auth } from "@/lib/auth";
 
 const { contactos, resenas, proveedores, categorias, solicitudesDatos, consentimientos, politicas, festivos, configuracion } = schema;
@@ -69,18 +70,10 @@ export async function datosPrivacidad(usuarioId: string) {
   return { solicitudes, aceptadas };
 }
 
-/** CU-92: suma días hábiles saltando fines de semana y festivos de Colombia (tabla `festivos`). */
+/** CU-92: suma días hábiles con los festivos de Colombia (calculados) y los que se agreguen a mano en la tabla `festivos`. */
 export async function sumarDiasHabiles(desde: Date, dias: number): Promise<string> {
-  const lista = await db.select({ fecha: festivos.fecha }).from(festivos);
-  const feriados = new Set(lista.map((f) => String(f.fecha)));
-  const d = new Date(desde);
-  let restantes = dias;
-  while (restantes > 0) {
-    d.setUTCDate(d.getUTCDate() + 1);
-    const dia = d.getUTCDay();
-    if (dia !== 0 && dia !== 6 && !feriados.has(d.toISOString().slice(0, 10))) restantes--;
-  }
-  return d.toISOString().slice(0, 10);
+  const extra = new Set((await db.select({ fecha: festivos.fecha }).from(festivos)).map((f) => String(f.fecha)));
+  return sumarDiasHabilesColombia(desde, dias, extra);
 }
 
 /** Plazos en días hábiles: parámetros de `configuracion` (regla 8). Ley 1581: consultas 10, reclamos 15. */

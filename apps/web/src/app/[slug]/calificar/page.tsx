@@ -48,10 +48,10 @@ export default async function Calificar({ params, searchParams }: { params: Prom
       ) : propio ? (
         <div className={`${aviso} bg-piedra`}>Este es tu propio perfil: no puedes calificarte.</div>
       ) : calificado ? (
-        <div className={`${aviso} bg-piedra`}>Ya calificaste a este proveedor por tu último contacto. Si lo vuelves a contactar desde Las 3B, podrás calificarlo otra vez.</div>
+        <div className={`${aviso} bg-piedra`}>Ya calificaste a este proveedor por tu último contacto. Si lo vuelves a contactar desde LasTresB, podrás calificarlo otra vez.</div>
       ) : !contacto ? (
         <div className={`${aviso} bg-amarillo-suave text-amarillo-oscuro`}>
-          <b>Primero contáctalo.</b> Para mantener las reseñas reales, solo puede calificar quien escribió al proveedor desde Las 3B.
+          <b>Primero contáctalo.</b> Para mantener las reseñas reales, solo puede calificar quien escribió al proveedor desde LasTresB.
           <a href={`/api/v1/contactos/ir?p=${slug}&origen=perfil`} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-12 items-center justify-center rounded-campo bg-verde text-base font-semibold text-white">Escribir por WhatsApp</a>
         </div>
       ) : (

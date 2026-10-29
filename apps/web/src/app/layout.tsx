@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     google: process.env.GOOGLE_SITE_VERIFICATION || "PV2Tc0MI8AE_GoDiaFVqWuM09AtV7Ie2ANLyKtOexRU",
     ...(process.env.BING_SITE_VERIFICATION ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } } : {}),
   },
-  alternates: { types: { "application/rss+xml": [{ url: "/guias/feed.xml", title: "Guías de Las 3B" }] } },
+  alternates: { types: { "application/rss+xml": [{ url: "/guias/feed.xml", title: "Guías de LasTresB" }] } },
   formatDetection: { telephone: false, email: false, address: false },
   appleWebApp: { capable: true, title: MARCA.nombre, statusBarStyle: "default" },
 };

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CATEGORIAS, LOCALIDADES_BOGOTA } from "@las3b/shared";
 import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
+import { conteosPorOficioYLocalidad, minProveedoresSeo } from "@/lib/publicacion";
 import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
 import { Faq } from "@/components/Faq";
 import { faqLocalidad } from "@/lib/faqs";
@@ -17,7 +18,7 @@ export function generateStaticParams() {
   return LOCALIDADES_BOGOTA.map((l) => ({ slug: l.slug }));
 }
 
-const buscar = (categoria: string, localidad: string) => `/servicios/${categoria}/${localidad}`;
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -36,6 +37,10 @@ export default async function Localidad({ params }: Props) {
   if (!localidad) notFound();
 
   const ruta = `/localidades/${localidad.slug}`;
+  // Solo se enlaza a la página SEO del oficio en esta localidad si ya cumple la regla de publicación; si no, a la búsqueda.
+  const minimo = await minProveedoresSeo();
+  const publicadas = new Set((await conteosPorOficioYLocalidad().catch(() => [])).filter((c) => c.localidad === localidad.slug && c.total >= minimo).map((c) => c.oficio));
+  const buscar = (oficio: string) => (publicadas.has(oficio) ? `/servicios/${oficio}/${localidad.slug}` : `/buscar?categoria=${oficio}&localidad=${localidad.slug}`);
   const vecinas = LOCALIDADES_BOGOTA.filter((l) => l.slug !== localidad.slug);
 
   return (
@@ -50,7 +55,7 @@ export default async function Localidad({ params }: Props) {
       <JsonLd
         datos={jsonLdLista(
           `Servicios en ${localidad.nombre}, Bogotá`,
-          CATEGORIAS.flatMap((c) => c.subcategorias).map((s) => ({ nombre: s.nombre, ruta: buscar(s.slug, localidad.slug) })),
+          CATEGORIAS.flatMap((c) => c.subcategorias).map((s) => ({ nombre: s.nombre, ruta: buscar(s.slug) })),
         )}
       />
       <main className="mx-auto flex max-w-[1200px] flex-col gap-5 px-5 pb-14 pt-2 sm:gap-7 sm:px-6 sm:pt-8">
@@ -81,7 +86,7 @@ export default async function Localidad({ params }: Props) {
               <ul className="flex flex-wrap gap-2">
                 {c.subcategorias.map((s) => (
                   <li key={s.slug}>
-                    <Link href={buscar(s.slug, localidad.slug)} className="flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-medium text-tinta">
+                    <Link href={buscar(s.slug)} className="flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-medium text-tinta">
                       {s.nombre}
                     </Link>
                   </li>

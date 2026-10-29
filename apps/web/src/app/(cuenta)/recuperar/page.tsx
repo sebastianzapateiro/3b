@@ -25,7 +25,7 @@ export default function Recuperar() {
 
   return (
     <>
-      <title>Recuperar clave · Las 3B</title>
+      <title>Recuperar clave · LasTresB</title>
       <Encabezado titulo="¿Olvidaste tu clave?" texto="Escribe tu correo y te enviamos un enlace para crear una nueva." />
       <div className="mt-7">
         {enviado ? (

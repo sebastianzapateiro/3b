@@ -14,7 +14,7 @@ export default async function Registro({ searchParams }: Props) {
 
   return (
     <>
-      <Encabezado titulo="Crea tu cuenta" texto="Es gratis. La necesitas para calificar a quienes contactaste por Las 3B." />
+      <Encabezado titulo="Crea tu cuenta" texto="Es gratis. La necesitas para calificar a quienes contactaste por LasTresB." />
 
       {googleHabilitado && (
         <>

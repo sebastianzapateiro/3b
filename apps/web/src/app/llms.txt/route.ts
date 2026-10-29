@@ -11,9 +11,9 @@ export const dynamic = "force-static";
 export function GET() {
   const l = (t: string, ruta: string, d?: string) => `- [${t}](${absoluta(ruta)})${d ? `: ${d}` : ""}`;
   const cuerpo = [
-    "# Las 3B (LasTresB)",
+    "# LasTresB (LasTresB)",
     "",
-    "> Directorio gratuito de servicios y oficios en Bogotá, Colombia. La persona busca por servicio y localidad, compara reseñas de clientes reales y contacta al proveedor directo por WhatsApp. Sin comisiones. Las 3B es un portal de contacto: no intermedia pagos ni garantiza el servicio.",
+    "> Directorio gratuito de servicios y oficios en Bogotá, Colombia. La persona busca por servicio y localidad, compara reseñas de clientes reales y contacta al proveedor directo por WhatsApp. Sin comisiones. LasTresB es un portal de contacto: no intermedia pagos ni garantiza el servicio.",
     "",
     "Datos clave: solo Bogotá (20 localidades). Proveedores con identidad y WhatsApp verificados. Una reseña por contacto. Idioma: español de Colombia.",
     "",
@@ -21,7 +21,7 @@ export function GET() {
     ...CATEGORIAS.flatMap((c) => [l(c.nombre, `/categorias/${c.slug}`, c.descripcion), ...c.subcategorias.map((s) => `  ${l(`${s.nombre} en Bogotá`, `/servicios/${s.slug}`)}`)]),
     "",
     "## Cómo funciona",
-    l("¿Cómo funciona Las 3B?", "/como-funciona", "paso a paso para buscar y para ofrecer servicios"),
+    l("¿Cómo funciona LasTresB?", "/como-funciona", "paso a paso para buscar y para ofrecer servicios"),
     l("Servicios por localidad", "/localidades"),
     "",
     "## Guías para contratar con confianza",

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Identidad Las 3B: ver docs/05-marca.md y packages/shared/src/marca.ts */
+/* Identidad LasTresB: ver docs/05-marca.md y packages/shared/src/marca.ts */
 @theme {
   --color-verde: #0f6b5c;
   --color-verde-oscuro: #0a4d42;

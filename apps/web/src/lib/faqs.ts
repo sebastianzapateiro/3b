@@ -8,16 +8,16 @@ export type Pregunta = { pregunta: string; respuesta: string };
 
 const GENERALES = {
   costo: {
-    pregunta: "¿Cuánto cuesta usar Las 3B?",
-    respuesta: "Nada. Buscar y contactar proveedores es gratis y Las 3B no cobra comisiones. Lo que pagas por el servicio va completo al proveedor.",
+    pregunta: "¿Cuánto cuesta usar LasTresB?",
+    respuesta: "Nada. Buscar y contactar proveedores es gratis y LasTresB no cobra comisiones. Lo que pagas por el servicio va completo al proveedor.",
   },
   contacto: {
     pregunta: "¿Cómo contacto a un proveedor?",
     respuesta: "Desde su perfil pulsas «Escribir por WhatsApp» y acuerdas con él el servicio, el precio y la fecha, sin intermediarios.",
   },
   responsabilidad: {
-    pregunta: "¿Las 3B garantiza el servicio?",
-    respuesta: "No. Las 3B es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con cada proveedor. Por eso conviene dejar lo pactado por escrito en el chat.",
+    pregunta: "¿LasTresB garantiza el servicio?",
+    respuesta: "No. LasTresB es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con cada proveedor. Por eso conviene dejar lo pactado por escrito en el chat.",
   },
   verificacion: {
     pregunta: "¿Qué significa que un proveedor esté verificado?",
@@ -25,12 +25,12 @@ const GENERALES = {
   },
   resenas: {
     pregunta: "¿Las reseñas son reales?",
-    respuesta: "Sí. Solo puede reseñar quien contactó al proveedor desde Las 3B, y se permite una reseña por contacto.",
+    respuesta: "Sí. Solo puede reseñar quien contactó al proveedor desde LasTresB, y se permite una reseña por contacto.",
   },
 } satisfies Record<string, Pregunta>;
 
 export const FAQ_HOME: Pregunta[] = [
-  { pregunta: "¿Qué es Las 3B?", respuesta: "Un directorio de servicios y oficios en Bogotá: buscas por servicio y localidad, comparas reseñas y escribes directo al proveedor por WhatsApp." },
+  { pregunta: "¿Qué es LasTresB?", respuesta: "Un directorio de servicios y oficios en Bogotá: buscas por servicio y localidad, comparas reseñas y escribes directo al proveedor por WhatsApp." },
   GENERALES.costo,
   GENERALES.contacto,
   GENERALES.verificacion,
@@ -72,7 +72,7 @@ export const FAQ_LOCALIDADES: Pregunta[] = [
 export function faqLocalidad(nombre: string): Pregunta[] {
   return [
     { pregunta: `¿Cómo encuentro un plomero, electricista u otro oficio en ${nombre}?`, respuesta: `Elige el servicio en esta página y verás los proveedores que atienden ${nombre}, con sus reseñas.` },
-    { pregunta: `¿Los proveedores de ${nombre} cobran comisión a través de Las 3B?`, respuesta: "No. Las 3B no cobra comisiones; acuerdas el precio directamente con el proveedor." },
+    { pregunta: `¿Los proveedores de ${nombre} cobran comisión a través de LasTresB?`, respuesta: "No. LasTresB no cobra comisiones; acuerdas el precio directamente con el proveedor." },
     { pregunta: `¿Y si no encuentro mi servicio en ${nombre}?`, respuesta: "Prueba con una localidad vecina o con otra palabra clave. Los proveedores nuevos se suman con frecuencia." },
     GENERALES.contacto,
   ];
@@ -98,7 +98,7 @@ export function faqGuia(slug: string): Pregunta[] {
       { pregunta: "¿Cada cuánto debo revisar las instalaciones de gas?", respuesta: "Al menos una vez al año, o antes si notas olor o fallas, y siempre con un técnico competente." },
       { pregunta: "¿Qué hago si huelo a gas?", respuesta: "Ventila, no uses interruptores ni llamas y llama a un profesional o a la empresa de gas desde un lugar seguro." },
     ],
-    "seguridad-al-contratar-clases-o-cuidado-con-menores": [
+    "seguridad-al-contratar-clases-con-menores": [
       { pregunta: "¿Qué es la insignia «Apto para menores»?", respuesta: "Indica que el proveedor presentó la verificación de antecedentes exigida para trabajar con menores (Ley 1918). Tiene vigencia limitada." },
       { pregunta: "¿Puedo estar presente durante las clases?", respuesta: "Sí, y es recomendable al inicio. Un proveedor serio lo entiende." },
     ],
@@ -107,8 +107,8 @@ export function faqGuia(slug: string): Pregunta[] {
       { pregunta: "¿Quién responde si se daña algo?", respuesta: "Debe quedar acordado antes con el proveedor. Documenta con fotos el estado de tus cosas." },
     ],
     "que-hacer-si-el-servicio-quedo-mal": [
-      { pregunta: "¿Dónde presento un reclamo?", respuesta: "En la página de reclamos de Las 3B. Primero intenta resolverlo con el proveedor por escrito." },
-      { pregunta: "¿Puedo dejar una reseña si tuve un mal servicio?", respuesta: "Sí, si contactaste al proveedor desde Las 3B. Cuenta los hechos sin insultos." },
+      { pregunta: "¿Dónde presento un reclamo?", respuesta: "En la página de reclamos de LasTresB. Primero intenta resolverlo con el proveedor por escrito." },
+      { pregunta: "¿Puedo dejar una reseña si tuve un mal servicio?", respuesta: "Sí, si contactaste al proveedor desde LasTresB. Cuenta los hechos sin insultos." },
     ],
   };
   return [...(porGuia[slug] ?? []), GENERALES.contacto];
@@ -129,7 +129,7 @@ export const FAQ_PORTAFOLIO: Pregunta[] = [
 ];
 
 export const FAQ_TERMINOS: Pregunta[] = [
-  { pregunta: "¿Quién puede usar Las 3B?", respuesta: "Personas mayores de 18 años con capacidad legal para contratar." },
+  { pregunta: "¿Quién puede usar LasTresB?", respuesta: "Personas mayores de 18 años con capacidad legal para contratar." },
   GENERALES.responsabilidad,
   GENERALES.costo,
 ];
@@ -142,7 +142,7 @@ export const FAQ_PRIVACIDAD: Pregunta[] = [
 
 export const FAQ_RECLAMOS: Pregunta[] = [
   { pregunta: "¿Cuándo debo presentar un reclamo?", respuesta: "Cuando el proveedor no responde, hay una conducta grave o información falsa en su perfil. Antes, intenta resolverlo con él por escrito." },
-  { pregunta: "¿Las 3B resuelve disputas de dinero?", respuesta: "No. Las 3B no interviene en pagos ni garantiza el servicio; revisa los reportes sobre los perfiles publicados." },
+  { pregunta: "¿LasTresB resuelve disputas de dinero?", respuesta: "No. LasTresB no interviene en pagos ni garantiza el servicio; revisa los reportes sobre los perfiles publicados." },
   GENERALES.resenas,
 ];
 
@@ -171,7 +171,7 @@ export function faqServicio(o: { nombre: string; localidad?: string; menores: bo
 }
 
 export const FAQ_COOKIES: Pregunta[] = [
-  { pregunta: "¿Puedo usar Las 3B sin aceptar cookies de analítica?", respuesta: "Sí. Las cookies necesarias bastan para buscar, ver perfiles y contactar. La analítica es opcional y solo se activa si la aceptas." },
+  { pregunta: "¿Puedo usar LasTresB sin aceptar cookies de analítica?", respuesta: "Sí. Las cookies necesarias bastan para buscar, ver perfiles y contactar. La analítica es opcional y solo se activa si la aceptas." },
   { pregunta: "¿Cómo cambio mi decisión?", respuesta: "Usa el enlace «Configurar cookies» en el pie de cualquier página y elige de nuevo." },
   { pregunta: "¿Usan cookies de publicidad?", respuesta: "No. Hoy solo usamos cookies necesarias y, con tu permiso, analítica agregada." },
 ];
@@ -184,7 +184,7 @@ export const FAQ_RESENAS: Pregunta[] = [
 ];
 
 export const FAQ_TERMINOS_PROVEEDORES: Pregunta[] = [
-  { pregunta: "¿Las 3B me cobra comisión?", respuesta: "No. Acuerdas precio, fecha y garantía directamente con tus clientes y Las 3B no recibe dinero por tus servicios." },
+  { pregunta: "¿LasTresB me cobra comisión?", respuesta: "No. Acuerdas precio, fecha y garantía directamente con tus clientes y LasTresB no recibe dinero por tus servicios." },
   { pregunta: "¿Quién es dueño de mis fotos?", respuesta: "Tú. Nos das una licencia no exclusiva y gratuita, mientras tengas perfil, para mostrarlas en el portal y compartirlas para promocionar tu perfil." },
   { pregunta: "¿Pueden suspender mi perfil?", respuesta: "Sí, si incumples los términos. Normalmente te avisamos el motivo y tienes 5 días hábiles para dar tu versión; en casos de fraude o riesgo para personas puede ser inmediato y provisional." },
   { pregunta: "¿Puedo borrar una reseña que no me gusta?", respuesta: "No. Puedes responderla una vez y reportarla si incumple la política de reseñas." },

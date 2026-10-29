@@ -45,7 +45,7 @@ export const RECOMENDADOS_DEMO: ProveedorResumen[] = [
     slug: "carlos-pinzon-acarreos",
     nombre: "Carlos Pinzón",
     iniciales: "CP",
-    servicio: "Acarreos",
+    servicio: "Trasteos y mudanzas",
     localidades: ["Suba", "Engativá"],
     promedio: 4.7,
     totalResenas: 24,
@@ -76,7 +76,7 @@ const SERVICIOS_DEMO: Record<string, { nombre: string; descripcion: string; prec
     { nombre: "Clase individual", descripcion: "Presencial o virtual", precioDesde: "45000", unidad: "clase" },
     { nombre: "Preparación de examen", descripcion: "TOEFL / IELTS", precioDesde: "60000", unidad: "clase" },
   ],
-  Acarreos: [
+  "Trasteos y mudanzas": [
     { nombre: "Trasteo pequeño", descripcion: "Dentro de la misma localidad", precioDesde: "90000", unidad: "trayecto" },
     { nombre: "Objetos pesados", descripcion: "Neveras, lavadoras, muebles", precioDesde: "70000", unidad: "trayecto" },
   ],
@@ -90,7 +90,7 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
   return {
     slug: p.slug,
     nombre: p.nombre,
-    presentacion: "Perfil de ejemplo para mostrar cómo se ve un portafolio en Las 3B. Aquí cada proveedor cuenta, en sus propias palabras, su experiencia y cómo trabaja.",
+    presentacion: "Perfil de ejemplo para mostrar cómo se ve un portafolio en LasTresB. Aquí cada proveedor cuenta, en sus propias palabras, su experiencia y cómo trabaja.",
     whatsapp: "",
     categoriaPrincipal: p.servicio,
     localidadPrincipal: p.localidades[0] ?? null,
@@ -98,8 +98,8 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
     fotos: [],
     insignias: p.insignias.map((clave) => ({ clave, nombre: { verificado: "Verificado", formalizado: "Formalizado", apto_menores: "Apto para menores", certificado: "Certificado" }[clave] })),
     resenas: [
-      { nombreCliente: "Marcela G.", estrellas: 5, comentario: "Llegó a la hora que dijo y cobró lo que acordamos.", creadoEn: new Date(ahora - 14 * dia), respuesta: null },
-      { nombreCliente: "Andrés P.", estrellas: 4, comentario: "Buen trabajo y muy amable. Demoró un poco en empezar.", creadoEn: new Date(ahora - 40 * dia), respuesta: null },
+      { id: "demo-1", nombreCliente: "Marcela G.", estrellas: 5, comentario: "Llegó a la hora que dijo y cobró lo que acordamos.", creadoEn: new Date(ahora - 14 * dia), respuesta: null },
+      { id: "demo-2", nombreCliente: "Andrés P.", estrellas: 4, comentario: "Buen trabajo y muy amable. Demoró un poco en empezar.", creadoEn: new Date(ahora - 40 * dia), respuesta: null },
     ],
     promedio: p.promedio,
     totalResenas: p.totalResenas,

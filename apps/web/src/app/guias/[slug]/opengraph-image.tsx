@@ -1,7 +1,7 @@
 import { imagenOg, TAM_OG } from "@/lib/og";
 import { guiaPorSlug } from "@/lib/guias";
 
-export const alt = "Las 3B";
+export const alt = "LasTresB";
 export const size = TAM_OG;
 export const contentType = "image/png";
 

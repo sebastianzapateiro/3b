@@ -36,6 +36,10 @@ export type FiltrosBusqueda = {
   calificacionMin?: number;
   /** Precio máximo de la visita («desde») en COP. */
   precioMax?: number;
+  /** Solo proveedores que declaran atender urgencias o 24 horas. */
+  urgencias?: boolean;
+  /** Solo proveedores con «precio desde» publicado. */
+  conPrecio?: boolean;
   orden?: Orden;
   pagina?: number;
 };
@@ -49,6 +53,8 @@ export type ResultadoBusqueda = {
   totalResenas: number;
   insignias: { clave: string; nombre: string }[];
   precioDesde: number | null;
+  atiendeUrgencias: boolean;
+  disponible24h: boolean;
 };
 
 export type PaginaResultados = {
@@ -141,6 +147,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
 
   if (f.calificacionMin) condiciones.push(sql`${proveedores.promedio} >= ${f.calificacionMin}`);
   if (f.precioMax) condiciones.push(sql`${precioMinimo} <= ${f.precioMax}`);
+  if (f.urgencias) condiciones.push(sql`(${proveedores.atiendeUrgencias} OR ${proveedores.disponible24h})`);
+  if (f.conPrecio) condiciones.push(sql`${precioMinimo} IS NOT NULL`);
 
   const donde = and(...condiciones);
 
@@ -165,6 +173,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
       precio: precioMinimo,
+      urgencias: proveedores.atiendeUrgencias,
+      h24: proveedores.disponible24h,
     })
     .from(proveedores)
     .where(donde)
@@ -219,6 +229,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       totalResenas: r.totalResenas,
       insignias: insigniasMapa.get(r.id) ?? [],
       precioDesde: r.precio != null ? Number(r.precio) : null,
+      atiendeUrgencias: r.urgencias,
+      disponible24h: r.h24,
     })),
     total,
     pagina,

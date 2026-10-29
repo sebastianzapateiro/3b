@@ -41,6 +41,7 @@ export type InsigniaPublica = {
 };
 
 export type ResenaPublica = {
+  id: string;
   nombreCliente: string;
   estrellas: number;
   comentario: string | null;
@@ -64,7 +65,7 @@ export type PortafolioCompleto = {
   /** Todas las categorías y localidades del proveedor. */
   categorias: string[];
   localidades: string[];
-  /** Fecha de alta, para «En Las 3B desde». */
+  /** Fecha de alta, para «En LasTresB desde». */
   desde: Date;
   /** Cantidad de reseñas visibles por estrellas (índice 0 = 1 estrella). */
   distribucion: number[];
@@ -171,6 +172,7 @@ export async function obtenerPortafolioCompleto(
 
       db
         .select({
+          id: resenas.id,
           comentario: resenas.comentario,
           estrellas: sql<number>`round((${resenas.puntualidad} + ${resenas.calidad} + ${resenas.calidadPrecio} + ${resenas.cumplimiento}) / 4.0)`,
           creadoEn: resenas.createdAt,
@@ -247,6 +249,7 @@ export async function obtenerPortafolioCompleto(
         nombre: i.nombre,
       })),
       resenas: filasResenas.map((r) => ({
+        id: r.id,
         nombreCliente: r.nombreCliente ?? "Cliente",
         estrellas: Math.round(Number(r.estrellas ?? 0)),
         comentario: r.comentario,

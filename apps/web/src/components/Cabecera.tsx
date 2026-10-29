@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Desplegable, itemMenu } from "@/components/Desplegable";
+import { EnlaceNav } from "@/components/EnlaceNav";
 import { Logo } from "@/components/Logo";
 import { MenuUsuario } from "@/components/MenuUsuario";
 
@@ -14,20 +15,20 @@ export function Cabecera() {
   return (
     <header className="sticky top-0 z-40 border-b border-borde-suave bg-crema/95 backdrop-blur supports-[backdrop-filter]:bg-crema/85">
       <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3.5 pl-5 pr-4 sm:px-6 sm:py-4">
-        <Link href="/" aria-label="Las 3B, inicio" className="text-tinta">
+        <Link href="/" aria-label="LasTresB, inicio" className="text-tinta">
           <Logo />
         </Link>
 
         <nav aria-label="Principal" className="hidden items-center gap-1 md:flex">
-          <Link href="/categorias" className={enlaceNav}>Categorías</Link>
-          <Link href="/como-funciona" className={enlaceNav}>Cómo funciona</Link>
+          <EnlaceNav href="/categorias" prefijos={["/servicios"]}>Categorías</EnlaceNav>
+          <EnlaceNav href="/como-funciona">Cómo funciona</EnlaceNav>
           <span>
             <Desplegable etiqueta="Explorar" claseBoton={`${enlaceNav} gap-1`} ancho="w-52" boton={<>Explorar {chevron}</>}>
               <Link role="menuitem" href="/localidades" className={itemMenu}>Por localidad</Link>
               <Link role="menuitem" href="/guias" className={itemMenu}>Guías para contratar</Link>
             </Desplegable>
           </span>
-          <Link href="/proveedores/registro" className={enlaceNav}>Soy proveedor</Link>
+          <EnlaceNav href="/proveedores/registro">Soy proveedor</EnlaceNav>
           <span className="ml-1.5"><MenuUsuario /></span>
         </nav>
 

@@ -8,7 +8,7 @@ import { FAQ_COMO_FUNCIONA } from "@/lib/faqs";
 import { absoluta, jsonLdMigas , meta } from "@/lib/seo";
 
 /** ¿Cómo funciona? (P2). Paso a paso para quien busca y para quien ofrece; las imágenes son ejemplos hechos con los mismos componentes del portal. */
-export const metadata: Metadata = meta({ titulo: "¿Cómo funciona Las 3B? Paso a paso", descripcion: "Busca un servicio en tu localidad de Bogotá, compara reseñas y escribe directo por WhatsApp. Gratis y sin comisiones. Así de fácil.", ruta: "/como-funciona" });
+export const metadata: Metadata = meta({ titulo: "¿Cómo funciona LasTresB? Paso a paso", descripcion: "Busca un servicio en tu localidad de Bogotá, compara reseñas y escribe directo por WhatsApp. Gratis y sin comisiones. Así de fácil.", ruta: "/como-funciona" });
 
 const PASOS_COMPRADOR = [
   {
@@ -33,7 +33,7 @@ const PASOS_COMPRADOR = [
   },
   {
     titulo: "Cuenta cómo te fue",
-    texto: "Si lo contactaste desde Las 3B, puedes dejar una reseña con hechos. Así ayudas a tus vecinos a elegir bien.",
+    texto: "Si lo contactaste desde LasTresB, puedes dejar una reseña con hechos. Así ayudas a tus vecinos a elegir bien.",
     imagen: null,
   },
 ] as const;
@@ -108,7 +108,7 @@ export default function ComoFunciona() {
   const howTo = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: "Cómo contratar un servicio en Las 3B",
+    name: "Cómo contratar un servicio en LasTresB",
     inLanguage: "es-CO",
     step: PASOS_COMPRADOR.map((p, i) => ({ "@type": "HowToStep", position: i + 1, name: p.titulo, text: p.texto, url: `${absoluta("/como-funciona")}#paso-${i + 1}` })),
   };
@@ -119,7 +119,7 @@ export default function ComoFunciona() {
       <JsonLd datos={howTo} />
       <main className="mx-auto flex max-w-[1000px] flex-col gap-8 px-5 pb-14 pt-4 sm:gap-12 sm:px-6 sm:pt-10">
         <div className="flex flex-col gap-2">
-          <h1 className="text-balance font-display text-[32px] font-extrabold tracking-[-1px] sm:text-5xl">¿Cómo funciona Las 3B?</h1>
+          <h1 className="text-balance font-display text-[32px] font-extrabold tracking-[-1px] sm:text-5xl">¿Cómo funciona LasTresB?</h1>
           <p className="max-w-[600px] text-base leading-normal text-tinta-2 sm:text-lg">
             Encuentras a quien te ayude en tu localidad y le escribes directo por WhatsApp. Es gratis y no cobramos comisiones.
           </p>

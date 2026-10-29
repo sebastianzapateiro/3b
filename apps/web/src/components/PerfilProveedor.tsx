@@ -214,7 +214,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
           <div className={`hidden flex-col gap-3.5 p-[22px] shadow-[0_8px_30px_rgba(27,38,35,0.06)] lg:flex ${tarjeta} rounded-[26px]`}>
             <b className="font-display text-xl">Contacta directo</b>
             <BotonWhatsApp href={enlaceWA} clase="h-[54px] text-base" />
-            <span className="text-[13px] leading-[1.45] text-gris">Acuerdas precio, fecha y garantía directo con el proveedor. Las 3B no cobra comisión.</span>
+            <span className="text-[13px] leading-[1.45] text-gris">Acuerdas precio, fecha y garantía directo con el proveedor. LasTresB no cobra comisión.</span>
             <div className="flex flex-col gap-1.5 border-t border-borde-suave pt-3.5">
               <span className="text-sm leading-[1.4] text-tinta-2">Comparte este perfil con quien lo necesite.</span>
               <AccionesPerfil url={url} titulo={p.nombre} variante="boton" />
@@ -229,7 +229,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
               <Verificacion ok={tiene("formalizado")} texto={tiene("formalizado") ? "RUT vigente" : "RUT (sin cargar)"} />
               <Verificacion ok={tiene("certificado")} texto={tiene("certificado") ? "Certificado de oficio" : "Certificado de oficio (sin cargar)"} />
             </ul>
-            <span className="text-[13px] leading-[1.45] text-gris">En Las 3B desde {desde}</span>
+            <span className="text-[13px] leading-[1.45] text-gris">En LasTresB desde {desde}</span>
           </div>
 
           {p.localidades.length > 0 && (
@@ -250,7 +250,8 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
             </nav>
           )}
 
-          <Link href="/reclamos" className="inline-flex min-h-11 items-center pl-1 text-sm font-semibold text-verde hover:text-verde-oscuro">Reportar este perfil</Link>
+          <Link href={`/reportar?tipo=perfil&id=${p.slug}`} className="inline-flex min-h-11 items-center pl-1 text-sm font-semibold text-verde hover:text-verde-oscuro">Reportar este perfil</Link>
+          <Link href={`/reclamos?proveedor=${p.slug}`} className="inline-flex min-h-11 items-center pl-1 text-sm font-semibold text-tinta-2 hover:text-verde-oscuro">Presentar un reclamo</Link>
         </aside>
       </div>
 

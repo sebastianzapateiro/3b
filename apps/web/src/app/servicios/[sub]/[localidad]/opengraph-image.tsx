@@ -1,7 +1,7 @@
 import { imagenOg, TAM_OG } from "@/lib/og";
 import { LOCALIDADES_BOGOTA, subcategoriaPorSlug } from "@las3b/shared";
 
-export const alt = "Las 3B";
+export const alt = "LasTresB";
 export const size = TAM_OG;
 export const contentType = "image/png";
 

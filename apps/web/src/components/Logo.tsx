@@ -23,7 +23,7 @@ export function Logo({ oscuro = false, className }: { oscuro?: boolean; classNam
       <span className="font-display text-[22px] font-extrabold tracking-tight">
         LasTres<span className={oscuro ? "text-ladrillo-claro" : "text-ladrillo"}>B</span>
       </span>
-      <span className="sr-only">Las 3B</span>
+      <span className="sr-only">LasTresB</span>
     </span>
   );
 }
