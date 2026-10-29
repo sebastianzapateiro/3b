@@ -53,6 +53,7 @@ pnpm db:seed                # localidades, insignias, taxonomía (idempotente)
 pnpm db:studio
 pnpm admin:crear <correo>   # da rol admin a una cuenta existente
 pnpm db:cifrar-documentos   # revisa documentos en texto plano; --aplicar los cifra
+pnpm docs:diagramas         # regenera los SVG de docs/diagramas/ desde docs/07-diagramas.md
 ```
 
 ## Estructura
@@ -68,7 +69,7 @@ docs/             Visión, requerimientos, casos de uso, arquitectura, legal, ma
 
 ## Documentación
 
-Empieza por [docs/README.md](docs/README.md). El plan de trabajo está en [docs/06-plan.md](docs/06-plan.md).
+Empieza por [docs/README.md](docs/README.md). El plan de trabajo está en [docs/06-plan.md](docs/06-plan.md) y los diagramas de arquitectura en [docs/07-diagramas.md](docs/07-diagramas.md) (Mermaid: GitHub y VS Code los dibujan).
 
 ## Trabajar con agentes de IA
 

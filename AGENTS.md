@@ -18,6 +18,7 @@ Dueño: Sebastián Zapateiro. Responde en español, conciso. Analiza y muestra h
    - `pnpm typecheck` y `pnpm build` sin errores (no hay tests ni lint todavía).
    - Prueba la pantalla con `pnpm dev` cuando aplique.
    - Marca la tarea en `docs/06-plan.md` y actualiza la sección **Estado** de este archivo.
+   - Si cambió la arquitectura (servicios, tablas, flujos de seguridad), actualiza el diagrama en `docs/07-diagramas.md` y corre `pnpm docs:diagramas`.
    - Commit pequeño en español (ver Convenciones). No hagas push ni merge a `main` sin que el dueño lo pida.
 4. **Si algo no está decidido** (marcado como *Propuesta* en los docs o ausente), constrúyelo como parámetro en la tabla `configuracion` o pregunta; no inventes reglas de negocio.
 
@@ -83,6 +84,7 @@ pnpm db:seed                # localidades, insignias, taxonomía (idempotente)
 pnpm db:studio
 pnpm admin:crear <correo>   # rol admin a una cuenta existente (primer admin)
 pnpm db:cifrar-documentos   # cuenta documentos en texto plano; --aplicar los cifra
+pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md (usa el Chrome instalado)
 ```
 
 ## Entorno (problemas ya resueltos)
