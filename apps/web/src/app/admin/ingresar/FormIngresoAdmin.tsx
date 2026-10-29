@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import QRCode from "qrcode";
 import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components/cuenta";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
@@ -9,7 +10,7 @@ import { authClient, mensajeDeError } from "@/lib/auth-client";
 export function FormIngresoAdmin() {
   const router = useRouter();
   const [paso, setPaso] = useState<1 | 2 | "config">(1);
-  const [configuracion, setConfiguracion] = useState<{ uri: string; clave: string; respaldo: string[] } | null>(null);
+  const [configuracion, setConfiguracion] = useState<{ uri: string; clave: string; qr: string; respaldo: string[] } | null>(null);
   const [correo, setCorreo] = useState("");
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -44,7 +45,8 @@ export function FormIngresoAdmin() {
       return setError("No pudimos iniciar la configuración del segundo factor. Intenta de nuevo.");
     }
     setCorreo(correoIngresado);
-    setConfiguracion({ uri: config.totpURI, clave: new URL(config.totpURI).searchParams.get("secret") ?? "", respaldo: config.backupCodes });
+    const qr = await QRCode.toDataURL(config.totpURI, { width: 220, margin: 1, color: { dark: "#1B2623", light: "#FFFFFF" } });
+    setConfiguracion({ uri: config.totpURI, clave: new URL(config.totpURI).searchParams.get("secret") ?? "", qr, respaldo: config.backupCodes });
     setPaso("config");
   }
 
@@ -57,7 +59,7 @@ export function FormIngresoAdmin() {
     const { error } = await authClient.twoFactor.verifyTotp({ code });
     if (error) {
       setCargando(false);
-      return setError("El código no coincide. Revisa que hayas agregado la clave en tu app y que la hora del celular sea automática.");
+      return setError("El código no coincide. Revisa que hayas escaneado el QR y que la hora del celular sea automática.");
     }
     router.replace("/admin");
     router.refresh();
@@ -110,16 +112,21 @@ export function FormIngresoAdmin() {
       {paso === "config" && configuracion ? (
         <form onSubmit={confirmarConfiguracion} className="flex flex-col gap-4">
           <ol className="flex flex-col gap-3 text-[15px] leading-normal text-tinta-2">
-            <li><b>1.</b> En tu app elige «Agregar cuenta» y «Ingresar clave manualmente» (o abre el enlace desde el celular).</li>
             <li>
-              <b>2.</b> Escribe esta clave:
-              <code className="mt-1.5 block break-all rounded-xl bg-white px-3 py-2.5 font-mono text-base font-bold tracking-wider text-tinta">{configuracion.clave}</code>
-              <a href={configuracion.uri} className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-verde">Abrir en mi app autenticadora</a>
+              <b>1.</b> En tu app elige «Agregar cuenta» y escanea este código QR:
+              {/* eslint-disable-next-line @next/next/no-img-element -- data URL generada en el cliente */}
+              <img src={configuracion.qr} alt="Código QR para vincular LasTresB en tu app autenticadora" width={220} height={220} className="mx-auto mt-3 rounded-xl border border-borde bg-white p-2" />
+              <details className="mt-2 text-sm">
+                <summary className="inline-flex min-h-11 items-center font-semibold text-tinta-2">¿No puedes escanearlo?</summary>
+                <span className="block">Elige «Ingresar clave manualmente» y escribe:</span>
+                <code className="mt-1.5 block break-all rounded-xl bg-white px-3 py-2.5 font-mono text-base font-bold tracking-wider text-tinta">{configuracion.clave}</code>
+                <a href={configuracion.uri} className="mt-1 inline-flex min-h-11 items-center font-semibold text-verde">Abrir en mi app autenticadora (desde el celular)</a>
+              </details>
             </li>
-            <li><b>3.</b> Guarda estos códigos de respaldo en un lugar seguro. Cada uno sirve una sola vez:
+            <li><b>2.</b> Guarda estos códigos de respaldo en un lugar seguro. Cada uno sirve una sola vez:
               <code className="mt-1.5 grid grid-cols-2 gap-1 rounded-xl bg-white px-3 py-2.5 font-mono text-sm">{configuracion.respaldo.map((c) => <span key={c}>{c}</span>)}</code>
             </li>
-            <li><b>4.</b> Escribe el código de 6 dígitos que muestra la app para confirmar:</li>
+            <li><b>3.</b> Escribe el código de 6 dígitos que muestra la app para confirmar:</li>
           </ol>
           <fieldset className="flex gap-2">
             <legend className="sr-only">Código de 6 dígitos</legend>
