@@ -21,7 +21,11 @@ Copia del lienzo "Las 3B — Mockups v0.3" (claude.ai). Cada archivo es una pant
 | BO_Catalogo | Categorías y sinónimos (B5) | `/admin/catalogo` |
 | BO_Auditoria | Auditoría y parámetros (B8) | `/admin/auditoria` |
 
-Pendientes en el lienzo: versiones de escritorio de login y del alta de proveedor (usar las móviles como base), panel del proveedor, calificar, Mi cuenta y reclamo público.
+| Panel_proveedor.md | Panel del proveedor (descripción, sin lienzo) | `/panel` |
+| Calificar.md | Calificar a un proveedor (descripción) | `/[slug]/calificar` |
+| Mi_cuenta.md | Mi cuenta y menú de usuario (descripción) | `/cuenta` |
+
+Pendientes en el lienzo: versiones de escritorio de login y del alta de proveedor (usar las móviles como base) y reclamo público.
 
 Backoffice: los motivos de rechazo y la división de sub-roles son propuestas pendientes del visto bueno de Andrés (ver doc "Las 3B — Estado del sistema y decisiones" en Drive).
 

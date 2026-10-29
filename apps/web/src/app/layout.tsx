@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { MARCA } from "@las3b/shared";
 import { Analitica } from "@/components/Analitica";
+import { Cabecera } from "@/components/Cabecera";
+import { MarcoSitio } from "@/components/MarcoSitio";
+import { Pie } from "@/components/Pie";
 import { DESCRIPCION, INDEXABLE, SITIO_URL } from "@/lib/seo";
 import "./globals.css";
 
@@ -35,7 +38,11 @@ export const metadata: Metadata = {
   robots: INDEXABLE
     ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
     : { index: false, follow: false },
-  verification: { google: process.env.GOOGLE_SITE_VERIFICATION || "PV2Tc0MI8AE_GoDiaFVqWuM09AtV7Ie2ANLyKtOexRU" },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || "PV2Tc0MI8AE_GoDiaFVqWuM09AtV7Ie2ANLyKtOexRU",
+    ...(process.env.BING_SITE_VERIFICATION ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } } : {}),
+  },
+  alternates: { types: { "application/rss+xml": [{ url: "/guias/feed.xml", title: "Guías de Las 3B" }] } },
   formatDetection: { telephone: false, email: false, address: false },
   appleWebApp: { capable: true, title: MARCA.nombre, statusBarStyle: "default" },
 };
@@ -50,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-CO" className={`${bricolage.variable} ${inter.variable}`}>
       <body className="min-h-dvh bg-crema font-sans text-tinta antialiased">
-        {children}
+        <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
         <Analitica />
       </body>
     </html>

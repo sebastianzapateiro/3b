@@ -6,6 +6,7 @@
  * Estados: borrador → pendiente → aprobado | rechazado.
  */
 import { auth } from "@/lib/auth";
+import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { headers } from "next/headers";
 import { db, schema } from "@las3b/db";
 import { slugSchema } from "@las3b/shared";
@@ -53,6 +54,16 @@ async function verificarCategoriaExigeRut(categoriaId: number): Promise<boolean>
     .where(eq(categorias.id, categoriaId))
     .limit(1);
   return c?.exigeRutDesdeAlta ?? false;
+}
+
+async function verificarCategoriaExigeMenores(categoriaId: number | null): Promise<boolean> {
+  if (categoriaId == null) return false;
+  const [c] = await db
+    .select({ exigeInsigniaMenores: categorias.exigeInsigniaMenores })
+    .from(categorias)
+    .where(eq(categorias.id, categoriaId))
+    .limit(1);
+  return c?.exigeInsigniaMenores ?? false;
 }
 
 /** Paso 1 · Datos básicos: crea el proveedor en borrador o lo actualiza. */
@@ -120,7 +131,7 @@ export async function guardarPaso1(formData: FormData) {
     localidadId,
   });
 
-  return { ok: true, proveedorId: p.id, requiereRut: exigeRut };
+  return { ok: true, proveedorId: p.id, requiereRut: exigeRut, requiereMenores: await verificarCategoriaExigeMenores(categoriaId) };
 }
 
 /** Paso 2 · Qué ofrece y dónde: servicios, presentación, experiencia, localidades adicionales. */
@@ -227,6 +238,25 @@ export async function guardarPaso3(formData: FormData) {
 
   if (exigeRut && !rut) {
     return { error: "El RUT es obligatorio para tu categoría o segmento." };
+  }
+
+  // Consentimientos (RF-19, Ley 1581): casillas no premarcadas; se guarda versión, fecha e IP.
+  const exigeMenores = await verificarCategoriaExigeMenores((prov?.categoriaId as number | null | undefined) ?? null);
+  if (formData.get("aceptaTerminosProveedor") !== "on") return { error: "Debes aceptar los términos para proveedores." };
+  if (formData.get("aceptaDatos") !== "on") return { error: "Debes autorizar el tratamiento de tus datos personales para verificar tu identidad." };
+  if (exigeMenores && formData.get("autorizaLey1918") !== "on") {
+    return { error: "Tu categoría trabaja con menores: debes autorizar la consulta de antecedentes (Ley 1918)." };
+  }
+  try {
+    const h = await headers();
+    await registrarConsentimientos(
+      usuario.id,
+      ["terminos_proveedores", "tratamiento_datos", ...(exigeMenores ? (["autorizacion_ley_1918"] as const) : [])],
+      { ip: ipDeLaPeticion(h), userAgent: h.get("user-agent") },
+    );
+  } catch (e) {
+    console.error("[alta proveedor] No se pudieron registrar los consentimientos", e);
+    return { error: "No pudimos registrar tu autorización. Intenta de nuevo en un momento." };
   }
 
   const rutFechaLimite = exigeRut

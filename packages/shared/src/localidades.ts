@@ -23,3 +23,27 @@ export const LOCALIDADES_BOGOTA = [
 ] as const;
 
 export type LocalidadSlug = (typeof LOCALIDADES_BOGOTA)[number]["slug"];
+
+/** Localidades que limitan entre sí (aproximado), para el filtro «También en localidades vecinas». */
+export const LOCALIDADES_VECINAS: Record<LocalidadSlug, LocalidadSlug[]> = {
+  usaquen: ["chapinero", "suba"],
+  chapinero: ["usaquen", "santa-fe", "teusaquillo", "barrios-unidos"],
+  "santa-fe": ["chapinero", "la-candelaria", "los-martires", "san-cristobal", "teusaquillo"],
+  "san-cristobal": ["santa-fe", "la-candelaria", "rafael-uribe-uribe", "usme"],
+  usme: ["san-cristobal", "rafael-uribe-uribe", "ciudad-bolivar", "tunjuelito", "sumapaz"],
+  tunjuelito: ["rafael-uribe-uribe", "usme", "ciudad-bolivar", "kennedy"],
+  bosa: ["kennedy", "ciudad-bolivar"],
+  kennedy: ["bosa", "fontibon", "puente-aranda", "tunjuelito"],
+  fontibon: ["engativa", "kennedy", "puente-aranda"],
+  engativa: ["suba", "barrios-unidos", "teusaquillo", "fontibon"],
+  suba: ["usaquen", "engativa", "barrios-unidos"],
+  "barrios-unidos": ["suba", "engativa", "teusaquillo", "chapinero"],
+  teusaquillo: ["chapinero", "barrios-unidos", "engativa", "santa-fe", "los-martires", "puente-aranda"],
+  "los-martires": ["santa-fe", "teusaquillo", "antonio-narino", "puente-aranda", "la-candelaria"],
+  "antonio-narino": ["los-martires", "puente-aranda", "rafael-uribe-uribe", "tunjuelito"],
+  "puente-aranda": ["teusaquillo", "los-martires", "antonio-narino", "kennedy", "fontibon"],
+  "la-candelaria": ["santa-fe", "los-martires"],
+  "rafael-uribe-uribe": ["antonio-narino", "san-cristobal", "usme", "tunjuelito"],
+  "ciudad-bolivar": ["bosa", "tunjuelito", "usme", "sumapaz"],
+  sumapaz: ["usme", "ciudad-bolivar"],
+};

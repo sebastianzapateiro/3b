@@ -1,11 +1,11 @@
 "use client";
 /** Cliente de Better Auth para componentes de la web. */
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields } from "better-auth/client/plugins";
+import { inferAdditionalFields, twoFactorClient } from "better-auth/client/plugins";
 import type { auth } from "./auth";
 
 export const authClient = createAuthClient({
-  plugins: [inferAdditionalFields<typeof auth>()],
+  plugins: [inferAdditionalFields<typeof auth>(), twoFactorClient()],
 });
 
 const MENSAJES: Record<string, string> = {

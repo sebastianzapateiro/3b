@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Logo } from "@/components/Logo";
 
 /**
@@ -9,7 +9,7 @@ export const metadata = { robots: { index: false } };
 
 export default function CuentaLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh lg:p-4">
+    <div className="flex min-h-[calc(100dvh-4.5rem)] lg:p-4">
       <aside className="hidden flex-[1_1_0] flex-col justify-between rounded-[28px] bg-tinta p-12 text-white lg:flex">
         <Link href="/" aria-label="Las 3B, inicio" className="text-crema">
           <Logo oscuro />
@@ -45,7 +45,7 @@ export default function CuentaLayout({ children }: { children: React.ReactNode }
 
       <main className="flex flex-[1_1_0] flex-col px-6 pb-7 pt-4 lg:items-center lg:justify-center lg:px-12 lg:py-10">
         <div className="flex w-full max-w-[420px] flex-1 flex-col self-center lg:flex-none">
-          <div className="flex items-center justify-between lg:hidden">
+          <div className="hidden">
             <Link href="/" aria-label="Volver al inicio" className="-ml-2.5 flex size-11 items-center justify-center text-tinta">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M15 18l-6-6 6-6" />

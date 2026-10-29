@@ -61,3 +61,53 @@ export const RESENA_DESTACADA_DEMO = {
   cliente: "Marcela G.",
   localidad: "Suba",
 };
+
+/**
+ * Perfil completo de muestra para los proveedores demo (/[slug]). Datos ilustrativos, no reales;
+ * la página los marca como «Perfil de ejemplo» y no se indexa.
+ */
+const SERVICIOS_DEMO: Record<string, { nombre: string; descripcion: string; precioDesde: string; unidad: string }[]> = {
+  "Plomería": [
+    { nombre: "Visita de diagnóstico", descripcion: "Incluye revisión de fugas", precioDesde: "60000", unidad: "visita" },
+    { nombre: "Destape de cañería", descripcion: "", precioDesde: "90000", unidad: "trabajo" },
+    { nombre: "Cambio de grifería", descripcion: "", precioDesde: "80000", unidad: "trabajo" },
+  ],
+  "Clases de inglés": [
+    { nombre: "Clase individual", descripcion: "Presencial o virtual", precioDesde: "45000", unidad: "clase" },
+    { nombre: "Preparación de examen", descripcion: "TOEFL / IELTS", precioDesde: "60000", unidad: "clase" },
+  ],
+  Acarreos: [
+    { nombre: "Trasteo pequeño", descripcion: "Dentro de la misma localidad", precioDesde: "90000", unidad: "trayecto" },
+    { nombre: "Objetos pesados", descripcion: "Neveras, lavadoras, muebles", precioDesde: "70000", unidad: "trayecto" },
+  ],
+};
+
+export function perfilDemo(slug: string): import("@/lib/portafolio-completo").PortafolioCompleto | undefined {
+  const p = RECOMENDADOS_DEMO.find((x) => x.slug === slug);
+  if (!p) return undefined;
+  const ahora = Date.now();
+  const dia = 86_400_000;
+  return {
+    slug: p.slug,
+    nombre: p.nombre,
+    presentacion: "Perfil de ejemplo para mostrar cómo se ve un portafolio en Las 3B. Aquí cada proveedor cuenta, en sus propias palabras, su experiencia y cómo trabaja.",
+    whatsapp: "",
+    categoriaPrincipal: p.servicio,
+    localidadPrincipal: p.localidades[0] ?? null,
+    servicios: SERVICIOS_DEMO[p.servicio] ?? [],
+    fotos: [],
+    insignias: p.insignias.map((clave) => ({ clave, nombre: { verificado: "Verificado", formalizado: "Formalizado", apto_menores: "Apto para menores", certificado: "Certificado" }[clave] })),
+    resenas: [
+      { nombreCliente: "Marcela G.", estrellas: 5, comentario: "Llegó a la hora que dijo y cobró lo que acordamos.", creadoEn: new Date(ahora - 14 * dia), respuesta: null },
+      { nombreCliente: "Andrés P.", estrellas: 4, comentario: "Buen trabajo y muy amable. Demoró un poco en empezar.", creadoEn: new Date(ahora - 40 * dia), respuesta: null },
+    ],
+    promedio: p.promedio,
+    totalResenas: p.totalResenas,
+    categorias: [p.servicio],
+    localidades: p.localidades,
+    desde: new Date(ahora - 200 * dia),
+    distribucion: [0, 1, 2, 8, 26].map((n) => n),
+    enlaces: [],
+    esEjemplo: true,
+  };
+}

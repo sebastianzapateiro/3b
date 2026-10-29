@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import { meta } from "@/lib/seo";
+import { Faq } from "@/components/Faq";
+import { FAQ_TERMINOS } from "@/lib/faqs";
 
-export const metadata: Metadata = { title: "Términos de uso · Las 3B" };
+export const metadata = meta({ titulo: "Términos de uso", descripcion: "Condiciones para usar Las 3B: qué es el portal, qué no es y cómo se acuerdan los servicios con cada proveedor.", ruta: "/terminos" });
 
 /**
  * Páginas legales — texto vigente (versión 1.0, redacción del modelo; revisión pendiente del Drive).
@@ -9,6 +11,7 @@ export const metadata: Metadata = { title: "Términos de uso · Las 3B" };
  */
 export default function Terminos() {
   return (
+    <>
     <main className="mx-auto max-w-3xl px-5 py-16">
       <h1 className="font-display text-4xl font-extrabold">Términos de uso</h1>
       <p className="mt-4 text-sm text-gris">Versión 1.0 — Vigencia: 27 de octubre de 2026.</p>
@@ -38,5 +41,7 @@ export default function Terminos() {
         <p className="leading-relaxed">Al registrarse en Las 3B se aceptan estos términos.</p>
       </section>
     </main>
+    <Faq preguntas={FAQ_TERMINOS} />
+    </>
   );
 }

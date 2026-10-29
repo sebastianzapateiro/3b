@@ -20,6 +20,7 @@ export function RegistroProveedorClient() {
   const [aviso, setAviso] = useState("");
   const [isPending, startTransition] = useTransition();
   const [requiereRut, setRequiereRut] = useState(false);
+  const [requiereMenores, setRequiereMenores] = useState(false);
 
   const asyncGuardarPaso1 = async (fd: FormData) => {
     const res = await guardarPaso1(fd);
@@ -29,6 +30,7 @@ export function RegistroProveedorClient() {
     }
     if (res?.ok) {
       setRequiereRut(!!res.requiereRut);
+      setRequiereMenores(!!res.requiereMenores);
       setPaso(2);
       return true;
     }
@@ -445,6 +447,29 @@ export function RegistroProveedorClient() {
               </label>
             </div>
           )}
+          <fieldset className="flex flex-col gap-2.5 rounded-[18px] bg-piedra p-4">
+            <legend className="sr-only">Autorizaciones</legend>
+            <div className="flex items-start gap-2">
+              <input id="aceptaTerminosProveedor" name="aceptaTerminosProveedor" type="checkbox" required className={casilla} />
+              <label htmlFor="aceptaTerminosProveedor" className="text-sm leading-snug text-tinta-2">
+                Acepto los <Link href="/terminos-proveedores" target="_blank" className="font-semibold text-verde underline">términos de uso para proveedores</Link>.
+              </label>
+            </div>
+            <div className="flex items-start gap-2">
+              <input id="aceptaDatos" name="aceptaDatos" type="checkbox" required className={casilla} />
+              <label htmlFor="aceptaDatos" className="text-sm leading-snug text-tinta-2">
+                Autorizo el tratamiento de mis datos personales (documento, fecha de nacimiento, dirección) para verificar mi identidad, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.
+              </label>
+            </div>
+            {requiereMenores && (
+              <div className="flex items-start gap-2">
+                <input id="autorizaLey1918" name="autorizaLey1918" type="checkbox" required className={casilla} />
+                <label htmlFor="autorizaLey1918" className="text-sm leading-snug text-tinta-2">
+                  Tu categoría trabaja con menores. Autorizo la consulta de antecedentes en el registro de inhabilidades (Ley 1918 de 2018) para recibir la insignia «Apto para menores». Es un dato sensible y esta autorización es voluntaria.
+                </label>
+              </div>
+            )}
+          </fieldset>
           <button type="submit" disabled={cargando} className={`mt-2 ${botonPrincipal}`}>
             {cargando ? "Enviando…" : "Enviar para revisión"}
           </button>

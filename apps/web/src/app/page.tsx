@@ -1,69 +1,18 @@
 import Link from "next/link";
-import { LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
+import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
 import type { Metadata } from "next";
+import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
-import { Logo } from "@/components/Logo";
 import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
-import { jsonLdSitio } from "@/lib/seo";
+import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
+import { Faq } from "@/components/Faq";
+import { FAQ_HOME } from "@/lib/faqs";
 
 /** Home (CU-01, CU-03). Diseño de referencia: docs/mockups/Home_web.dc.html y Home_movil.dc.html. */
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const LOCALIDAD_INICIAL = "suba";
-
-const CATEGORIAS = [
-  {
-    nombre: "Hogar",
-    detalle: "Plomería, electricidad, pintura, cerrajería",
-    corto: "Plomería, luz, pintura",
-    slug: "hogar",
-    tono: "bg-verde-claro text-verde-oscuro",
-    icono: (
-      <>
-        <path d="M3 11 12 4l9 7" />
-        <path d="M5 10v10h14V10" />
-      </>
-    ),
-  },
-  {
-    nombre: "Clases y refuerzo",
-    detalle: "Matemáticas, inglés, música, tareas",
-    corto: "Inglés, mate, música",
-    slug: "clases-y-refuerzo",
-    tono: "bg-amarillo-suave text-amarillo-oscuro",
-    icono: (
-      <>
-        <path d="M4 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H4z" />
-        <path d="M20 5h-4a2 2 0 0 0-2 2" />
-        <path d="M20 5v13h-6" />
-      </>
-    ),
-  },
-  {
-    nombre: "Acarreos",
-    detalle: "Mudanzas de barrio, objetos pesados",
-    corto: "Mudanzas de barrio",
-    slug: "acarreos",
-    tono: "bg-ladrillo-suave text-ladrillo-oscuro",
-    icono: (
-      <>
-        <path d="M2 7h11v9H2z" />
-        <path d="M13 10h4l4 3v3h-8" />
-        <circle cx="6" cy="18" r="2" />
-        <circle cx="17" cy="18" r="2" />
-      </>
-    ),
-  },
-  {
-    nombre: "Servicios varios",
-    detalle: "Costura, mascotas, jardines, electrodomésticos",
-    corto: "Costura, mascotas, jardín",
-    slug: "servicios-varios",
-    tono: "bg-piedra text-tinta",
-    icono: <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" />,
-  },
-];
 
 const POPULARES = ["Plomería", "Inglés", "Mudanzas", "Cerrajería"];
 
@@ -128,37 +77,7 @@ export default function Home() {
   return (
     <>
       <JsonLd datos={jsonLdSitio()} />
-      <header className="sm:border-b sm:border-borde">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-3 py-3.5 pl-5 pr-4 sm:flex-wrap sm:px-6 sm:py-4">
-          <Link href="/" aria-label="Las 3B, inicio" className="text-tinta">
-            <Logo />
-          </Link>
-          <nav aria-label="Principal" className="hidden flex-wrap items-center gap-1 sm:flex">
-            <a href="#categorias" className={`${enlaceNav} hidden md:flex`}>Categorías</a>
-            <a href="#como" className={`${enlaceNav} hidden md:flex`}>Cómo funciona</a>
-            <Link href="/proveedores/registro" className={enlaceNav}>Soy proveedor</Link>
-            <Link href="/ingresar" className="ml-1.5 flex h-11 items-center rounded-xl border-2 border-tinta px-[18px] text-[15px] font-semibold text-tinta">
-              Ingresar
-            </Link>
-          </nav>
-          {/* Móvil (Home_movil): Ingresar + menú */}
-          <div className="relative flex items-center gap-0.5 sm:hidden">
-            <Link href="/ingresar" className="flex h-11 items-center px-3 text-[15px] font-semibold text-tinta">Ingresar</Link>
-            <details className="group">
-              <summary aria-label="Abrir menú" className="flex size-11 cursor-pointer list-none items-center justify-center text-tinta [&::-webkit-details-marker]:hidden">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                  <path d="M4 7h16M4 12h16M4 17h16" />
-                </svg>
-              </summary>
-              <nav aria-label="Menú" className="absolute right-0 top-12 z-10 flex w-56 flex-col rounded-[18px] border border-borde-suave bg-white p-2 shadow-[0_8px_30px_rgba(27,38,35,0.12)]">
-                <a href="#categorias" className="flex h-11 items-center rounded-xl px-3 text-[15px] font-medium text-tinta">Categorías</a>
-                <a href="#como" className="flex h-11 items-center rounded-xl px-3 text-[15px] font-medium text-tinta">Cómo funciona</a>
-                <Link href="/proveedores/registro" className="flex h-11 items-center rounded-xl px-3 text-[15px] font-medium text-tinta">Soy proveedor</Link>
-              </nav>
-            </details>
-          </div>
-        </div>
-      </header>
+      <JsonLd datos={jsonLdLista("Categorías de servicios en Bogotá", CATEGORIAS.map((c) => ({ nombre: c.nombre, ruta: `/categorias/${c.slug}` })))} />
 
       <main>
         <section className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-12 px-5 pb-7 pt-2.5 sm:px-6 sm:pb-16 sm:pt-14">
@@ -280,21 +199,24 @@ export default function Home() {
         </section>
 
         <section id="categorias" className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-6">
-          <h2 className={h2}>Categorías</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className={h2}>Categorías</h2>
+            <Link href="/categorias" className="text-sm font-semibold text-verde hover:text-verde-oscuro sm:text-[15px]">
+              Ver todas las categorías
+            </Link>
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
             {CATEGORIAS.map((c) => (
               <Link
                 key={c.slug}
-                href={buscar({ categoria: c.slug, localidad: LOCALIDAD_INICIAL })}
-                className={`flex h-[124px] min-w-0 flex-col justify-between rounded-[18px] p-3.5 sm:h-auto sm:min-h-40 sm:flex-[1_1_240px] sm:gap-4 sm:rounded-[22px] sm:p-5 ${c.tono}`}
+                href={`/categorias/${c.slug}`}
+                className={`flex h-[124px] min-w-0 flex-col justify-between rounded-[18px] p-3.5 sm:h-auto sm:min-h-40 sm:flex-[1_1_240px] sm:gap-4 sm:rounded-[22px] sm:p-5 ${TONO_CATEGORIA[c.icono]}`}
               >
-                <svg className="size-7 sm:size-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  {c.icono}
-                </svg>
+                <IconoCategoria icono={c.icono} className="size-7 sm:size-8" />
                 <span className="flex flex-col gap-0.5 sm:gap-1">
                   <b className="text-base sm:text-lg">{c.nombre}</b>
                   <span className="text-xs sm:hidden">{c.corto}</span>
-                  <span className="hidden text-sm leading-snug sm:inline">{c.detalle}</span>
+                  <span className="hidden text-sm leading-snug sm:inline">{c.descripcion}</span>
                 </span>
               </Link>
             ))}
@@ -404,27 +326,14 @@ export default function Home() {
           <h2 className="font-display text-2xl font-bold">Busca por localidad</h2>
           <nav aria-label="Localidades" className="flex flex-wrap gap-x-5 gap-y-2 text-[15px]">
             {LOCALIDADES_BOGOTA.map((l) => (
-              <Link key={l.slug} href={buscar({ localidad: l.slug })} className="text-verde hover:text-verde-oscuro">
+              <Link key={l.slug} href={`/localidades/${l.slug}`} className="inline-flex min-h-9 items-center text-verde hover:text-verde-oscuro">
                 {l.nombre}
               </Link>
             ))}
           </nav>
         </section>
       </main>
-
-      <footer className="border-t border-borde">
-        <div className="mx-auto flex max-w-[1200px] flex-col-reverse gap-3 px-5 pb-8 pt-6 text-sm text-gris sm:flex-row sm:flex-wrap sm:justify-between sm:gap-4 sm:px-6 sm:pb-9 sm:pt-7">
-          <p className="max-w-[560px] leading-[1.45] sm:leading-normal">
-            Las 3B es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
-          </p>
-          <nav aria-label="Legal" className="flex flex-wrap gap-4 sm:gap-[18px]">
-            <Link href="/terminos" className="text-verde hover:text-verde-oscuro">Términos</Link>
-            <Link href="/privacidad" className="text-verde hover:text-verde-oscuro">Datos personales</Link>
-            <Link href="/resenas" className="text-verde hover:text-verde-oscuro">Política de reseñas</Link>
-            <Link href="/reclamos" className="text-verde hover:text-verde-oscuro">Presentar un reclamo</Link>
-          </nav>
-        </div>
-      </footer>
+      <Faq preguntas={FAQ_HOME} />
     </>
   );
 }

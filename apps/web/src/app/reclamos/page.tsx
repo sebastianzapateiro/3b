@@ -1,6 +1,8 @@
-import type { Metadata } from "next";
+import { meta } from "@/lib/seo";
+import { Faq } from "@/components/Faq";
+import { FAQ_RECLAMOS } from "@/lib/faqs";
 
-export const metadata: Metadata = { title: "Política de reclamos · Las 3B" };
+export const metadata = meta({ titulo: "Reclamos", descripcion: "Cómo presentar un reclamo sobre un proveedor o un perfil publicado en Las 3B.", ruta: "/reclamos" });
 
 /**
  * Páginas legales — texto vigente (versión 1.0, redacción del modelo; revisión pendiente del Drive).
@@ -8,6 +10,7 @@ export const metadata: Metadata = { title: "Política de reclamos · Las 3B" };
  */
 export default function Reclamos() {
   return (
+    <>
     <main className="mx-auto max-w-3xl px-5 py-16">
       <h1 className="font-display text-4xl font-extrabold">Política de reclamos</h1>
       <p className="mt-4 text-sm text-gris">Versión 1.0 — Vigencia: 27 de octubre de 2026.</p>
@@ -29,5 +32,7 @@ export default function Reclamos() {
         <p className="leading-relaxed">Las 3B entrega los datos del proveedor al reclamante en 15 días hábiles.</p>
       </section>
     </main>
+    <Faq preguntas={FAQ_RECLAMOS} />
+    </>
   );
 }

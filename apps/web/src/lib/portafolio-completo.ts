@@ -2,7 +2,7 @@
  * P7 · Portafolio público completo del proveedor (RF-37 a RF-43).
  * Solo datos públicos: nunca documento, dirección, RUT ni fecha de nacimiento (regla 1).
  */
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 
 const {
@@ -45,6 +45,7 @@ export type ResenaPublica = {
   estrellas: number;
   comentario: string | null;
   creadoEn: Date;
+  respuesta: string | null;
 };
 
 export type PortafolioCompleto = {
@@ -60,6 +61,17 @@ export type PortafolioCompleto = {
   resenas: ResenaPublica[];
   promedio: number;
   totalResenas: number;
+  /** Todas las categorías y localidades del proveedor. */
+  categorias: string[];
+  localidades: string[];
+  /** Fecha de alta, para «En Las 3B desde». */
+  desde: Date;
+  /** Cantidad de reseñas visibles por estrellas (índice 0 = 1 estrella). */
+  distribucion: number[];
+  /** Enlaces internos a las páginas de servicio + localidad (SEO). */
+  enlaces: { texto: string; ruta: string }[];
+  /** Perfil de muestra (no es un proveedor real). */
+  esEjemplo?: boolean;
 };
 
 export type ResultadoPortafolioCompleto =
@@ -84,6 +96,7 @@ export async function obtenerPortafolioCompleto(
       whatsapp: proveedores.whatsapp,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
+      desde: proveedores.createdAt,
     })
     .from(proveedores)
     .where(eq(proveedores.slug, slug))
@@ -112,7 +125,7 @@ export async function obtenerPortafolioCompleto(
     return { tipo: "no_existe" };
   }
 
-  const [servicios, fotos, filasInsignias, filasResenas, cats, locs] =
+  const [servicios, fotos, filasInsignias, filasResenas, cats, locs, conteo] =
     await Promise.all([
       db
         .select({
@@ -159,12 +172,14 @@ export async function obtenerPortafolioCompleto(
       db
         .select({
           comentario: resenas.comentario,
-          estrellas: resenas.puntualidad,
+          estrellas: sql<number>`round((${resenas.puntualidad} + ${resenas.calidad} + ${resenas.calidadPrecio} + ${resenas.cumplimiento}) / 4.0)`,
           creadoEn: resenas.createdAt,
           nombreCliente: user.name,
+          respuesta: schema.respuestasResena.texto,
         })
         .from(resenas)
         .innerJoin(user, eq(user.id, resenas.compradorId))
+        .leftJoin(schema.respuestasResena, and(eq(schema.respuestasResena.resenaId, resenas.id), eq(schema.respuestasResena.estado, "visible")))
         .where(
           and(
             eq(resenas.proveedorId, p.id),
@@ -175,19 +190,29 @@ export async function obtenerPortafolioCompleto(
         .limit(10),
 
       db
-        .select({ nombre: categorias.nombre })
+        .select({ nombre: categorias.nombre, slug: categorias.slug })
         .from(proveedorCategorias)
         .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
-        .where(eq(proveedorCategorias.proveedorId, p.id))
-        .limit(1),
+        .where(eq(proveedorCategorias.proveedorId, p.id)),
 
       db
-        .select({ nombre: localidades.nombre })
+        .select({ nombre: localidades.nombre, slug: localidades.slug })
         .from(proveedorLocalidades)
         .innerJoin(localidades, eq(localidades.id, proveedorLocalidades.localidadId))
-        .where(eq(proveedorLocalidades.proveedorId, p.id))
-        .limit(1),
+        .where(eq(proveedorLocalidades.proveedorId, p.id)),
+
+      db
+        .select({ estrellas: sql<number>`round((${resenas.puntualidad} + ${resenas.calidad} + ${resenas.calidadPrecio} + ${resenas.cumplimiento}) / 4.0)`, total: count() })
+        .from(resenas)
+        .where(and(eq(resenas.proveedorId, p.id), eq(resenas.estado, "visible")))
+        .groupBy(sql`round((${resenas.puntualidad} + ${resenas.calidad} + ${resenas.calidadPrecio} + ${resenas.cumplimiento}) / 4.0)`),
     ]);
+
+  const distribucion = [0, 0, 0, 0, 0];
+  for (const c of conteo) {
+    const i = Math.min(5, Math.max(1, Math.round(Number(c.estrellas)))) - 1;
+    distribucion[i] = (distribucion[i] ?? 0) + Number(c.total);
+  }
 
   const categoriaPrincipal = cats[0]?.nombre ?? null;
   const localidadPrincipal = locs[0]?.nombre ?? null;
@@ -226,9 +251,15 @@ export async function obtenerPortafolioCompleto(
         estrellas: Math.round(Number(r.estrellas ?? 0)),
         comentario: r.comentario,
         creadoEn: r.creadoEn,
+        respuesta: r.respuesta,
       })),
       promedio: estrellasPromedio,
       totalResenas,
+      categorias: cats.map((c) => c.nombre),
+      localidades: locs.map((l) => l.nombre),
+      desde: p.desde,
+      distribucion,
+      enlaces: cats.flatMap((c) => [{ texto: ` en Bogotá`, ruta: `/servicios/${c.slug}` }, ...locs.slice(0, 3).map((l) => ({ texto: ` en ${l.nombre}`, ruta: `/servicios/${c.slug}/${l.slug}` }))]),
     },
   };
 }

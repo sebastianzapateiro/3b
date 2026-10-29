@@ -10,6 +10,7 @@ const RUTAS_PUBLICAS = [
   "/",
   "/buscar",
   "/ingresar",
+  "/admin/ingresar",
   "/registro",
   "/recuperar",
   "/nueva-clave",
@@ -25,13 +26,13 @@ const RUTAS_PUBLICAS = [
   "/twitter-image",
 ];
 
+/** Zonas que exigen sesión; todo lo demás es público (páginas legales, SEO, portafolios /[slug]). */
+const PREFIJOS_PRIVADOS = ["/admin", "/cuenta", "/proveedores", "/panel"];
+
 function esRutaPublica(pathname: string): boolean {
   if (RUTAS_PUBLICAS.includes(pathname)) return true;
-  if (pathname.startsWith("/api/")) return true;
-  if (pathname.startsWith("/_next/")) return true;
-  if (pathname.startsWith("/iconos/")) return true;
-  if (pathname.startsWith("/[slug]")) return true; // portafolio público
-  return false;
+  const privada = PREFIJOS_PRIVADOS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return !privada;
 }
 
 export async function middleware(request: Request) {

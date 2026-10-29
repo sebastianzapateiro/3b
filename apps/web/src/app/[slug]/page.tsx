@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
 import { MARCA } from "@las3b/shared";
+import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
-import { RECOMENDADOS_DEMO } from "@/lib/demo";
+import { FAQ_PORTAFOLIO } from "@/lib/faqs";
+import { perfilDemo, RECOMENDADOS_DEMO } from "@/lib/demo";
 import { PerfilProveedor } from "@/components/PerfilProveedor";
 import { obtenerPortafolioCompleto } from "@/lib/portafolio-completo";
-import { jsonLdMigas, jsonLdProveedor } from "@/lib/seo";
+import { jsonLdMigas, jsonLdProveedor, meta } from "@/lib/seo";
 
 /**
  * P7 · Portafolio público del proveedor en lastresb.com.co/<slug> (RF-37 a RF-43, CU-04).
@@ -26,23 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (r.tipo === "publicado") {
     const p = r.proveedor;
-    const titulo = `${p.nombre}: ${p.servicios.slice(0, 2).join(" y ") || "servicios"} en ${p.localidadPrincipal || "Bogotá"}`;
+    const oficios = p.categorias.slice(0, 2).join(" y ") || "servicios";
+    const zona = p.localidades.slice(0, 2).join(" y ") || "Bogotá";
+    const titulo = `${p.nombre}: ${oficios} en ${zona}, Bogotá`;
     const descripcion =
       p.presentacion?.slice(0, 155) ??
-      `${p.nombre} ofrece ${p.servicios.join(", ").toLowerCase()} en ${p.localidadPrincipal || "Bogotá"}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`;
-    return {
-      title: titulo,
-      description: descripcion,
-      alternates: { canonical: `/${p.slug}` },
-      openGraph: {
-        type: "profile",
-        title: titulo,
-        description: descripcion,
-        url: `/${p.slug}`,
-        siteName: MARCA.nombre,
-        locale: "es_CO",
-      },
-    };
+      `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`;
+    return meta({ titulo, descripcion, ruta: `/${p.slug}`, tipo: "profile" });
   }
   if (r.tipo === "demo" || r.tipo === "no_disponible") {
     return { title: r.nombre, robots: { index: false, follow: true } };
@@ -70,13 +62,10 @@ export default async function PortafolioProveedor({ params }: Props) {
 
   if (r.tipo === "demo") {
     return (
-      <main className="mx-auto max-w-3xl px-5 py-16">
-        <p className="font-mono text-sm text-gris">{MARCA.dominio}/{slug}</p>
-        <h1 className="mt-2 font-display text-4xl font-extrabold">{r.nombre}</h1>
-        <p className="mt-3 text-lg text-tinta-2">
-          Perfil de ejemplo. El portafolio completo está en construcción.
-        </p>
-      </main>
+      <>
+        <PerfilProveedor proveedor={perfilDemo(slug)!} />
+        <Faq preguntas={FAQ_PORTAFOLIO} />
+      </>
     );
   }
 
@@ -88,9 +77,11 @@ export default async function PortafolioProveedor({ params }: Props) {
           slug: p.slug,
           nombre: p.nombre,
           descripcion: p.presentacion,
-          servicios: p.servicios.map((s) => s.nombre),
-          localidades: [p.localidadPrincipal].filter((l): l is string => l !== null),
+          servicios: p.categorias,
+          localidades: p.localidades,
           calificacion: { promedio: p.promedio, total: p.totalResenas },
+          resenas: p.resenas.map((r) => ({ autor: r.nombreCliente, estrellas: r.estrellas, texto: r.comentario, fecha: r.creadoEn })),
+          ofertas: p.servicios.map((s) => ({ nombre: s.nombre, precioDesde: s.precioDesde })),
         })}
       />
       <JsonLd
@@ -100,6 +91,7 @@ export default async function PortafolioProveedor({ params }: Props) {
         ])}
       />
       <PerfilProveedor proveedor={p} />
+      <Faq preguntas={FAQ_PORTAFOLIO} />
     </>
   );
 }

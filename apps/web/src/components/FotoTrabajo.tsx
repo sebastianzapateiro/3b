@@ -4,8 +4,8 @@ import type { FotoTrabajo } from "@/lib/portafolio-completo";
 export function FotoTrabajo({ foto }: { foto: FotoTrabajo }) {
   return (
     <div
-      className="aspect-[4/5] rounded-[16px] overflow-hidden bg-borde-suave"
-      style={{ aspectRatio: "4/5" }}
+      className="aspect-square rounded-[14px] lg:rounded-2xl overflow-hidden bg-borde-suave"
+     
     >
       <img
         src={foto.rutaMiniatura ?? foto.ruta}

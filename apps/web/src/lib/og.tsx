@@ -55,3 +55,44 @@ export async function fuente(familia: "Bricolage Grotesque" | "Inter", peso: num
 }
 
 export const definidas = <T,>(xs: (T | undefined)[]) => xs.filter((x): x is T => x !== undefined);
+
+export const TAM_OG = { width: 1200, height: 630 };
+
+/** Imagen social (1200×630) para páginas internas: etiqueta superior, título grande y línea de apoyo. */
+export async function imagenOg(o: { etiqueta: string; titulo: string; detalle?: string }) {
+  const { ImageResponse } = await import("next/og");
+  const { MARCA } = await import("@las3b/shared");
+  const fonts = definidas([
+    await fuente("Bricolage Grotesque", 800, o.titulo + o.etiqueta + MARCA.wordmark),
+    await fuente("Inter", 600, (o.detalle ?? "") + MARCA.dominio + MARCA.lema),
+  ]);
+  const largo = o.titulo.length > 46;
+  return new ImageResponse(
+    (
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: COLORES.crema, padding: 64 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <MonogramaOg ancho={84} />
+            <div style={{ display: "flex", fontFamily: "Bricolage Grotesque", fontWeight: 800, fontSize: 36, color: COLORES.tinta }}>
+              LasTres<span style={{ color: COLORES.ladrillo }}>B</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", background: COLORES.verde, color: "#FFFFFF", fontFamily: "Bricolage Grotesque", fontWeight: 800, fontSize: 26, padding: "10px 22px", borderRadius: 999 }}>{o.etiqueta}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+          <div style={{ display: "flex", fontFamily: "Bricolage Grotesque", fontWeight: 800, fontSize: largo ? 62 : 78, lineHeight: 1.05, letterSpacing: -2, color: COLORES.tinta }}>{o.titulo}</div>
+          {o.detalle && <div style={{ display: "flex", fontFamily: "Inter", fontWeight: 600, fontSize: 30, lineHeight: 1.35, color: "#3E4A47", maxWidth: 940 }}>{o.detalle}</div>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", fontFamily: "Inter", fontWeight: 600, fontSize: 26, color: COLORES.verde }}>{MARCA.dominio}</div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 11, background: COLORES.verde }} />
+            <div style={{ width: 22, height: 22, borderRadius: 11, background: COLORES.ladrillo }} />
+            <div style={{ width: 22, height: 22, borderRadius: 11, background: COLORES.amarillo }} />
+          </div>
+        </div>
+      </div>
+    ),
+    { ...TAM_OG, fonts },
+  );
+}
