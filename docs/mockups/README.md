@@ -20,7 +20,6 @@ Copia del lienzo "Las 3B — Mockups v0.3" (claude.ai). Cada archivo es una pant
 | BO_Usuarios | Usuarios, roles y suspensión (B4) | `/admin/usuarios` |
 | BO_Catalogo | Categorías y sinónimos (B5) | `/admin/catalogo` |
 | BO_Auditoria | Auditoría y parámetros (B8) | `/admin/auditoria` |
-
 | Panel_proveedor.md | Panel del proveedor (descripción, sin lienzo) | `/panel` |
 | Calificar.md | Calificar a un proveedor (descripción) | `/[slug]/calificar` |
 | Mi_cuenta.md | Mi cuenta y menú de usuario (descripción) | `/cuenta` |

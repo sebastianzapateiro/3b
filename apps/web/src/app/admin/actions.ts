@@ -4,16 +4,19 @@
  * B1, B2, B4, B5 · Acciones del backoffice (Server Actions). Cada una exige sesión + rol + 2FA,
  * valida la entrada con zod y deja registro en `auditoria` (regla 3).
  */
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { slugSchema } from "@las3b/shared";
-import { db, schema } from "@las3b/db";
+import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
+import { auth } from "@/lib/auth";
+import { enviarCorreo } from "@/lib/correo";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
-import { exigirBackoffice } from "@/lib/verificacion";
+import { parametro } from "@/lib/parametros";
+import { exigencia2fa, exigirBackoffice, guardarExigencia2fa, ROLES_2FA_OPCIONAL } from "@/lib/verificacion";
 
 const { proveedores, usuarioRoles, user, session, twoFactor, categorias, terminosBusqueda, proveedorInsignias, insignias, proveedorCategorias, proveedorLocalidades, serviciosProveedor, configuracion } = schema;
 
@@ -74,15 +77,6 @@ export async function rechazarProveedor(formData: FormData) {
   volver("/admin/aprobaciones", { ok: "Proveedor rechazado. Quedó el motivo registrado." });
 }
 
-/** Regla 2: cada apertura de un documento privado se registra. Aún no hay almacenamiento privado conectado. */
-export async function abrirDocumento(formData: FormData) {
-  const actor = await exigirBackoffice();
-  const proveedorId = uuid.parse(texto(formData, "proveedorId"));
-  const documentoId = uuid.parse(texto(formData, "documentoId"));
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "documento_abierto", objetoTipo: "proveedor", objetoId: proveedorId, metadatos: { documentoId } });
-  volver(`/admin/proveedores/${proveedorId}`, { doc: documentoId });
-}
-
 /* ───────────── Alta asistida ───────────── */
 
 const altaAsistida = z.object({
@@ -139,7 +133,7 @@ export async function crearProveedorAsistido(formData: FormData) {
       whatsapp: d.whatsapp,
       emiteFactura: d.factura === "si",
       tipoDocumento: d.tipoDocumento,
-      documentoCifrado: d.documento,
+      ...protegerDocumento(d.documento),
       direccionNotificaciones: d.direccion,
       fechaNacimiento: d.fechaNacimiento || null,
     })
@@ -161,6 +155,56 @@ export async function crearProveedorAsistido(formData: FormData) {
 /* ───────────── Usuarios y roles ───────────── */
 
 const ROLES = ["comprador", "proveedor", "verificador", "moderador", "admin"] as const;
+
+/**
+ * CU-72 · Crear usuario desde el backoffice (solo admin). La cuenta nace sin clave: la persona recibe
+ * un enlace de invitación a /nueva-clave (token de Better Auth, vigencia en `configuracion`).
+ * Al primer ingreso el proxy le pide mayoría de edad y aceptar políticas (regla 5).
+ */
+export async function crearUsuario(formData: FormData) {
+  const actor = await exigirBackoffice(true);
+  const datos = z
+    .object({ nombre: z.string().min(2).max(80), correo: z.string().email().max(120), roles: z.array(z.enum(ROLES)) })
+    .safeParse({ nombre: texto(formData, "nombre"), correo: texto(formData, "correo").toLowerCase(), roles: formData.getAll("rol") });
+  if (!datos.success) volver("/admin/usuarios", { nuevo: "1", error: "Revisa el nombre y el correo." });
+  const { nombre, correo, roles } = datos.data;
+
+  const [existe] = await db.select({ id: user.id }).from(user).where(eq(user.email, correo)).limit(1);
+  if (existe) volver("/admin/usuarios", { u: existe.id, error: "Ya hay una cuenta con ese correo." });
+
+  const ctx = await auth.$context;
+  // El admin responde por el correo; el enlace de invitación solo llega a ese buzón.
+  const nuevo = await ctx.internalAdapter.createUser({ name: nombre, email: correo, emailVerified: true }, { method: "admin" });
+  if (roles.length) await db.insert(usuarioRoles).values(roles.map((rol) => ({ usuarioId: nuevo.id, rol, asignadoPor: actor.user.id })));
+
+  const token = randomBytes(24).toString("base64url");
+  const horas = await parametro("invitacion_vigencia_h");
+  await ctx.internalAdapter.createVerificationValue({ identifier: `reset-password:${token}`, value: nuevo.id, expiresAt: new Date(Date.now() + horas * 3_600_000) });
+  await enviarCorreo({
+    para: correo,
+    asunto: "Te crearon una cuenta en LasTresB",
+    texto: `Hola, ${nombre}. El equipo de LasTresB te creó una cuenta con este correo.\nPara elegir tu clave abre este enlace (vence en ${horas} horas):\n${ctx.baseURL.replace(/\/api\/auth$/, "")}/nueva-clave?token=${token}\n\nSi no esperabas este correo, ignóralo.`,
+  });
+
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "usuario_creado", objetoTipo: "usuario", objetoId: nuevo.id, metadatos: { roles } });
+  revalidatePath("/admin", "layout");
+  volver("/admin/usuarios", { u: nuevo.id, ok: `Cuenta creada. Enviamos la invitación a ${correo}.` });
+}
+
+/** B4 · Qué roles del equipo deben usar 2FA. Solo admin; el rol admin siempre lo exige y no se puede cambiar. */
+export async function cambiarExigencia2fa(formData: FormData) {
+  const actor = await exigirBackoffice(true);
+  const antes = await exigencia2fa();
+  const cambios: Record<string, { antes: boolean; despues: boolean }> = {};
+  for (const rol of ROLES_2FA_OPCIONAL) {
+    const exige = formData.get(rol) === "on";
+    if (exige === antes[rol]) continue;
+    await guardarExigencia2fa(rol, exige);
+    cambios[rol] = { antes: antes[rol], despues: exige };
+  }
+  if (Object.keys(cambios).length) await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "exigencia_2fa_actualizada", objetoTipo: "configuracion", metadatos: cambios });
+  volver("/admin/usuarios", { ok: Object.keys(cambios).length ? "Exigencia de segundo factor guardada." : "No hubo cambios." });
+}
 
 export async function guardarRoles(formData: FormData) {
   const actor = await exigirBackoffice(true);

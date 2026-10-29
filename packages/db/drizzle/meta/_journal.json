@@ -43,6 +43,13 @@
       "when": 1793306682695,
       "tag": "0005_tan_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793309040307,
+      "tag": "0006_documento_huella",
+      "breakpoints": true
     }
   ]
 }

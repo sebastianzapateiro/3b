@@ -10,12 +10,18 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 1. Extensiones y permisos en base (prerrequisito de P2)
 
+> **Estado (29 oct 2026):** parcial. `auditoria` ya es de solo inserción por disparador (`0003_auditoria_solo_insercion`). `0002_busqueda.sql` **no está en `meta/_journal.json`**, así que nunca se aplica: registrarla o borrarla. Faltan `f_unaccent` e índices trigram (la búsqueda funciona sin ellos con `translate`).
+
+
 - Migración SQL manual nueva en `packages/db/drizzle/` (registrarla en `meta/_journal.json` como hacen las existentes, o generarla con `pnpm --filter @las3b/db exec drizzle-kit generate --custom --name=extensiones`).
 - Contenido: `create extension if not exists unaccent;` `create extension if not exists pg_trgm;` función inmutable `f_unaccent(text)` para poder indexar; índices GIN trigram sobre `categorias.nombre`, `terminos_busqueda.termino`, `proveedores.nombre_publico`.
 - `revoke update, delete on auditoria from` los roles de la app (`authenticated`, `anon` y el usuario de `DATABASE_URL`) (regla 3, CU-78).
 - **Aceptación:** `pnpm db:migrate` aplica sin error; `select f_unaccent('Plomería')` devuelve `Plomeria`; un `update auditoria ...` con el usuario de la app falla.
 
-## [ ] 2. P2 Búsqueda `/buscar?q=&localidad=&categoria=`
+## [x] 2. P2 Búsqueda `/buscar?q=&localidad=&categoria=`
+
+> **Hecha (oct 2026)** salvo: falta `GET /api/v1/proveedores` (regla 7, app móvil) y comprobar tolerancia a errores ("plomreo").
+
 
 - Lógica: `apps/web/src/lib/busqueda.ts` → `buscarProveedores({ q, localidad, categoria, pagina })`. Reutilizable por `/api/v1/proveedores` (regla 7).
 - Pasos: normalizar `q` (minúsculas, sin tildes) → resolver categorías por `terminos_busqueda` y `categorias.nombre` (similitud trigram, tolera errores) → filtrar proveedores `aprobado`/`en_revision` (regla 6) → ordenar por **coincidencia → cubre la localidad → `promedio`** (CU-01) → paginar (tamaño en `configuracion`, clave `busqueda.tamano_pagina`).
@@ -26,7 +32,10 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - SEO: `noindex` en resultados con `q` libre; título "Plomeros en Suba" cuando hay categoría + localidad.
 - **Aceptación:** "plomeria", "plomería" y "plomero" dan los mismos resultados; "plomreo" sugiere/encuentra Plomería; proveedores `pausado` no aparecen; con localidad, los que la cubren salen primero.
 
-## [ ] 3. P7 Portafolio `/[slug]` con diseño completo
+## [x] 3. P7 Portafolio `/[slug]` con diseño completo
+
+> **Hecha (oct 2026):** `lib/portafolio-completo.ts`, `components/PerfilProveedor.tsx`, OG por proveedor.
+
 
 - Ya hecho: resolución en `lib/portafolio.ts` (301, no disponible, 404) y metadatos.
 - Falta: extender `obtenerPortafolio` con servicios y precios (`servicios_proveedor`), fotos visibles (`portafolio_fotos` con `estado = visible`), insignias, horario, formas de pago, factura/garantía, años de experiencia, últimas reseñas con respuesta. **Nunca** columnas privadas (regla 1).
@@ -35,7 +44,10 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - Quitar el atajo de `RECOMENDADOS_DEMO` cuando haya proveedores reales en la base.
 - **Aceptación:** un proveedor `aprobado` muestra todo el mockup; `pausado` muestra "no disponible"; `suspendido` da 404; slug viejo redirige 301.
 
-## [ ] 4. P4 Contacto `/api/v1/contactos`
+## [x] 4. P4 Contacto `/api/v1/contactos`
+
+> **Hecha (oct 2026)** en `GET /api/v1/contactos/ir?p=<slug>&origen=`. Pendiente: límite de clics repetidos desde `configuracion`; cookie `anonimo_id` a 1 año (hoy 30 días); el `POST /api/v1/contactos` antiguo no valida estado ni reutiliza la cookie (unificar o borrar); `TarjetaProveedor` aún no apunta al endpoint.
+
 
 - Lógica: `lib/contacto.ts` → `registrarContacto({ proveedorSlug, categoriaId?, localidadId?, origen, sesion?, anonimoId? })` inserta en `contactos` y devuelve el enlace de `enlaceWhatsApp` (`@las3b/shared`).
 - Ruta GET que registra y responde 302 a `wa.me`. Anónimo: cookie `anonimo_id` (uuid, httpOnly, 1 año).
@@ -43,7 +55,10 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - Limitar clics repetidos (mismo visitante + proveedor en N minutos, N en `configuracion`) para no inflar métricas.
 - **Aceptación:** cada clic crea una fila en `contactos` con `origen`; el mensaje de WhatsApp lleva categoría y localidad.
 
-## [ ] 5. P1 Pendientes de cuenta
+## [x] 5. P1 Pendientes de cuenta
+
+> **Hecha (oct 2026):** Resend con respaldo en consola; el proxy exige consentimiento (`/consentimiento`) a usuarios sin él. Pendiente: textos legales definitivos desde Drive.
+
 
 - Proveedor de correo en `lib/correo.ts` (Resend recomendado; variable `RESEND_API_KEY` en `.env.example`). Mantener el log en consola si falta la clave.
 - Primer ingreso con Google: si el usuario no tiene consentimiento vigente, redirigir a una pantalla que pida mayoría de edad + aceptación (regla 5) antes de continuar.
@@ -51,6 +66,9 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - **Aceptación:** registro envía correo real; un usuario Google nuevo no puede navegar sin aceptar.
 
 ## [ ] 6. P3 Alta de proveedor `/proveedores/registro` (3 pasos)
+
+> **Estado (29 oct 2026):** pasos y borrador hechos. Documento cifrado con AES-256-GCM + huella HMAC (`packages/db/src/cifrado.ts`, clave `DOCUMENTOS_CLAVE`, migración `0004_documento_huella`). Carga de documentos hecha (29 oct): URL firmada de un solo uso → subida directa al bucket `privado` → confirmación con tipo real por firma de bytes (`lib/documentos.ts`, `/api/v1/yo/documentos`); paso 3 exige los obligatorios; el panel permite cargar el RUT diferido. Falta OTP real por WhatsApp (hoy en consola) y antivirus.
+
 
 - Mockups `Proveedor_paso1/2/3.dc.html` (móvil; escritorio = misma estructura centrada).
 - Paso 1 datos básicos y segmento (preguntas iniciales → `segmento`); paso 2 qué ofreces (categorías, servicios y precios) y dónde (localidades); paso 3 verificación: OTP por WhatsApp (5 min, 3 intentos, bloqueo 15 min), documento, dirección de notificaciones.
@@ -61,13 +79,19 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 7. Backoffice: acceso y cola de aprobación (B1)
 
+> **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Además: crear usuarios con invitación por correo y QR para el 2FA (29 oct). «Abrir» documento ya usa `/admin/documentos/[id]`: URL firmada (minutos en `configuracion`) y registro en `auditoria` por cada apertura. Sesión del equipo de 8 h, 2FA desde `/ingresar` y códigos de respaldo hechos (29 oct).
+
+
 - Proteger `/admin/*` (middleware o layout de servidor): sesión + rol en `usuario_roles` (`verificador`, `moderador`, `admin`) + 2FA TOTP activo; sesión de 8 h. Ingreso en `/admin/ingresar` (`BO_Ingreso.dc.html`).
 - `/admin` tablero (`BO_Tablero`), `/admin/aprobaciones` cola (`BO_Aprobaciones`), `/admin/proveedores/[id]` revisión con documentos por URL firmada de 5 min y registro en `auditoria` (`BO_Revision`), `/admin/proveedores/nuevo` alta asistida (`BO_NuevoProveedor`).
 - Toda decisión (aprobar, rechazar con motivo, pedir corrección, insignias) inserta en `auditoria`.
 - Motivos de rechazo y sub-roles son **Propuesta** pendiente de Andrés: hacerlos configurables.
 - **Aceptación:** sin 2FA no entra; aprobar cambia el estado a `aprobado`, fija `aprobado_en` y el perfil aparece en búsqueda.
 
-## [ ] 8. Páginas legales `/terminos`, `/privacidad`, `/reclamos`
+## [x] 8. Páginas legales `/terminos`, `/privacidad`, `/reclamos`
+
+> **Hecha (oct 2026):** además `/cookies`, `/terminos-proveedores`, `/resenas`, `/retiro-de-contenido`, `/reportar`. Pendiente: textos definitivos de Drive.
+
 
 - Textos de Drive (carpeta "Textos legales"), versión vigente desde `politicas`. Ver `docs/04-legal.md`.
 - `/reclamos`: formulario público que crea fila en `reclamos` con `fecha_limite` en días hábiles (usar `festivos`, plazos en `configuracion`, CU-92).

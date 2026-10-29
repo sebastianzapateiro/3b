@@ -1,6 +1,6 @@
 /** P3 / B1 / B2 · Proveedores, portafolio, documentos privados e insignias. */
 import {
-  boolean, date, integer, jsonb, numeric, pgEnum, pgTable, primaryKey, real, serial, text, timestamp, uuid,
+  boolean, date, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey, real, serial, text, timestamp, uuid,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { categorias, localidades } from "./catalogo";
@@ -37,7 +37,8 @@ export const proveedores = pgTable("proveedores", {
   formasPago: text().array(),
   // Privados (RF-10: nunca en el perfil público)
   tipoDocumento: tipoDocumentoEnum(),
-  documentoCifrado: text(),
+  documentoCifrado: text(), // AES-256-GCM, ver src/cifrado.ts
+  documentoHuella: text(), // HMAC del documento: detectar duplicados sin descifrar
   direccionNotificaciones: text(),
   fechaNacimiento: date(),
   rutFechaLimite: date(),
@@ -48,7 +49,7 @@ export const proveedores = pgTable("proveedores", {
   aprobadoEn: timestamp({ withTimezone: true }),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-});
+}, (t) => [index("proveedores_documento_huella_idx").on(t.documentoHuella)]);
 
 export const proveedorCategorias = pgTable(
   "proveedor_categorias",

@@ -1,6 +1,6 @@
 /**
  * P1 pendientes · Guarda los consentimientos del usuario (RF-19, Ley 1581).
- * Se llama desde /cuenta/consentimiento tras marcar las casillas.
+ * Se llama desde /consentimiento tras marcar las casillas.
  */
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";

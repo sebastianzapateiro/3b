@@ -5,7 +5,7 @@
 **Monolito modular** en Next.js (App Router + TypeScript) dentro de un **monorepo pnpm + Turborepo**. La web, el backoffice (`/admin`) y la API (`/api/v1`) son una sola app desplegable. La app móvil (Expo, fase 2) consume solo la API.
 
 ```
-apps/web          Next.js: sitio público PWA, /admin, /api/v1, /api/auth
+apps/web          Next.js 16: sitio público PWA, /panel, /admin, /api/v1, /api/auth
 apps/mobile       Expo (fase 2)
 packages/db       Drizzle ORM: esquema, migraciones, semillas
 packages/shared   Marca, localidades, reglas de slug, WhatsApp, validaciones zod
@@ -34,6 +34,15 @@ Conjunto de roles por usuario (`usuario_roles`): `comprador`, `proveedor`, `veri
 - Vincular Google a una cuenta existente solo si ambos correos están verificados.
 - Captcha tras 3 fallos; bloqueo y aviso tras 5 fallos en 15 min.
 
+**Implementado (29 oct 2026):**
+- `src/proxy.ts` (convención de Next 16, runtime Node.js) exige sesión en `/admin`, `/cuenta`, `/panel` y `/proveedores`, y manda a `/consentimiento` a quien no tenga consentimiento vigente (Google, invitados).
+- Backoffice: `lib/verificacion.ts` exige rol `verificador`/`moderador`/`admin`. El 2FA es obligatorio siempre para `admin`; para verificador y moderador lo decide un admin en `/admin/usuarios` → «Segundo factor por rol» (`configuracion`: `exige_2fa_verificador`, `exige_2fa_moderador`; activado si no hay valor). Con varios roles se exige si alguno lo exige. Cada cambio queda en `auditoria`. Ingreso en `/admin/ingresar`; la primera vez muestra un QR (clave manual como respaldo) y códigos de respaldo.
+- El admin crea cuentas en `/admin/usuarios`: la cuenta nace sin clave y recibe un enlace de invitación a `/nueva-clave` (vigencia en `configuracion`, `invitacion_vigencia_h`). El primer admin se crea con `pnpm admin:crear`.
+- Límite de peticiones de Better Auth: 30 por minuto.
+- Sesión del equipo: `lib/verificacion.ts` cierra la sesión si pasaron más de `sesion_backoffice_h` horas (8) desde el ingreso y manda a `/admin/ingresar?vencida=1`. «Confiar en este equipo» dura 8 h (`trustDeviceMaxAge`).
+- 2FA al ingresar: `/ingreso` y `/admin/ingresar` comparten `components/SegundoFactor.tsx` (código TOTP o código de respaldo de un solo uso).
+- **Pendiente:** OTP real por WhatsApp (hoy en consola), captcha, Apple.
+
 ## Datos
 
 PostgreSQL en Supabase con búsqueda full-text en español. Esquema en `packages/db/src/schema/`:
@@ -46,7 +55,13 @@ PostgreSQL en Supabase con búsqueda full-text en español. Esquema en `packages
 | `contacto.ts` | contactos, servicios, resenas, respuestas_resena, reportes, acciones_moderacion |
 | `cumplimiento.ts` | politicas, consentimientos, reclamos, solicitudes_datos, auditoria, festivos, configuracion |
 
-Decisiones: una reseña por contacto · documento cifrado y archivos en bucket privado · promedios en caché en `proveedores` · consentimientos apuntan a la versión exacta de la política.
+Decisiones: una reseña por contacto · documento cifrado y archivos en bucket privado · promedios en caché en `proveedores` · consentimientos apuntan a la versión exacta de la política · `auditoria` de solo inserción (disparador que rechaza UPDATE, DELETE y TRUNCATE).
+
+### Datos privados
+
+- **Número de documento:** cifrado en la aplicación con AES-256-GCM (`packages/db/src/cifrado.ts`), formato `v1:<iv>:<cifrado>`. La clave `DOCUMENTOS_CLAVE` vive solo en variables de entorno; la base nunca la ve. `documento_huella` (HMAC-SHA256) permite detectar duplicados sin descifrar. Solo se descifra para la entrega de datos del art. 53 (auditada).
+- **Archivos:** Supabase Storage. `privado` (JPG, PNG, HEIC, PDF; 10 MB; sin políticas, solo el servidor con la service role key; lectura por URL firmada de 5 min auditada) y `publico` (JPG, PNG, WebP; 5 MB; fotos tras moderación). Subida: el servidor firma una URL de un solo uso con nombre aleatorio, el navegador sube directo (Vercel no admite cuerpos de más de 4,5 MB) y el servidor confirma el tipo real por la firma de bytes antes de registrarlo; si no cumple, lo borra. Requisitos por segmento y categoría en `documentosExigidos` (`lib/documentos.ts`), única fuente para alta, panel y backoffice. Pendiente: antivirus.
+- **Pendiente de decidir:** cifrar también dirección de notificaciones y fecha de nacimiento.
 
 ## Infraestructura (MVP)
 

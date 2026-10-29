@@ -1,14 +1,8 @@
+import { CargaDocumento } from "@/components/CargaDocumento";
+import { estadoDocumentos } from "@/lib/documentos";
 import { exigirProveedor, verificacionDelProveedor } from "@/lib/panel";
 
-/** P8 · Estado de la verificación: documentos e insignias (CU-30). Mockup: docs/mockups/Panel_proveedor.md. */
-const DOCS: Record<string, string> = {
-  documento_frente: "Cédula · frente",
-  documento_reverso: "Cédula · reverso",
-  rut: "RUT",
-  camara_comercio: "Cámara de comercio",
-  matricula: "Matrícula o certificación",
-  autorizacion_ley_1918: "Autorización Ley 1918 (menores)",
-};
+/** P8 · Estado de la verificación: documentos e insignias (CU-30). Carga de documentos privados (regla 2). Mockup: docs/mockups/Panel_proveedor.md. */
 const INSIGNIAS = [
   { clave: "verificado", nombre: "Verificado", como: "Se otorga cuando el equipo aprueba tu perfil." },
   { clave: "formalizado", nombre: "Formalizado", como: "Se otorga cuando tu RUT está verificado." },
@@ -19,7 +13,7 @@ const fecha = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("es-C
 
 export default async function Verificacion() {
   const { proveedor: p } = await exigirProveedor();
-  const v = await verificacionDelProveedor(p.id);
+  const [v, docs] = await Promise.all([verificacionDelProveedor(p.id), estadoDocumentos(p.id)]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -40,19 +34,16 @@ export default async function Verificacion() {
 
       <section className="flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6">
         <h2 className="font-display text-2xl font-bold">Documentos</h2>
-        <ul className="flex flex-col">
-          {Object.entries(DOCS).map(([tipo, texto]) => {
-            const cargado = v.documentos.includes(tipo);
-            return (
-              <li key={tipo} className="flex items-center justify-between gap-2 border-t border-borde-suave py-3 first:border-0">
-                <span className="text-[15px]">{texto}</span>
-                <span className={`text-sm font-semibold ${cargado ? "text-verde-oscuro" : "text-gris"}`}>{cargado ? "Cargado" : "Sin cargar"}</span>
-              </li>
-            );
-          })}
-        </ul>
+        {p.rutFechaLimite && !docs.lista.find((d) => d.tipo === "rut")?.cargado && (
+          <p className="rounded-[14px] bg-amarillo-suave px-4 py-3 text-sm font-semibold text-amarillo-oscuro">Carga tu RUT antes del {fecha(p.rutFechaLimite)} para que tu página siga publicada.</p>
+        )}
+        <div className="flex flex-col gap-2.5">
+          {docs.lista.map((d) => (
+            <CargaDocumento key={d.tipo} doc={d} />
+          ))}
+        </div>
         <p className="rounded-[14px] bg-piedra p-4 text-sm leading-normal text-tinta-2">
-          Tus documentos son privados: solo los ve el equipo de verificación y cada apertura queda registrada. La carga desde este panel se habilita cuando se conecte el almacenamiento privado; mientras tanto, el equipo te los pide al revisar tu perfil.
+          Tus documentos son privados: solo los ve el equipo de verificación y cada apertura queda registrada. Si cambias uno, el nuevo reemplaza al anterior.
         </p>
       </section>
     </div>

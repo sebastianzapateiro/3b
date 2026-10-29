@@ -39,3 +39,17 @@ html {
   outline: 3px solid var(--color-amarillo);
   outline-offset: 2px;
 }
+
+/* Tailwind 4 deja los botones con cursor por defecto: mano en todo lo que se puede pulsar. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label:has(> input[type="checkbox"], > input[type="radio"]),
+  select {
+    cursor: pointer;
+  }
+  :disabled {
+    cursor: not-allowed;
+  }
+}

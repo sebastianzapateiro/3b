@@ -1,9 +1,10 @@
-/** A0 · Qué roles tiene la persona con sesión (para el menú de usuario). No expone datos personales. */
+/** A0 · Qué roles tiene la persona con sesión (menú de usuario e ingreso al backoffice). No expone datos personales. */
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { auth } from "@/lib/auth";
+import { rolesExigen2fa } from "@/lib/verificacion";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +18,7 @@ export async function GET() {
   return NextResponse.json({
     proveedor: Boolean(p) || roles.includes("proveedor"),
     backoffice: roles.some((r) => ["verificador", "moderador", "admin"].includes(r)),
+    // Si sus roles exigen segundo factor (admin siempre; verificador y moderador según el backoffice).
+    exige2fa: await rolesExigen2fa(roles),
   });
 }

@@ -1,3 +1,4 @@
+/** Proxy (Next 16, runtime Node.js): sesión y consentimiento vigente en zonas privadas (RF-19). Edge no sirve: el driver `postgres` necesita TCP. */
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
@@ -15,7 +16,7 @@ const RUTAS_PUBLICAS = [
   "/admin/ingresar",
   "/recuperar",
   "/nueva-clave",
-  "/cuenta/consentimiento",
+  "/consentimiento",
   "/api",
   "/_next",
   "/iconos",
@@ -49,7 +50,7 @@ function redireccionPermanente(url: URL): URL | null {
   return nuevo ? new URL(`/servicios/${nuevo}${resto}`, url) : null;
 }
 
-export async function middleware(request: Request) {
+export async function proxy(request: Request) {
   const url = new URL(request.url);
   const { pathname } = url;
   // Un solo ingreso: las rutas anteriores de ingreso y registro pasan a /ingreso (301).
@@ -90,7 +91,7 @@ export async function middleware(request: Request) {
 
     if (!tieneConsentimiento[0]) {
       return NextResponse.redirect(
-        new URL("/cuenta/consentimiento", request.url)
+        new URL("/consentimiento", request.url)
       );
     }
   }
