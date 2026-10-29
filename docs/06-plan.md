@@ -67,7 +67,7 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 6. P3 Alta de proveedor `/proveedores/registro` (3 pasos)
 
-> **Estado (29 oct 2026):** pasos y borrador hechos. **Falla de seguridad:** `documento_cifrado` se guarda en texto plano (`registro/actions.ts`). Falta subida de archivos al bucket `privado` con validación de tipo real, y OTP real por WhatsApp (hoy en consola).
+> **Estado (29 oct 2026):** pasos y borrador hechos. Documento cifrado con AES-256-GCM + huella HMAC (`packages/db/src/cifrado.ts`, clave `DOCUMENTOS_CLAVE`, migración `0004_documento_huella`). Falta subida de archivos al bucket `privado` con validación de tipo real, y OTP real por WhatsApp (hoy en consola).
 
 
 - Mockups `Proveedor_paso1/2/3.dc.html` (móvil; escritorio = misma estructura centrada).

@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { slugSchema } from "@las3b/shared";
-import { db, schema } from "@las3b/db";
+import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
 import { enviarCorreo } from "@/lib/correo";
@@ -142,7 +142,7 @@ export async function crearProveedorAsistido(formData: FormData) {
       whatsapp: d.whatsapp,
       emiteFactura: d.factura === "si",
       tipoDocumento: d.tipoDocumento,
-      documentoCifrado: d.documento,
+      ...protegerDocumento(d.documento),
       direccionNotificaciones: d.direccion,
       fechaNacimiento: d.fechaNacimiento || null,
     })

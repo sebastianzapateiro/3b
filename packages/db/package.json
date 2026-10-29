@@ -13,7 +13,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts",
-    "admin:crear": "tsx src/admin-crear.ts"
+    "admin:crear": "tsx src/admin-crear.ts",
+    "db:cifrar-documentos": "tsx src/cifrar-documentos.ts"
   },
   "dependencies": {
     "@las3b/shared": "workspace:*",

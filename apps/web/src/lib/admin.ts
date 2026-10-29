@@ -265,7 +265,7 @@ export async function obtenerRevision(id: string) {
     rutFechaLimite: p.rutFechaLimite,
     creado: p.createdAt,
     tipoDocumento: p.tipoDocumento,
-    // El documento está cifrado: solo se muestra una máscara; la lectura completa se audita aparte.
+    // El documento está cifrado (AES-256-GCM): solo se muestra una máscara; la lectura completa se audita aparte.
     documentoMascara: doc ? "••••••••" : "—",
     fechaNacimiento: nacimiento ? nacimiento.toLocaleDateString("es-CO", { timeZone: "UTC" }) : null,
     mayorDeEdad: edad !== null ? edad >= 18 : null,

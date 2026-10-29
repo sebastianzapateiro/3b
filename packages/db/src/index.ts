@@ -14,4 +14,5 @@ const client = postgres(url ?? "postgres://localhost:5432/las3b", { prepare: fal
 
 export const db = drizzle(client, { schema, casing: "snake_case" });
 export { schema };
+export { cifrar, descifrar, estaCifrado, huella, protegerDocumento } from "./cifrado";
 export type DB = typeof db;

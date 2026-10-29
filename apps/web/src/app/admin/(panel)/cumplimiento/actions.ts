@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { db, schema } from "@las3b/db";
+import { db, descifrar, estaCifrado, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { enviarCorreo } from "@/lib/correo";
 import { exigirBackoffice } from "@/lib/verificacion";
@@ -14,6 +14,12 @@ const { reclamos, solicitudesDatos, proveedores, user, politicas } = schema;
 const ruta = "/admin/cumplimiento";
 const volver = (params: Record<string, string>): never => redirect(`${ruta}?${new URLSearchParams(params)}`);
 const id = z.string().uuid();
+
+/** El documento se guarda cifrado; los registros anteriores al cifrado pueden seguir en claro hasta migrarlos. */
+function documentoLegible(valor: string | null) {
+  if (!valor) return null;
+  return estaCifrado(valor) ? descifrar(valor) : valor;
+}
 
 /** Art. 53 de la Ley 1480: entrega al comprador los datos de identificación y contacto del proveedor. */
 export async function entregarDatos(formData: FormData) {
@@ -33,7 +39,7 @@ export async function entregarDatos(formData: FormData) {
       "Como pediste en tu reclamo, estos son los datos de identificación y contacto del proveedor (art. 53, Ley 1480 de 2011):",
       `- Nombre o razón social: ${u?.nombre ?? p.nombrePublico}`,
       `- Nombre público: ${p.nombrePublico}`,
-      `- Documento: ${p.tipoDocumento?.toUpperCase() ?? ""} ${p.documentoCifrado ?? "no registrado"}`,
+      `- Documento: ${p.tipoDocumento?.toUpperCase() ?? ""} ${documentoLegible(p.documentoCifrado) ?? "no registrado"}`,
       `- Dirección de notificaciones: ${p.direccionNotificaciones ?? "no registrada"}`,
       `- Teléfono / WhatsApp: ${p.whatsapp}`,
       "",

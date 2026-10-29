@@ -8,7 +8,7 @@
 import { auth } from "@/lib/auth";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { headers } from "next/headers";
-import { db, schema } from "@las3b/db";
+import { db, protegerDocumento, schema } from "@las3b/db";
 import { slugSchema } from "@las3b/shared";
 import { redirect } from "next/navigation";
 import { and, eq, inArray } from "drizzle-orm";
@@ -270,7 +270,7 @@ export async function guardarPaso3(formData: FormData) {
       estado: "pendiente",
       segmento: prov?.segmento as any,
       tipoDocumento: tipoDocumento as any,
-      documentoCifrado: documento,
+      ...protegerDocumento(documento),
       direccionNotificaciones,
       fechaNacimiento: new Date(fechaNacimiento).toISOString(),
       rutFechaLimite,

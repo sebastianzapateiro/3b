@@ -14,6 +14,7 @@
     "db:migrate": "pnpm --filter @las3b/db db:migrate",
     "db:seed": "pnpm --filter @las3b/db db:seed",
     "admin:crear": "pnpm --filter @las3b/db admin:crear",
+    "db:cifrar-documentos": "pnpm --filter @las3b/db db:cifrar-documentos",
     "db:studio": "pnpm --filter @las3b/db db:studio"
   },
   "pnpm": {
