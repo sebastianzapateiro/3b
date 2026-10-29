@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { MARCA } from "@las3b/shared";
 import { Analitica } from "@/components/Analitica";
@@ -59,6 +60,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh bg-crema font-sans text-tinta antialiased">
         <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
         <Analitica />
+        {/* Vercel Web Analytics: sin cookies, solo envía datos en despliegues de Vercel (no en local). */}
+        <Analytics />
       </body>
     </html>
   );
