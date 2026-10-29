@@ -91,6 +91,15 @@ pnpm db:studio
 - P1 cuenta: `/ingresar`, `/registro` (mayoría de edad + consentimiento con versión/IP), `/recuperar`, `/nueva-clave`.
 - Mockups del backoffice (BO_*) agregados en `docs/mockups/`.
 
+**Hecho (hasta 29 oct 2026)**
+- Migraciones `0002_bright_luke_cage` y `0003_auditoria_solo_insercion` (disparador: `auditoria` solo inserción). `0002_busqueda.sql` está suelta, fuera del journal.
+- P2 `/buscar`, P7 `/[slug]` con diseño completo, P4 `/api/v1/contactos/ir`, P1 con Resend y consentimiento obligatorio para Google.
+- P3 alta de proveedor en 3 pasos con borrador; panel del proveedor (`/panel`).
+- Backoffice B1–B8: aprobaciones, revisión, alta asistida, moderación, usuarios y roles, catálogo, cumplimiento, auditoría, parámetros.
+- Legales, `/reclamos`, `/reportar`; SEO por oficio y localidad (`/servicios/[sub]/[localidad]`, `/categorias`, `/guias`).
+
+**Deuda abierta (ver plan):** documento sin cifrar y sin archivos privados en el alta (reglas 1 y 2), `GET /api/v1/proveedores`, límites de contacto.
+
 **Siguiente:** ver [`docs/06-plan.md`](docs/06-plan.md).
 
 **Diseño de referencia:** `docs/mockups/` (índice y rutas en `docs/mockups/README.md`). Implementa cada pantalla siguiendo su mockup: layout, copia, colores y tamaños. Faltan login y alta de proveedor en escritorio (usar los móviles como base). Logos vectoriales en `~/Descargas/logos-Las3B_banco-de-imagenes/svg` (fuera del repo).
