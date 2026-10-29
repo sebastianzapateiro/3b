@@ -18,14 +18,20 @@ const PANEL: Record<ColorPanel, { fondo: string; pastilla: string; claro: boolea
 function Paso({ paso, n, id }: { paso: PasoComo; n: number; id?: string }) {
   const p = PANEL[paso.panel];
   return (
-    <li id={id} className="flex scroll-mt-24 flex-col overflow-hidden rounded-[30px] border border-borde bg-white sm:min-h-[300px] sm:flex-row">
-      <div className={`flex flex-none items-center justify-center px-6 py-7 sm:w-[320px] ${p.fondo}`}>
+    <li id={id} className="flex scroll-mt-24 flex-col overflow-hidden rounded-[30px] border border-borde bg-white sm:min-h-[280px] sm:flex-row-reverse">
+      <div className={`flex flex-none items-center justify-center px-2.5 py-4 sm:w-[360px] sm:px-3 ${p.fondo}`}>
         <Pantallazo icono={paso.icono} sobreClaro={p.claro} />
       </div>
-      <div className="flex flex-1 flex-col justify-center gap-3 px-6 py-6 sm:px-9 sm:py-8">
-        <span className={`inline-flex h-9 w-fit items-center rounded-full px-4 text-[15px] font-extrabold uppercase tracking-[.14em] ${p.pastilla}`}>Paso {n}</span>
-        <h3 className="font-display text-2xl font-extrabold leading-tight tracking-[-0.03em] sm:text-[30px]">{paso.titulo}</h3>
-        <p className="text-base leading-normal text-tinta-2 sm:text-[17px]">{paso.texto}</p>
+      <div className="flex flex-1 items-center gap-4 px-5 py-6 sm:gap-6 sm:px-8 sm:py-8">
+        {/* Bola con el número del paso, a la izquierda. */}
+        <span aria-label={`Paso ${n}`} className={`flex size-[76px] flex-none flex-col items-center justify-center rounded-full leading-none sm:size-[96px] ${p.pastilla}`}>
+          <span aria-hidden="true" className="text-[11px] font-bold uppercase tracking-[.14em] sm:text-xs">Paso</span>
+          <span aria-hidden="true" className="font-display text-[34px] font-extrabold sm:text-[46px]">{n}</span>
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col gap-2.5">
+          <h3 className="font-display text-2xl font-extrabold leading-tight tracking-[-0.03em] sm:text-[28px]">{paso.titulo}</h3>
+          <p className="text-base leading-normal text-tinta-2 sm:text-[17px]">{paso.texto}</p>
+        </div>
       </div>
     </li>
   );
