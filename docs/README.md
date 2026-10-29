@@ -1,4 +1,4 @@
-# Documentación de Las 3B
+# Documentación de LasTresB
 
 Resúmenes para desarrollo. La fuente de verdad es la carpeta del proyecto en Google Drive; si algo no coincide, manda el Drive.
 
@@ -10,9 +10,11 @@ Resúmenes para desarrollo. La fuente de verdad es la carpeta del proyecto en Go
 | [03-arquitectura.md](03-arquitectura.md) | Módulos, roles, autenticación, modelo de datos, infraestructura | 03_Arquitectura y 02_Diagramas |
 | [04-legal.md](04-legal.md) | Obligaciones legales que afectan el producto | 00_Vision y Textos legales |
 | [05-marca.md](05-marca.md) | Identidad Las 3B y mockups | Banco de logos + lienzo de mockups |
-| [06-plan.md](06-plan.md) | Backlog ordenado con criterios de aceptación | Estado del sistema y decisiones |
+| [06-plan.md](06-plan.md) | Backlog ordenado con criterios de aceptación y estado de cada tarea | LasTresB — Estado del sistema y decisiones (v0.2) |
 | [mockups/](mockups/README.md) | Pantallas de referencia y su ruta en la app | Lienzo "Las 3B — Mockups v0.3" |
 
 Carpeta raíz del Drive: https://drive.google.com/drive/folders/1EU7gtl4B9jtJ7yu1SEiN-hTW-npKefhA
 
-> Los documentos del Drive todavía dicen "BBB Bogotá" y `bbbbogota.com`. El nombre vigente es **Las 3B** y el dominio **lastresb.com.co**.
+> Los documentos del Drive todavía dicen "BBB Bogotá" y `bbbbogota.com`. El nombre vigente es **LasTresB** (antes «Las 3B») y el dominio **lastresb.com.co**.
+>
+> El estado al día está en el doc **«LasTresB — Estado del sistema y decisiones v0.2 (29 oct 2026)»** en la raíz del Drive; la v0.1 queda como histórico.

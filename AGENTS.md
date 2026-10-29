@@ -29,76 +29,91 @@ Fuente de verdad del negocio: Drive del proyecto (enlace en `docs/README.md`). E
 - `apps/web`: **Next.js 16** (App Router, TypeScript, Tailwind 4, alias `@/*` → `src/*`). Público + `/admin` + `/api/v1` + `/api/auth`.
 - `packages/db`: **Drizzle ORM** sobre Postgres en **Supabase**, `casing: "snake_case"`, driver `postgres` con `prepare: false`. Migraciones en `packages/db/drizzle/`.
 - Auth: **Better Auth** (correo + clave, Google, 2FA TOTP para backoffice). Config: `apps/web/src/lib/auth.ts`, cliente en `lib/auth-client.ts`.
-- `packages/shared`: marca, localidades, `slugSchema`, `enlaceWhatsApp`. Lo usarán web y Expo.
+- `packages/shared`: marca, localidades, categorías, `slugSchema`, `enlaceWhatsApp`, `PARAMETROS`, días hábiles. Lo usarán web y Expo (sin dependencias de Node).
+- Storage: **Supabase Storage**, buckets `privado` (documentos, sin políticas: solo el servidor con service role) y `publico` (fotos). Probados el 29 oct 2026.
+- Cifrado: `packages/db/src/cifrado.ts` (AES-256-GCM + huella HMAC, clave `DOCUMENTOS_CLAVE`). Solo servidor.
 - `apps/mobile`: reservado para Expo (fase 2). **No crear todavía.**
 
 ## Mapa del código
 
 ```
-apps/web/src/app/
-  page.tsx                 Home (buscador por localidad)
-  (cuenta)/                /ingresar, /registro, /recuperar, /nueva-clave
-  [slug]/page.tsx          Portafolio público
-  admin/page.tsx           Backoffice (sin proteger aún)
-  api/auth/[...all]        Handler de Better Auth
-  api/v1/health            Salud de la API
-  robots.ts, sitemap.ts, opengraph-image.tsx, manifest.ts, iconos/
-apps/web/src/lib/
-  auth.ts                  Config Better Auth
-  portafolio.ts            obtenerPortafolio(slug): resolución pública por slug
-  consentimientos.ts       Registro de consentimientos (versión, fecha, IP)
-  correo.ts                enviarCorreo(): hoy imprime en consola
-  seo.ts, og.tsx           JSON-LD y plantilla de imágenes OG
-  demo.ts                  Recomendados de ejemplo (temporal, home)
-  destino.ts               Redirección segura tras ingresar
-apps/web/src/components/   Logo, TarjetaProveedor, cuenta (formularios), JsonLd, Analitica
-packages/db/src/schema/    auth, catalogo, proveedores, contacto, cumplimiento
-packages/db/src/seed.ts    Localidades, insignias, taxonomía y sinónimos
-packages/shared/src/       marca, localidades, slug, whatsapp
+apps/web/src/
+  proxy.ts                 Sesión + consentimiento en zonas privadas (Next 16 «proxy», runtime Node.js)
+  app/
+    page.tsx               Home
+    (cuenta)/              /ingresar, /registro, /recuperar, /nueva-clave (también invitaciones)
+    consentimiento/        Aceptación obligatoria para quien no tiene consentimiento vigente (Google, invitados)
+    cuenta/                Mi cuenta, actividad, privacidad
+    buscar/                P2 resultados
+    [slug]/                P7 portafolio, calificar (P5), OG por proveedor
+    servicios/, categorias/, localidades/, guias/   Páginas SEO por oficio y localidad
+    proveedores/registro/  P3 alta en 3 pasos (borrador → pendiente)
+    panel/                 Panel del proveedor: perfil, servicios, reseñas, verificación
+    reclamos/, reportar/   Formularios públicos (CU-10/11, reportes)
+    terminos/, terminos-proveedores/, privacidad/, cookies/, resenas/, retiro-de-contenido/   Legales
+    admin/ingresar/        Ingreso del equipo: clave + 2FA (QR la primera vez)
+    admin/(panel)/         B1–B8: tablero, aprobaciones, proveedores/[id], proveedores/nuevo, moderacion,
+                           usuarios (crear, roles, suspender), catalogo, cumplimiento, auditoria
+    api/auth/[...all]      Better Auth
+    api/v1/                health, yo, contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
+  lib/                     Lógica de negocio (regla 7): busqueda, portafolio(-completo), resenas, panel, admin,
+                           moderacion, cumplimiento, auditoria(-consulta), parametros, verificacion (guardia backoffice),
+                           consentimientos, correo (Resend o consola), seo, seo-servicios, publicacion, guias, faqs
+  components/              UI pública; components/admin/ para el backoffice
+packages/db/src/
+  schema/                  auth, catalogo, proveedores, contacto, cumplimiento
+  cifrado.ts               cifrar, descifrar, huella, protegerDocumento
+  seed.ts                  Localidades, insignias, taxonomía y sinónimos
+  admin-crear.ts           pnpm admin:crear <correo>
+  cifrar-documentos.ts     pnpm db:cifrar-documentos [--aplicar]
+packages/shared/src/       marca, localidades, categorias, slug, whatsapp, parametros, habiles, politicas, motivos
 docs/                      Visión, requerimientos, casos de uso, arquitectura, legal, marca, plan, mockups
 ```
 
 ## Comandos
 
 ```bash
-pnpm dev                 # web en http://localhost:3000
+pnpm dev                    # web en http://localhost:3000
 pnpm typecheck
-pnpm build
-pnpm db:generate         # nueva migración tras cambiar packages/db/src/schema/*
-pnpm db:migrate          # aplica migraciones a DATABASE_URL
-pnpm db:seed             # localidades, insignias, taxonomía (idempotente)
+pnpm build                  # usa --force si cambiaste variables de entorno (Turborepo cachea el build)
+pnpm db:generate            # nueva migración tras cambiar packages/db/src/schema/*
+pnpm db:migrate             # aplica migraciones a DATABASE_URL
+pnpm db:seed                # localidades, insignias, taxonomía (idempotente)
 pnpm db:studio
+pnpm admin:crear <correo>   # rol admin a una cuenta existente (primer admin)
+pnpm db:cifrar-documentos   # cuenta documentos en texto plano; --aplicar los cifra
 ```
 
 ## Entorno (problemas ya resueltos)
 
-- Variables en **`.env` (raíz)** y **`apps/web/.env.local`**, mismo contenido. Plantilla: `.env.example`. Nunca leas ni copies valores reales de `.env` o `vercel.txt` a otros archivos, commits o mensajes.
+- Variables en **`.env` (raíz)** y **`apps/web/.env.local`**, mismo contenido. Plantilla: `.env.example` (solo nombres, **nunca valores reales**). Nunca leas ni copies valores reales de `.env` o `vercel.txt` a otros archivos, commits o mensajes. Next solo lee `apps/web/.env.local`; los scripts de `packages/db` leen el `.env` de la raíz.
+- Variables nuevas: declararlas también en `globalEnv` de `turbo.json`.
 - `DATABASE_URL` debe ser el **Session pooler** de Supabase (`postgres.<id>@aws-X-<region>.pooler.supabase.com:5432`). La conexión directa `db.<id>.supabase.co` es solo IPv6 y falla con `EHOSTUNREACH`. En Vercel se usa el Transaction pooler (puerto 6543).
 - Claves con símbolos deben ir codificadas en la URL.
-- `drizzle-kit migrate` no muestra errores de conexión; probar con el comando `node --env-file` del README.
+- `drizzle-kit migrate` no muestra errores de conexión; los avisos `NOTICE ... already exists, skipping` son normales.
 - `next/font/google` necesita internet en el build.
-- Sin proveedor de correo: los enlaces de verificación y recuperación salen en la consola de `pnpm dev`.
+- Sin `RESEND_API_KEY`: los enlaces de verificación, recuperación e invitación salen en la consola de `pnpm dev`.
+- **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver `postgres` no conecta («Failed to get session»).
+- Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».
 
 ## Estado
 
-**Hecho (27 oct 2026)**
-- Monorepo, typecheck y build de la web OK.
-- Esquema completo (~40 tablas); migraciones `0000_inicial` y `0001_two_factor_bloqueo` **aplicadas en Supabase**.
-- Semillas: 20 localidades, 4 insignias, 4 categorías padre + 26 subcategorías con sinónimos (`terminos_busqueda`).
-- Home completa según mockups web y móvil, con recomendados de ejemplo (`lib/demo.ts`).
-- SEO base: metadatos, Open Graph/X, `robots.ts`, `sitemap.ts`, JSON-LD, íconos PNG, GA4. Solo se indexa y mide con `VERCEL_ENV=production`.
-- `/[slug]` resuelve en base: 301 desde slugs anteriores, "no disponible" si pausado, 404 si no publicado. Falta el diseño del mockup.
-- P1 cuenta: `/ingresar`, `/registro` (mayoría de edad + consentimiento con versión/IP), `/recuperar`, `/nueva-clave`.
-- Mockups del backoffice (BO_*) agregados en `docs/mockups/`.
-
 **Hecho (hasta 29 oct 2026)**
-- Migraciones `0002_bright_luke_cage` y `0003_auditoria_solo_insercion` (disparador: `auditoria` solo inserción). `0002_busqueda.sql` está suelta, fuera del journal.
-- P2 `/buscar`, P7 `/[slug]` con diseño completo, P4 `/api/v1/contactos/ir`, P1 con Resend y consentimiento obligatorio para Google.
-- P3 alta de proveedor en 3 pasos con borrador; panel del proveedor (`/panel`).
-- Backoffice B1–B8: aprobaciones, revisión, alta asistida, moderación, usuarios y roles, catálogo, cumplimiento, auditoría, parámetros.
-- Legales, `/reclamos`, `/reportar`; SEO por oficio y localidad (`/servicios/[sub]/[localidad]`, `/categorias`, `/guias`).
+- Esquema completo (~40 tablas). Migraciones aplicadas en Supabase: `0000_inicial`, `0001_two_factor_bloqueo`, `0002_bright_luke_cage`, `0003_auditoria_solo_insercion` (disparador), `0004_documento_huella`. `0002_busqueda.sql` está suelta, fuera del journal (no se aplica).
+- Semillas: 20 localidades, insignias, taxonomía por oficios con sinónimos, festivos de Colombia.
+- Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
+- Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
+- Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella.
+- Backoffice B1–B8 con rol + 2FA (QR al configurar), creación de usuarios con invitación por correo, auditoría de solo inserción, parámetros en `configuracion`.
+- UI: cursor de mano global en elementos pulsables (`globals.css`).
 
-**Deuda abierta (ver plan):** documento sin cifrar y sin archivos privados en el alta (reglas 1 y 2), `GET /api/v1/proveedores`, límites de contacto.
+**Deuda abierta (ver plan):**
+- Subida de archivos al bucket `privado` y «Abrir documento» con URL firmada de 5 min (regla 2). Buckets ya creados.
+- OTP real por WhatsApp (hoy en consola).
+- Sesión de 8 h del backoffice: documentada pero no aplicada (hoy 30 días).
+- `/ingresar` no sabe pedir el código 2FA: una cuenta con 2FA debe entrar por `/admin/ingresar`.
+- `GET /api/v1/proveedores`; límites de clics repetidos en contacto; `POST /api/v1/contactos` antiguo por unificar.
+- Seguridad: una `DATABASE_URL` real quedó en el historial de git (commit `5a12a79`); rotar la clave de la base.
 
 **Siguiente:** ver [`docs/06-plan.md`](docs/06-plan.md).
 

@@ -57,7 +57,7 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [x] 5. P1 Pendientes de cuenta
 
-> **Hecha (oct 2026):** Resend con respaldo en consola; el middleware exige consentimiento (`/cuenta/consentimiento`) a usuarios sin él. Pendiente: textos legales definitivos desde Drive.
+> **Hecha (oct 2026):** Resend con respaldo en consola; el proxy exige consentimiento (`/consentimiento`) a usuarios sin él. Pendiente: textos legales definitivos desde Drive.
 
 
 - Proveedor de correo en `lib/correo.ts` (Resend recomendado; variable `RESEND_API_KEY` en `.env.example`). Mantener el log en consola si falta la clave.
@@ -67,7 +67,7 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 6. P3 Alta de proveedor `/proveedores/registro` (3 pasos)
 
-> **Estado (29 oct 2026):** pasos y borrador hechos. Documento cifrado con AES-256-GCM + huella HMAC (`packages/db/src/cifrado.ts`, clave `DOCUMENTOS_CLAVE`, migración `0004_documento_huella`). Falta subida de archivos al bucket `privado` con validación de tipo real, y OTP real por WhatsApp (hoy en consola).
+> **Estado (29 oct 2026):** pasos y borrador hechos. Documento cifrado con AES-256-GCM + huella HMAC (`packages/db/src/cifrado.ts`, clave `DOCUMENTOS_CLAVE`, migración `0004_documento_huella`). Buckets `privado` y `publico` creados y probados en Supabase (29 oct). Falta la subida de archivos al bucket `privado` con validación de tipo real, y OTP real por WhatsApp (hoy en consola).
 
 
 - Mockups `Proveedor_paso1/2/3.dc.html` (móvil; escritorio = misma estructura centrada).
@@ -79,7 +79,7 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 7. Backoffice: acceso y cola de aprobación (B1)
 
-> **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Falta: abrir documentos por URL firmada de 5 min con registro en `auditoria` (regla 2), depende de la tarea 6.
+> **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Además: crear usuarios con invitación por correo y QR para el 2FA (29 oct). Falta: abrir documentos por URL firmada de 5 min con registro en `auditoria` (regla 2), depende de la tarea 6; sesión de 8 h (hoy 30 días); que `/ingresar` pida el código 2FA o redirija a `/admin/ingresar`.
 
 
 - Proteger `/admin/*` (middleware o layout de servidor): sesión + rol en `usuario_roles` (`verificador`, `moderador`, `admin`) + 2FA TOTP activo; sesión de 8 h. Ingreso en `/admin/ingresar` (`BO_Ingreso.dc.html`).
