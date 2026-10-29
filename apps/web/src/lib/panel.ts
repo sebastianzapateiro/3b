@@ -13,7 +13,7 @@ const { proveedores, serviciosProveedor, resenas, respuestasResena, user, provee
 /** Sesión + registro de proveedor. Sin sesión va a ingresar; sin registro, al alta de proveedor. */
 export async function exigirProveedor() {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingresar?${new URLSearchParams({ destino: "/panel" })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: "/panel" })}`);
   const [p] = await db
     .select({
       id: proveedores.id,
@@ -27,6 +27,7 @@ export async function exigirProveedor() {
       ofreceGarantia: proveedores.ofreceGarantia,
       atiendeUrgencias: proveedores.atiendeUrgencias,
       disponible24h: proveedores.disponible24h,
+      visitaAConvenir: proveedores.visitaAConvenir,
       motivoRechazo: proveedores.motivoRechazo,
       rutFechaLimite: proveedores.rutFechaLimite,
       promedio: proveedores.promedio,

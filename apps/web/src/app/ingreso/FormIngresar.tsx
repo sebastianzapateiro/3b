@@ -12,6 +12,7 @@ export function FormIngresar({ destino }: { destino: string }) {
   const [cargando, setCargando] = useState(false);
   // Cuentas con 2FA (equipo del backoffice): tras la clave se pide el código en esta misma pantalla.
   const [pideCodigo, setPideCodigo] = useState(false);
+  const listo = `/ingreso/listo?destino=${encodeURIComponent(destino)}`;
 
   async function ingresar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,7 +23,7 @@ export function FormIngresar({ destino }: { destino: string }) {
       email: String(datos.get("correo")),
       password: String(datos.get("clave")),
       // Better Auth navega aquí al ingresar; también es el destino del enlace si reenvía la verificación.
-      callbackURL: destino,
+      callbackURL: listo,
     });
     if (error) {
       setError(mensajeDeError(error));
@@ -37,7 +38,7 @@ export function FormIngresar({ destino }: { destino: string }) {
   }
 
   function entrar() {
-    router.replace(destino);
+    router.replace(listo);
     router.refresh();
   }
 

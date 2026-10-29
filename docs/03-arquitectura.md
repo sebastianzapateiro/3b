@@ -40,7 +40,7 @@ Conjunto de roles por usuario (`usuario_roles`): `comprador`, `proveedor`, `veri
 - El admin crea cuentas en `/admin/usuarios`: la cuenta nace sin clave y recibe un enlace de invitación a `/nueva-clave` (vigencia en `configuracion`, `invitacion_vigencia_h`). El primer admin se crea con `pnpm admin:crear`.
 - Límite de peticiones de Better Auth: 30 por minuto.
 - Sesión del equipo: `lib/verificacion.ts` cierra la sesión si pasaron más de `sesion_backoffice_h` horas (8) desde el ingreso y manda a `/admin/ingresar?vencida=1`. «Confiar en este equipo» dura 8 h (`trustDeviceMaxAge`).
-- 2FA al ingresar: `/ingresar` y `/admin/ingresar` comparten `components/SegundoFactor.tsx` (código TOTP o código de respaldo de un solo uso).
+- 2FA al ingresar: `/ingreso` y `/admin/ingresar` comparten `components/SegundoFactor.tsx` (código TOTP o código de respaldo de un solo uso).
 - **Pendiente:** OTP real por WhatsApp (hoy en consola), captcha, Apple.
 
 ## Datos

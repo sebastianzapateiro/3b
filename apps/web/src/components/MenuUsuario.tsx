@@ -9,7 +9,7 @@ import { authClient } from "@/lib/auth-client";
 type Roles = { proveedor: boolean; backoffice: boolean };
 
 /** Ingresar o menú de la persona con sesión: Mi cuenta, Panel de proveedor y Cerrar sesión (todo en un solo desplegable). */
-export function MenuUsuario() {
+export function MenuUsuario({ compacto = false }: { compacto?: boolean }) {
   const router = useRouter();
   const { data, isPending } = authClient.useSession();
   const [roles, setRoles] = useState<Roles>({ proveedor: false, backoffice: false });
@@ -26,9 +26,16 @@ export function MenuUsuario() {
   if (isPending) return <span className="h-11 w-24" aria-hidden="true" />;
 
   if (!data?.user) {
+    if (compacto) {
+      return (
+        <Link href="/ingreso" aria-label="Iniciar sesión" className="flex size-11 items-center justify-center rounded-full text-tinta">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>
+        </Link>
+      );
+    }
     return (
-      <Link href="/ingresar" className="flex h-11 items-center rounded-xl border-2 border-tinta px-[18px] text-[15px] font-semibold text-tinta max-sm:border-0 max-sm:px-3">
-        Ingresar
+      <Link href="/ingreso" className="flex h-11 items-center rounded-xl bg-tinta px-5 text-[15px] font-semibold text-white hover:bg-verde-oscuro">
+        Iniciar sesión
       </Link>
     );
   }
@@ -39,12 +46,12 @@ export function MenuUsuario() {
     <Desplegable
       etiqueta="Menú de tu cuenta"
       alinear="derecha"
-      claseBoton="flex h-11 items-center gap-2 rounded-xl border-2 border-tinta pl-1.5 pr-3 text-[15px] font-semibold text-tinta"
+      claseBoton={compacto ? "flex size-11 items-center justify-center rounded-full text-tinta" : "flex h-11 items-center gap-2 rounded-xl border-2 border-tinta pl-1.5 pr-3 text-[15px] font-semibold text-tinta"}
       boton={
         <>
           <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-verde-claro text-[13px] font-bold text-verde-oscuro">{iniciales}</span>
-          <span className="hidden max-w-24 truncate sm:inline">{data.user.name.split(" ")[0]}</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          {!compacto && <span className="hidden max-w-24 truncate md:inline">{data.user.name.split(" ")[0]}</span>}
+          {!compacto && <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>}
         </>
       }
     >

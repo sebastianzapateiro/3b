@@ -9,7 +9,20 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { contieneServicioProhibido } from "@las3b/shared";
 import { db, schema } from "@las3b/db";
+import { headers } from "next/headers";
+import { ipDeLaPeticion } from "@/lib/consentimientos";
 import { destinoSeguro } from "@/lib/destino";
+
+/** Antispam: máximo 5 solicitudes por IP cada hora (en memoria; protege cada instancia del servidor). */
+const ENVIOS = new Map<string, number[]>();
+function demasiadas(ip: string | null) {
+  if (!ip) return false;
+  const ahora = Date.now();
+  const recientes = (ENVIOS.get(ip) ?? []).filter((t) => ahora - t < 3_600_000);
+  recientes.push(ahora);
+  ENVIOS.set(ip, recientes);
+  return recientes.length > 5;
+}
 
 const esquema = z.object({
   oficio: z.string().trim().max(80).optional(),
@@ -28,6 +41,7 @@ export async function registrarSolicitud(formData: FormData) {
   if (!r.success) return volver({ error: "Revisa los datos e intenta de nuevo." });
 
   const d = r.data;
+  if (demasiadas(ipDeLaPeticion(await headers()))) return volver({ error: "Hiciste varias solicitudes seguidas. Intenta de nuevo en un rato." });
   if (!d.oficio && !d.texto) return volver({ error: "Cuéntanos qué servicio buscas." });
 
   const whatsapp = d.whatsapp?.replace(/[^\d+]/g, "") || null;

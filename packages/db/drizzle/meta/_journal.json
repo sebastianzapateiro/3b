@@ -33,8 +33,22 @@
     {
       "idx": 4,
       "version": "7",
-      "when": 1793306050601,
-      "tag": "0004_documento_huella",
+      "when": 1793305132256,
+      "tag": "0004_swift_menace",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793306682695,
+      "tag": "0005_tan_king_cobra",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793309040307,
+      "tag": "0006_documento_huella",
       "breakpoints": true
     }
   ]

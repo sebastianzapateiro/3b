@@ -18,7 +18,7 @@ export default async function Calificar({ params, searchParams }: { params: Prom
   if (!proveedor) notFound();
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingresar?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
 
   const anonimoId = (await cookies()).get("anonimo_id")?.value ?? null;
   const propio = proveedor.usuarioId === session.user.id;

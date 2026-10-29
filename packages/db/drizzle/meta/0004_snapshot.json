@@ -1,5 +1,5 @@
 {
-  "id": "a148c7b0-64f7-4480-9a05-b2fb279c802d",
+  "id": "364c0dcc-b27c-4ec8-8860-d3ce47368751",
   "prevId": "28a99d24-aef0-47d4-a126-7d5d6d79e759",
   "version": "7",
   "dialect": "postgresql",
@@ -1487,12 +1487,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "documento_huella": {
-          "name": "documento_huella",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "direccion_notificaciones": {
           "name": "direccion_notificaciones",
           "type": "text",
@@ -1552,23 +1546,7 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "proveedores_documento_huella_idx": {
-          "name": "proveedores_documento_huella_idx",
-          "columns": [
-            {
-              "expression": "documento_huella",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "proveedores_usuario_id_user_id_fk": {
           "name": "proveedores_usuario_id_user_id_fk",
@@ -2502,6 +2480,71 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.mensajes_contacto": {
+      "name": "mensajes_contacto",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "nombre": {
+          "name": "nombre",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "correo": {
+          "name": "correo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "motivo": {
+          "name": "motivo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mensaje": {
+          "name": "mensaje",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "autoriza_datos": {
+          "name": "autoriza_datos",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "estado": {
+          "name": "estado",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'nuevo'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},

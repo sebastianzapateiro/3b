@@ -23,6 +23,8 @@ export function GET() {
     "## Cómo funciona",
     l("¿Cómo funciona LasTresB?", "/como-funciona", "paso a paso para buscar y para ofrecer servicios"),
     l("Servicios por localidad", "/localidades"),
+    l("Nosotros", "/nosotros", "qué es LasTresB y qué no es"),
+    l("Contacto", "/contacto"),
     "",
     "## Guías para contratar con confianza",
     ...GUIAS.map((g) => l(g.titulo, `/guias/${g.slug}`, g.resumen)),

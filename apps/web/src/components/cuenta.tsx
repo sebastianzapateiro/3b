@@ -1,6 +1,5 @@
-"use client";
+﻿"use client";
 /** Piezas compartidas de los formularios de cuenta (Login_movil). */
-import Link from "next/link";
 import { useState } from "react";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
@@ -73,9 +72,11 @@ export function Aviso({ tono, children }: { tono: "error" | "exito"; children: R
   );
 }
 
-export function BotonGoogle({ destino }: { destino: string }) {
+/** Ingreso con Google o Apple. Siempre vuelve a /ingreso/listo, que confirma la cuenta nueva antes de dejarla lista. */
+export function BotonSocial({ proveedor, destino, alElegir }: { proveedor: "google" | "apple"; destino: string; alElegir?: () => Promise<void> }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  const listo = `/ingreso/listo?destino=${encodeURIComponent(destino)}`;
   return (
     <>
       <button
@@ -83,7 +84,8 @@ export function BotonGoogle({ destino }: { destino: string }) {
         disabled={cargando}
         onClick={async () => {
           setCargando(true);
-          const { error } = await authClient.signIn.social({ provider: "google", callbackURL: destino });
+          await alElegir?.();
+          const { error } = await authClient.signIn.social({ provider: proveedor, callbackURL: listo, newUserCallbackURL: listo, errorCallbackURL: "/ingreso?error=oauth" });
           if (error) {
             setError(mensajeDeError(error));
             setCargando(false);
@@ -91,13 +93,19 @@ export function BotonGoogle({ destino }: { destino: string }) {
         }}
         className="flex h-13 items-center justify-center gap-2.5 rounded-campo border-[1.5px] border-borde-campo bg-white text-base font-semibold text-tinta disabled:opacity-60"
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z" />
-          <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.8A11 11 0 0 0 12 23z" />
-          <path fill="#FBBC05" d="M5.7 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.1a11 11 0 0 0 0 9.8z" />
-          <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1A11 11 0 0 0 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z" />
-        </svg>
-        Continuar con Google
+        {proveedor === "google" ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.5c2.1-1.9 3.3-4.7 3.3-8z" />
+            <path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.8A11 11 0 0 0 12 23z" />
+            <path fill="#FBBC05" d="M5.7 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.1a11 11 0 0 0 0 9.8z" />
+            <path fill="#EA4335" d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.1-3.1A11 11 0 0 0 2.1 7.1l3.6 2.8C6.6 7.4 9.1 5.4 12 5.4z" />
+          </svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.600-2.800-1.800-3.400-1.800-1.400-.1-2.800.9-3.500.9-.7 0-1.800-.8-3-.8-1.500 0-3 .9-3.800 2.300-1.600 2.800-.4 7 1.200 9.300.8 1.100 1.700 2.400 2.900 2.300 1.200 0 1.600-.7 3-.7s1.800.7 3 .7 2-1.100 2.800-2.200c.9-1.300 1.200-2.500 1.300-2.600-.1 0-2.500-1-2.500-3.900zM14.100 5.700c.6-.8 1.100-1.900.9-3-.9 0-2.100.6-2.700 1.400-.6.700-1.100 1.800-1 2.900 1.100.1 2.200-.5 2.800-1.300z" />
+          </svg>
+        )}
+        {proveedor === "google" ? "Continuar con Google" : "Continuar con Apple"}
       </button>
       {error && <Aviso tono="error">{error}</Aviso>}
     </>
@@ -112,24 +120,3 @@ export function Separador() {
   );
 }
 
-export function BannerProveedor() {
-  return (
-    <Link
-      href="/proveedores/registro"
-      className="mt-auto flex items-center gap-3 rounded-[18px] bg-amarillo-suave p-4 text-tinta lg:mt-8"
-    >
-      <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-amarillo">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" />
-        </svg>
-      </span>
-      <span className="flex flex-1 flex-col gap-0.5">
-        <b className="text-[15px]">¿Ofreces servicios?</b>
-        <span className="text-sm text-amarillo-oscuro">Regístrate gratis como proveedor</span>
-      </span>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M9 18l6-6-6-6" />
-      </svg>
-    </Link>
-  );
-}

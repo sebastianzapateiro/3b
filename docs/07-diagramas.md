@@ -320,7 +320,7 @@ sequenceDiagram
 sequenceDiagram
   autonumber
   actor E as Persona del equipo
-  participant W as /ingresar o /admin/ingresar
+  participant W as /ingreso o /admin/ingresar
   participant BA as Better Auth
   participant V as lib/verificacion
   participant DB as Postgres

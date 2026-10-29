@@ -159,7 +159,7 @@ export default function ComoFunciona() {
               </li>
             ))}
           </ol>
-          <Link href="/proveedores/registro" className="flex h-13 items-center justify-center self-start rounded-campo bg-amarillo px-7 text-base font-bold text-tinta">
+          <Link href="/ingreso" className="flex h-13 items-center justify-center self-start rounded-campo bg-amarillo px-7 text-base font-bold text-tinta">
             Registrarme como proveedor
           </Link>
         </section>

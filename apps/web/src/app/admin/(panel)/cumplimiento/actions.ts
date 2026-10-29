@@ -10,7 +10,7 @@ import { auditar } from "@/lib/auditoria";
 import { enviarCorreo } from "@/lib/correo";
 import { exigirBackoffice } from "@/lib/verificacion";
 
-const { reclamos, solicitudesDatos, proveedores, user, politicas } = schema;
+const { mensajesContacto, reclamos, solicitudesDatos, proveedores, user, politicas } = schema;
 const ruta = "/admin/cumplimiento";
 const volver = (params: Record<string, string>): never => redirect(`${ruta}?${new URLSearchParams(params)}`);
 const id = z.string().uuid();
@@ -98,4 +98,14 @@ export async function publicarPolitica(formData: FormData) {
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "politica_publicada", objetoTipo: "politica", objetoId: `${r.data.tipo}@${r.data.version}` });
   revalidatePath(ruta);
   return volver({ tab: "politicas", ok: "Nueva versión publicada." });
+}
+
+/** Marca un mensaje de /contacto como atendido. La respuesta se envía por correo desde fuera del sistema. */
+export async function atenderMensaje(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const mensajeId = id.parse(formData.get("id"));
+  await db.update(mensajesContacto).set({ estado: "atendido" }).where(eq(mensajesContacto.id, mensajeId));
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "mensaje_contacto_atendido", objetoTipo: "mensaje_contacto", objetoId: mensajeId });
+  revalidatePath("/admin", "layout");
+  return volver({ tab: "mensajes", ok: "Mensaje marcado como atendido." });
 }

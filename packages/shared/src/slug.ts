@@ -8,7 +8,7 @@ export const SLUGS_RESERVADOS = new Set([
   "admin", "api", "app", "login", "ingresar", "registro", "salir", "cuenta",
   "buscar", "resultados", "categorias", "localidades", "proveedores", "proveedor",
   "terminos", "privacidad", "cookies", "resenas", "reclamos", "ayuda", "contacto",
-  "guias", "como-funciona", "servicios", "cookies", "terminos-proveedores", "retiro-de-contenido", "panel", "llms", "feed", "las3b", "lastresb", "static", "_next", "favicon.ico", "robots.txt", "sitemap.xml",
+  "guias", "como-funciona", "servicios", "nosotros", "contacto", "cookies", "terminos-proveedores", "retiro-de-contenido", "panel", "llms", "feed", "las3b", "lastresb", "static", "_next", "favicon.ico", "robots.txt", "sitemap.xml",
   "manifest.webmanifest", ".well-known",
 ]);
 

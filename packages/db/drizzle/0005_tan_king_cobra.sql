@@ -1,0 +1,1 @@
+ALTER TABLE "proveedores" ADD COLUMN "visita_a_convenir" boolean DEFAULT false NOT NULL;

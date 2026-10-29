@@ -83,7 +83,7 @@ export function PaginaServicio({
           <div className="flex flex-wrap gap-2">
             <Link href={buscar} className="flex h-12 items-center rounded-campo bg-tinta px-6 text-base font-semibold text-white">Buscar y filtrar</Link>
             {variante === "base" && <BotonCercanos oficio={sub.slug} />}
-            <Link href="/proveedores/registro" className="flex h-12 items-center rounded-campo border-2 border-tinta px-6 text-base font-semibold text-tinta">Ofrezco este servicio</Link>
+            <Link href="/ingreso" className="flex h-12 items-center rounded-campo border-2 border-tinta px-6 text-base font-semibold text-tinta">Ofrezco este servicio</Link>
           </div>
         </header>
 
@@ -98,7 +98,7 @@ export function PaginaServicio({
         ) : (
           <section aria-labelledby="sin-proveedores" className="flex flex-col gap-3">
             <h2 id="sin-proveedores" className="font-display text-2xl font-bold">Aún no tenemos proveedores para este servicio</h2>
-            <p className="text-[15px] leading-normal text-tinta-2">Déjanos tu WhatsApp y te avisamos cuando haya. ¿Ofreces este servicio? <Link href="/proveedores/registro" className="font-semibold text-verde underline">Regístrate gratis</Link>.</p>
+            <p className="text-[15px] leading-normal text-tinta-2">Déjanos tu WhatsApp y te avisamos cuando haya. ¿Ofreces este servicio? <Link href="/ingreso" className="font-semibold text-verde underline">Regístrate gratis</Link>.</p>
           </section>
         )}
 

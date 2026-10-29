@@ -25,7 +25,7 @@ export async function calificarProveedor(formData: FormData) {
   if (!r.success) return volver(r.error.issues[0]?.message ?? "Revisa los datos.");
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingresar?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
 
   const proveedor = await proveedorPorSlug(r.data.slug);
   if (!proveedor) return volver("Este proveedor no está disponible.");

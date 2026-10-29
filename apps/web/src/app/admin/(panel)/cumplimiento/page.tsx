@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Aviso, campoAdmin, Encabezado, tarjeta } from "@/components/admin/Ui";
-import { bandejaCumplimiento, BANDEJAS, detalleReclamo, detalleSolicitud, ETIQUETA_SOLICITUD, politicasVigentes, type Bandeja } from "@/lib/cumplimiento";
+import { bandejaCumplimiento, BANDEJAS, detalleReclamo, detalleSolicitud, ETIQUETA_SOLICITUD, listarMensajes, politicasVigentes, type Bandeja } from "@/lib/cumplimiento";
 import { exigirBackoffice } from "@/lib/verificacion";
-import { entregarDatos, gestionarSolicitud, publicarPolitica, responderReclamo } from "./actions";
+import { atenderMensaje, entregarDatos, gestionarSolicitud, publicarPolitica, responderReclamo } from "./actions";
 
 /** B6 · Reclamos de consumo, solicitudes de datos y políticas. Mockup: docs/mockups/BO_Cumplimiento.dc.html. */
-const TABS: Record<Bandeja, string> = { todo: "Todo abierto", reclamos: "Reclamos de consumo", datos: "Solicitudes de datos", politicas: "Políticas" };
+const TABS: Record<Bandeja, string> = { todo: "Todo abierto", reclamos: "Reclamos de consumo", datos: "Solicitudes de datos", mensajes: "Mensajes de contacto", politicas: "Políticas" };
 const POLITICAS: Record<string, string> = { terminos_compradores: "Términos para compradores", terminos_proveedores: "Términos para proveedores", tratamiento_datos: "Tratamiento de datos", aviso_privacidad: "Aviso de privacidad", cookies: "Cookies", resenas: "Reglamento de reseñas", autorizacion_ley_1918: "Autorización Ley 1918", declaracion_servicios_no_permitidos: "Declaración de servicios no permitidos" };
 const fechaCorta = (d: string | Date) => new Date(typeof d === "string" ? `${d}T00:00:00Z` : d).toLocaleDateString("es-CO", { dateStyle: "long", timeZone: "UTC" });
 const ESTADO: Record<string, string> = { abierto: "Abierto", en_proceso: "En proceso", respondido: "Respondido", cerrado: "Cerrado" };
@@ -14,7 +14,8 @@ export default async function Cumplimiento({ searchParams }: { searchParams: Pro
   const { roles } = await exigirBackoffice();
   const sp = await searchParams;
   const bandeja = (BANDEJAS as readonly string[]).includes(sp.tab ?? "") ? (sp.tab as Bandeja) : "todo";
-  const filas = bandeja === "politicas" ? [] : await bandejaCumplimiento(bandeja);
+  const filas = bandeja === "politicas" || bandeja === "mensajes" ? [] : await bandejaCumplimiento(bandeja);
+  const mensajes = bandeja === "mensajes" ? await listarMensajes() : [];
   const [clase, idSel] = (sp.i ?? "").split(":");
   const seleccion = clase === "reclamo" ? await detalleReclamo(idSel ?? "").catch(() => null) : null;
   const solicitud = clase === "datos" ? await detalleSolicitud(idSel ?? "").catch(() => null) : null;
@@ -32,7 +33,7 @@ export default async function Cumplimiento({ searchParams }: { searchParams: Pro
       <main className="flex flex-col gap-5 px-5 pb-10 pt-6 lg:px-8">
         <Aviso ok={sp.ok} error={sp.error} />
 
-        {bandeja !== "politicas" && (
+        {bandeja !== "politicas" && bandeja !== "mensajes" && (
           <div className={`${tarjeta} overflow-x-auto`}>
             <table className="w-full min-w-[820px] border-collapse text-sm">
               <thead><tr className="bg-crema text-left text-gris"><th className="px-[18px] py-3 font-semibold">Trámite</th><th className="p-3 font-semibold">Solicitante</th><th className="p-3 font-semibold">Sobre</th><th className="w-56 p-3 font-semibold">Plazo</th><th className="p-3 font-semibold">Estado</th></tr></thead>
@@ -60,6 +61,27 @@ export default async function Cumplimiento({ searchParams }: { searchParams: Pro
               </tbody>
             </table>
           </div>
+        )}
+
+        {bandeja === "mensajes" && (
+          <section className={`${tarjeta} flex flex-col gap-1 p-[22px]`}>
+            <h2 className="font-display text-xl font-bold">Mensajes de contacto</h2>
+            {mensajes.length === 0 && <p className="text-[15px] text-gris">No hay mensajes todavía.</p>}
+            <ul className="flex flex-col">
+              {mensajes.map((m) => (
+                <li key={m.id} className="flex flex-col gap-1.5 border-t border-borde-suave py-3.5 first:border-0">
+                  <span className="flex flex-wrap items-baseline justify-between gap-2 text-sm"><b>{m.nombre} · {m.motivo}</b><span className="text-gris">{fechaCorta(m.createdAt)}</span></span>
+                  <a href={`mailto:${m.correo}`} className="text-sm font-semibold text-verde">{m.correo}</a>
+                  <p className="whitespace-pre-line text-[15px] leading-normal text-tinta-2">{m.mensaje}</p>
+                  {m.estado === "nuevo" ? (
+                    <form action={atenderMensaje}><input type="hidden" name="id" value={m.id} /><button type="submit" className="h-10 rounded-[10px] border-[1.5px] border-borde-campo bg-white px-3.5 text-sm font-semibold">Marcar como atendido</button></form>
+                  ) : (
+                    <span className="text-sm font-semibold text-verde-oscuro">Atendido</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
 
         <div className="flex flex-wrap items-start gap-5">

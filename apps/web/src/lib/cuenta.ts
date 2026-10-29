@@ -13,7 +13,7 @@ const { contactos, resenas, proveedores, categorias, solicitudesDatos, consentim
 /** Exige sesión; si no hay, lleva a ingresar y regresa a la misma página. */
 export async function exigirUsuario(destino: string) {
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingresar?${new URLSearchParams({ destino })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino })}`);
   return session.user;
 }
 
