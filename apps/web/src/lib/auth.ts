@@ -21,8 +21,30 @@ const social = {
   ...(appleHabilitado ? { apple: { clientId: process.env.APPLE_CLIENT_ID!, clientSecret: process.env.APPLE_CLIENT_SECRET! } } : {}),
 };
 
+/**
+ * El sitio puede servirse con y sin «www» (según el dominio principal en Vercel). Better Auth rechaza con
+ * INVALID_ORIGIN cualquier origen distinto de BETTER_AUTH_URL, así que se aceptan ambas variantes del mismo dominio.
+ */
+function origenesConfiables(): string[] {
+  const base = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
+  if (!base) return [];
+  try {
+    const u = new URL(base);
+    const sinWww = u.host.replace(/^www\./, "");
+    return [`${u.protocol}//${sinWww}`, `${u.protocol}//www.${sinWww}`];
+  } catch {
+    return [];
+  }
+}
+
 export const auth = betterAuth({
   appName: "LasTresB",
+  trustedOrigins: origenesConfiables(),
+  advanced: {
+    // Vercel fija x-real-ip con la IP del cliente. Sin una IP válida, Better Auth junta a todos en un solo
+    // contador del límite de intentos (5 ingresos por minuto para todo el sitio).
+    ipAddress: { ipAddressHeaders: ["x-real-ip", "x-forwarded-for"] },
+  },
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
