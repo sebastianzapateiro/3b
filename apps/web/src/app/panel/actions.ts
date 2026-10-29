@@ -40,6 +40,7 @@ export async function guardarPerfil(formData: FormData) {
       ofreceGarantia: formData.has("ofreceGarantia"),
       atiendeUrgencias: formData.has("atiendeUrgencias"),
       disponible24h: formData.has("disponible24h"),
+      visitaAConvenir: formData.has("visitaAConvenir"),
       updatedAt: new Date(),
     })
     .where(eq(proveedores.id, proveedor.id));

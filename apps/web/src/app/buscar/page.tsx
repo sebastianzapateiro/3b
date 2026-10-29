@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LOCALIDADES_BOGOTA, subcategoriaPorSlug } from "@las3b/shared";
+import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, subcategoriaPorSlug, type LocalidadSlug } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
-import { FiltrosResultados } from "@/components/FiltrosResultados";
+import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
-import { buscarProveedores, INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type Orden } from "@/lib/busqueda";
+import { buscarProveedores, filtrosDesdeParams } from "@/lib/busqueda";
+import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
 
 /** Resultados de búsqueda con filtros (P2, CU-01). Mockups: docs/mockups/Resultados_web.dc.html y Resultados_movil.dc.html. */
@@ -35,25 +36,12 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const localidad = uno(sp.localidad);
   const categoria = uno(sp.categoria);
   const orden = ORDENES.find((o) => o === uno(sp.orden));
-  const insignias = varios(sp.insignia).filter((i): i is InsigniaFiltro => (INSIGNIAS_FILTRO as readonly string[]).includes(i));
-  const cal = uno(sp.cal) === "4" || uno(sp.cal) === "4.5" ? uno(sp.cal)! : "0";
-  const precioMax = Number(uno(sp.precioMax)) || undefined;
-  const tambien = varios(sp.tambien);
-  const urgencias = uno(sp.urgente) === "1";
+  const params = new URLSearchParams();
+  for (const [k, val] of Object.entries(sp)) for (const x of varios(val)) params.append(k, x);
+  const { insignias, cal, visita, hoy, h24, tambien } = valoresDesdeParams(params);
   const pagina = Math.max(1, Number(uno(sp.pagina)) || 1);
 
-  const resultado = await buscarProveedores({
-    q,
-    localidad,
-    categoria,
-    tambien,
-    insignias,
-    calificacionMin: Number(cal) || undefined,
-    precioMax,
-    urgencias,
-    orden,
-    pagina,
-  });
+  const resultado = await buscarProveedores(filtrosDesdeParams(params));
 
   const nombreLocalidad = LOCALIDADES_BOGOTA.find((l) => l.slug === localidad)?.nombre;
   const tema = resultado.categoriaNombre ?? (q ? `«${q}»` : null);
@@ -64,8 +52,9 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const href = (cambios: Record<string, string | string[] | null>) => {
     const p = new URLSearchParams();
     const actual: Record<string, string | string[] | undefined> = {
-      q, localidad, categoria, orden, cal: cal === "0" ? undefined : cal, precioMax: precioMax ? String(precioMax) : undefined,
-      insignia: insignias, tambien, urgente: urgencias ? "1" : undefined, pagina: pagina > 1 ? String(pagina) : undefined,
+      q, localidad, categoria, orden, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
+      hoy: hoy ? "1" : undefined, h24: h24 ? "1" : undefined,
+      insignia: insignias, tambien, pagina: pagina > 1 ? String(pagina) : undefined,
     };
     for (const [k, v] of Object.entries({ ...actual, ...cambios })) {
       if (v == null) continue;
@@ -73,22 +62,35 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     }
     return `/buscar?${p}`;
   };
-  const alternar = (clave: InsigniaFiltro) =>
-    href({ insignia: insignias.includes(clave) ? insignias.filter((i) => i !== clave) : [...insignias, clave], pagina: null });
+  const limpiar = href({ insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, pagina: null });
 
-  const valores = { q, localidad, categoria, orden, insignias, cal, precioMax, tambien };
-  const limpiar = href({ insignia: null, cal: null, precioMax: null, tambien: null, pagina: null });
-  const hayFiltros = insignias.length > 0 || cal !== "0" || Boolean(precioMax) || tambien.length > 0;
+  // Filtros activos como chips con «x» para quitarlos de uno en uno.
+  const activos: { texto: string; quitar: string }[] = [
+    ...insignias.map((i) => ({ texto: ETIQUETA_INSIGNIA[i], quitar: href({ insignia: insignias.filter((x) => x !== i), pagina: null }) })),
+    ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")} o más`, quitar: href({ cal: null, pagina: null }) }] : []),
+    ...(visita ? [{ texto: visita === "convenir" ? "Visita a convenir" : `Visita ${etiquetaTope(Number(visita)).toLowerCase()}`, quitar: href({ visita: null, pagina: null }) }] : []),
+    ...(hoy ? [{ texto: "Urgente hoy", quitar: href({ hoy: null, pagina: null }) }] : []),
+    ...(h24 ? [{ texto: "24 horas", quitar: href({ h24: null, pagina: null }) }] : []),
+    ...tambien.map((t) => ({ texto: `También ${LOCALIDADES_BOGOTA.find((l) => l.slug === t)?.nombre ?? t}`, quitar: href({ tambien: tambien.filter((x) => x !== t), pagina: null }) })),
+  ];
+  const hayFiltros = activos.length > 0;
 
-  const chip = (activo: boolean) =>
-    `flex h-9 flex-none items-center gap-1.5 rounded-full px-3.5 text-sm ${activo ? "bg-verde font-semibold text-white" : "border border-borde-campo bg-white font-medium text-tinta"}`;
+  // Parámetros ajenos al panel y datos que este necesita.
+  const base = new URLSearchParams();
+  for (const [k, x] of [["q", q], ["localidad", localidad], ["categoria", categoria], ["orden", orden]] as const) if (x) base.set(k, x);
+  const inicial = { insignias, cal, visita, hoy, h24, tambien };
+  const vecinas = (localidad && localidad in LOCALIDADES_VECINAS ? LOCALIDADES_VECINAS[localidad as LocalidadSlug] : []).map((s) => ({
+    slug: s,
+    nombre: LOCALIDADES_BOGOTA.find((l) => l.slug === s)?.nombre ?? s,
+  }));
+  const panel = { base: base.toString(), inicial, mostrarNinos: aplicaNinos(categoria), vecinas };
 
   return (
     <>
       <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
         {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
         <aside className="hidden min-w-0 lg:block lg:flex-[1_1_250px]">
-          <FiltrosResultados prefijo="d" valores={valores} limpiar={limpiar} />
+          <div className="rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} /></div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
@@ -104,24 +106,23 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             <button type="submit" className="h-12 rounded-[14px] bg-tinta px-6 text-[15px] font-semibold text-white">Buscar</button>
           </form>
 
-          {/* Móvil: atajos y botón de filtros */}
-          <div className="flex flex-col gap-3 lg:hidden">
-            <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-              <Link href={alternar("verificado")} aria-pressed={insignias.includes("verificado")} className={chip(insignias.includes("verificado"))}>
-                {insignias.includes("verificado") && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>}
-                Verificados
-              </Link>
-              <Link href={alternar("formalizado")} aria-pressed={insignias.includes("formalizado")} className={chip(insignias.includes("formalizado"))}>Formalizados</Link>
-              <Link href={href({ cal: cal === "4" ? null : "4", pagina: null })} aria-pressed={cal === "4"} className={chip(cal === "4")}>4+ estrellas</Link>
-            </div>
-            <details className="group">
-              <summary className="flex h-11 cursor-pointer list-none items-center justify-center gap-2 rounded-[14px] bg-tinta text-[15px] font-semibold text-white [&::-webkit-details-marker]:hidden">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" /><circle cx="16" cy="6" r="2" /><circle cx="10" cy="12" r="2" /><circle cx="18" cy="18" r="2" /></svg>
-                Filtros{hayFiltros ? " (activos)" : ""}
-              </summary>
-              <div className="mt-3"><FiltrosResultados prefijo="m" valores={valores} limpiar={limpiar} /></div>
-            </details>
+          {/* Móvil: botón que abre la hoja de filtros */}
+          <div className="flex flex-col lg:hidden">
+            <HojaFiltros {...panel} activos={activos.length} />
           </div>
+
+          {activos.length > 0 && (
+            <ul aria-label="Filtros activos" className="flex flex-wrap gap-2">
+              {activos.map((a) => (
+                <li key={a.texto}>
+                  <Link href={a.quitar} aria-label={`Quitar filtro: ${a.texto}`} className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-verde bg-verde-claro px-3.5 text-sm font-semibold text-verde-oscuro">
+                    {a.texto}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
 
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex flex-col gap-1">
@@ -134,10 +135,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
               {q && <input type="hidden" name="q" value={q} />}
               {localidad && <input type="hidden" name="localidad" value={localidad} />}
               {categoria && <input type="hidden" name="categoria" value={categoria} />}
-              {insignias.map((i) => <input key={i} type="hidden" name="insignia" value={i} />)}
-              {tambien.map((t) => <input key={t} type="hidden" name="tambien" value={t} />)}
-              {cal !== "0" && <input type="hidden" name="cal" value={cal} />}
-              {precioMax && <input type="hidden" name="precioMax" value={precioMax} />}
+              {[...paramsDesdeValores(inicial)].map(([k, x]) => <input key={`${k}-${x}`} type="hidden" name={k} value={x} />)}
               <label htmlFor="orden">Ordenar por</label>
               <select id="orden" name="orden" defaultValue={orden ?? "calificacion"} className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-2.5 text-sm font-semibold text-tinta">
                 {ORDENES.map((o) => <option key={o} value={o}>{ETIQUETA_ORDEN[o]}</option>)}

@@ -27,6 +27,7 @@ export async function exigirProveedor() {
       ofreceGarantia: proveedores.ofreceGarantia,
       atiendeUrgencias: proveedores.atiendeUrgencias,
       disponible24h: proveedores.disponible24h,
+      visitaAConvenir: proveedores.visitaAConvenir,
       motivoRechazo: proveedores.motivoRechazo,
       rutFechaLimite: proveedores.rutFechaLimite,
       promedio: proveedores.promedio,

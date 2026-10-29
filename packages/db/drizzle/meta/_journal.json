@@ -36,6 +36,13 @@
       "when": 1793305132256,
       "tag": "0004_swift_menace",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793306682695,
+      "tag": "0005_tan_king_cobra",
+      "breakpoints": true
     }
   ]
 }

@@ -31,6 +31,7 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
   const iniciales = r.nombre.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2);
   const detalle = [r.servicios.join(", "), r.localidades.join(", ")].filter(Boolean).join(" · ");
   const perfil = `/${r.slug}`;
+  const textoVisita = r.precioVisita != null ? `Visita desde ${pesos.format(r.precioVisita)}` : r.visitaAConvenir ? "Visita a convenir" : null;
 
   return (
     <article className="flex flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-[18px] sm:rounded-[22px] sm:p-[18px]">
@@ -51,7 +52,7 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
             ) : (
               <span className="text-tinta-2">Nuevo en LasTresB</span>
             )}
-            {r.precioDesde != null && <span className="font-normal text-gris sm:hidden">· Desde {pesos.format(r.precioDesde)} la visita</span>}
+            {textoVisita && <span className="font-normal text-gris sm:hidden">· {textoVisita}</span>}
           </span>
         </span>
       </Link>
@@ -69,9 +70,9 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
       )}
 
       <div className="flex gap-2 sm:w-[220px] sm:flex-none sm:flex-col sm:items-stretch">
-        {r.precioDesde != null && (
+        {textoVisita && (
           <span className="hidden text-right text-sm text-tinta-2 sm:block">
-            Visita desde <b className="text-tinta">{pesos.format(r.precioDesde)}</b>
+            <b className="text-tinta">{textoVisita}</b>
           </span>
         )}
         <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta sm:hidden">

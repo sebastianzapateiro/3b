@@ -17,13 +17,30 @@ const {
   insignias,
 } = schema;
 
-export const INSIGNIAS_FILTRO = ["verificado", "formalizado", "certificado", "apto_menores"] as const;
-export type InsigniaFiltro = (typeof INSIGNIAS_FILTRO)[number];
-
-export const ORDENES = ["calificacion", "resenas", "precio"] as const;
-export type Orden = (typeof ORDENES)[number];
+export { INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type Orden } from "@/lib/filtros";
+import { ORDENES, valoresDesdeParams, type InsigniaFiltro, type Orden } from "@/lib/filtros";
 
 export const POR_PAGINA = 10;
+
+/** Convierte los parámetros de /buscar (URL) en filtros; lo comparten la página y la API de conteo. */
+export function filtrosDesdeParams(p: URLSearchParams): FiltrosBusqueda {
+  const v = valoresDesdeParams(p);
+  const orden = ORDENES.find((o) => o === p.get("orden"));
+  return {
+    q: p.get("q") || undefined,
+    localidad: p.get("localidad") || undefined,
+    categoria: p.get("categoria") || undefined,
+    tambien: v.tambien,
+    insignias: v.insignias,
+    calificacionMin: Number(v.cal) || undefined,
+    visitaMax: v.visita && v.visita !== "convenir" ? Number(v.visita) : undefined,
+    visitaConvenir: v.visita === "convenir",
+    urgenteHoy: v.hoy,
+    h24: v.h24,
+    orden,
+    pagina: Math.max(1, Number(p.get("pagina")) || 1),
+  };
+}
 
 export type FiltrosBusqueda = {
   q?: string;
@@ -40,6 +57,14 @@ export type FiltrosBusqueda = {
   urgencias?: boolean;
   /** Solo proveedores con «precio desde» publicado. */
   conPrecio?: boolean;
+  /** Tope del precio de visita publicado (servicios con unidad «visita»), en COP. */
+  visitaMax?: number;
+  /** Solo proveedores que marcaron «visita a convenir». */
+  visitaConvenir?: boolean;
+  /** Solo quienes declaran atender urgencias el mismo día. */
+  urgenteHoy?: boolean;
+  /** Solo quienes declaran atender 24 horas. */
+  h24?: boolean;
   orden?: Orden;
   pagina?: number;
 };
@@ -55,6 +80,9 @@ export type ResultadoBusqueda = {
   precioDesde: number | null;
   atiendeUrgencias: boolean;
   disponible24h: boolean;
+  /** Menor «precio desde» de un servicio con unidad visita; null si no publicó. */
+  precioVisita: number | null;
+  visitaAConvenir: boolean;
 };
 
 export type PaginaResultados = {
@@ -109,8 +137,10 @@ const lista = (ids: number[]) =>
 /** Precio «desde» más bajo entre los servicios visibles del proveedor. */
 const precioMinimo = sql<string | null>`(SELECT MIN(s.precio_desde) FROM servicios_proveedor s WHERE s.proveedor_id = "proveedores"."id" AND s.visible AND s.precio_desde IS NOT NULL)`;
 
-export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResultados> {
-  const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
+/** Precio «desde» más bajo entre los servicios visibles con unidad «visita»: el precio de la visita. */
+const precioVisitaSql = sql<string | null>`(SELECT MIN(s.precio_desde) FROM servicios_proveedor s WHERE s.proveedor_id = "proveedores"."id" AND s.visible AND s.unidad = 'visita' AND s.precio_desde IS NOT NULL)`;
+
+async function condicionesDe(f: FiltrosBusqueda) {
   const q = f.q?.trim();
 
   const categoria = await resolverCategoria(f.categoria);
@@ -149,14 +179,25 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
   if (f.precioMax) condiciones.push(sql`${precioMinimo} <= ${f.precioMax}`);
   if (f.urgencias) condiciones.push(sql`(${proveedores.atiendeUrgencias} OR ${proveedores.disponible24h})`);
   if (f.conPrecio) condiciones.push(sql`${precioMinimo} IS NOT NULL`);
+  if (f.visitaMax) condiciones.push(sql`${precioVisitaSql} <= ${f.visitaMax}`);
+  if (f.visitaConvenir) condiciones.push(sql`${proveedores.visitaAConvenir}`);
+  if (f.urgenteHoy) condiciones.push(sql`${proveedores.atiendeUrgencias}`);
+  if (f.h24) condiciones.push(sql`${proveedores.disponible24h}`);
 
-  const donde = and(...condiciones);
+  return { donde: and(...condiciones), categoria };
+}
 
-  const [conteo] = await db
-    .select({ total: sql<number>`count(*)::int` })
-    .from(proveedores)
-    .where(donde);
-  const total = conteo?.total ?? 0;
+/** Cuántos proveedores cumplen los filtros (para «Ver N proveedores» en vivo). */
+export async function contarProveedores(f: FiltrosBusqueda): Promise<number> {
+  const { donde } = await condicionesDe(f);
+  const [c] = await db.select({ total: sql<number>`count(*)::int` }).from(proveedores).where(donde);
+  return c?.total ?? 0;
+}
+
+export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResultados> {
+  const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
+  const { donde, categoria } = await condicionesDe(f);
+  const total = await contarProveedores(f);
 
   const orden: SQL[] =
     f.orden === "resenas"
@@ -173,6 +214,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
       precio: precioMinimo,
+      precioVisita: precioVisitaSql,
+      convenir: proveedores.visitaAConvenir,
       urgencias: proveedores.atiendeUrgencias,
       h24: proveedores.disponible24h,
     })
@@ -231,6 +274,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       precioDesde: r.precio != null ? Number(r.precio) : null,
       atiendeUrgencias: r.urgencias,
       disponible24h: r.h24,
+      precioVisita: r.precioVisita != null ? Number(r.precioVisita) : null,
+      visitaAConvenir: r.convenir,
     })),
     total,
     pagina,
