@@ -25,7 +25,7 @@ export default function Nosotros() {
             <p className="text-base leading-relaxed text-tinta-2 md:text-lg">LasTresB es un directorio gratuito donde cualquier persona en Bogotá encuentra, por localidad, a un técnico, un profesor, alguien que lleve y traiga cosas o un prestador de oficios de confianza, y lo contacta directo por WhatsApp.</p>
             <div className="flex flex-wrap gap-2.5">
               <Link href="/categorias" className="flex h-[52px] items-center rounded-campo bg-tinta px-7 text-base font-semibold text-white">Buscar un servicio</Link>
-              <Link href="/proveedores/registro" className="flex h-[52px] items-center rounded-campo border-2 border-tinta px-7 text-base font-semibold text-tinta">Registrar mi servicio</Link>
+              <Link href="/ingreso" className="flex h-[52px] items-center rounded-campo border-2 border-tinta px-7 text-base font-semibold text-tinta">Registrar mi servicio</Link>
             </div>
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] shadow-[0_8px_30px_rgba(27,38,35,0.12)]">

@@ -258,7 +258,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
       <div className="border-t border-borde">
         <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-3 px-5 py-6 text-sm text-gris lg:px-6">
           <span>Página creada gratis en <Link href="/" className="font-bold text-tinta">LasTres<span className="text-ladrillo">B</span></Link></span>
-          <Link href="/proveedores/registro" className="font-semibold text-verde hover:text-verde-oscuro">¿Ofreces un servicio? Crea tu página</Link>
+          <Link href="/ingreso" className="font-semibold text-verde hover:text-verde-oscuro">¿Ofreces un servicio? Crea tu página</Link>
         </div>
       </div>
     </div>

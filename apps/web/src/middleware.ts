@@ -10,9 +10,9 @@ const { user, consentimientos, politicas } = schema;
 const RUTAS_PUBLICAS = [
   "/",
   "/buscar",
-  "/ingresar",
+  "/ingreso",
+  "/ingreso/listo",
   "/admin/ingresar",
-  "/registro",
   "/recuperar",
   "/nueva-clave",
   "/cuenta/consentimiento",
@@ -52,6 +52,13 @@ function redireccionPermanente(url: URL): URL | null {
 export async function middleware(request: Request) {
   const url = new URL(request.url);
   const { pathname } = url;
+  // Un solo ingreso: las rutas anteriores de ingreso y registro pasan a /ingreso (301).
+  if (pathname === "/ingresar" || pathname === "/registro") {
+    const destino = new URL("/ingreso", url);
+    const d = url.searchParams.get("destino");
+    if (d) destino.searchParams.set("destino", d);
+    return NextResponse.redirect(destino, 301);
+  }
   const destinoPermanente = redireccionPermanente(url);
   if (destinoPermanente) return NextResponse.redirect(destinoPermanente, 301);
 
@@ -62,7 +69,9 @@ export async function middleware(request: Request) {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
-    return NextResponse.redirect(new URL("/ingresar", request.url));
+    // El backoffice tiene su propio ingreso (con 2FA) y no se mezcla con el de clientes y proveedores.
+    const ingreso = pathname === "/admin" || pathname.startsWith("/admin/") ? "/admin/ingresar" : "/ingreso";
+    return NextResponse.redirect(new URL(ingreso, request.url));
   }
 
   // Verificar que el usuario tenga consentimientos registrados (RF-19).

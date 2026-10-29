@@ -13,9 +13,13 @@ import { enviarCorreo } from "./correo";
 
 export const googleHabilitado = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
-const google = googleHabilitado
-  ? { google: { clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! } }
-  : undefined;
+/** Apple Sign-In: se activa solo cuando existan las credenciales (cuenta de Apple Developer). */
+export const appleHabilitado = Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET);
+
+const social = {
+  ...(googleHabilitado ? { google: { clientId: process.env.GOOGLE_CLIENT_ID!, clientSecret: process.env.GOOGLE_CLIENT_SECRET! } } : {}),
+  ...(appleHabilitado ? { apple: { clientId: process.env.APPLE_CLIENT_ID!, clientSecret: process.env.APPLE_CLIENT_SECRET! } } : {}),
+};
 
 export const auth = betterAuth({
   appName: "LasTresB",
@@ -45,7 +49,7 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendOnSignIn: true,
-    autoSignInAfterVerification: false, // tras confirmar vuelve a /ingresar?verificado=1
+    autoSignInAfterVerification: false, // tras confirmar vuelve a /ingreso?verificado=1
     sendVerificationEmail: async ({ user, url }) => {
       void enviarCorreo({
         para: user.email,
@@ -54,7 +58,7 @@ export const auth = betterAuth({
       });
     },
   },
-  socialProviders: google,
+  socialProviders: social,
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el backoffice usa 8 h, ver middleware
     updateAge: 60 * 60 * 24,
@@ -90,7 +94,17 @@ export const auth = betterAuth({
       },
     },
   },
-  rateLimit: { enabled: true, window: 60, max: 30 },
+  // Límite por IP: más estricto en los intentos de ingreso y de creación de cuenta.
+  rateLimit: {
+    enabled: true,
+    window: 60,
+    max: 30,
+    customRules: {
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-in/social": { window: 60, max: 10 },
+      "/sign-up/email": { window: 60, max: 5 },
+    },
+  },
   plugins: [twoFactor({ issuer: "LasTresB" }), nextCookies()],
 });
 

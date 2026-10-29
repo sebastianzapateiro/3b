@@ -31,7 +31,7 @@ export default function Recuperar() {
         {enviado ? (
           <div className="flex flex-col gap-4">
             <Aviso tono="exito">Si hay una cuenta con ese correo, te llegará el enlace en unos minutos. Vence en 1 hora.</Aviso>
-            <Link href="/ingresar" className={botonPrincipal}>Volver a ingresar</Link>
+            <Link href="/ingreso" className={botonPrincipal}>Volver a ingresar</Link>
           </div>
         ) : (
           <form onSubmit={pedirEnlace} className="flex flex-col gap-3.5">
@@ -43,7 +43,7 @@ export default function Recuperar() {
             <button type="submit" disabled={cargando} className={`mt-1.5 ${botonPrincipal}`}>
               {cargando ? "Enviando…" : "Enviarme el enlace"}
             </button>
-            <Link href="/ingresar" className="mt-2 text-center text-[15px] font-semibold text-verde hover:text-verde-oscuro">
+            <Link href="/ingreso" className="mt-2 text-center text-[15px] font-semibold text-verde hover:text-verde-oscuro">
               Volver a ingresar
             </Link>
           </form>

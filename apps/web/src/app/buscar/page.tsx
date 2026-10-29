@@ -176,7 +176,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             <div className="mt-2 flex flex-wrap gap-x-4">
               {hayFiltros && <Link href={limpiar} className="inline-flex min-h-11 items-center text-sm font-semibold underline">Quitar filtros</Link>}
               <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
-              <Link href="/proveedores/registro" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Registrar un proveedor</Link>
+              <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Registrar un proveedor</Link>
             </div>
           </section>
         </div>

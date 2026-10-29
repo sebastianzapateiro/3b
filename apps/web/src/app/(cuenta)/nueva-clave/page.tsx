@@ -47,7 +47,7 @@ function FormNuevaClave() {
       setCargando(false);
       return setError(mensajeDeError(error));
     }
-    router.replace("/ingresar?clave=nueva");
+    router.replace("/ingreso?clave=nueva");
   }
 
   return (

@@ -15,18 +15,19 @@ export function FormIngresar({ destino }: { destino: string }) {
     const datos = new FormData(e.currentTarget);
     setCargando(true);
     setError("");
+    const listo = `/ingreso/listo?destino=${encodeURIComponent(destino)}`;
     const { error } = await authClient.signIn.email({
       email: String(datos.get("correo")),
       password: String(datos.get("clave")),
       // Better Auth navega aquí al ingresar; también es el destino del enlace si reenvía la verificación.
-      callbackURL: destino,
+      callbackURL: listo,
     });
     if (error) {
       setError(mensajeDeError(error));
       setCargando(false);
       return;
     }
-    router.replace(destino);
+    router.replace(listo);
     router.refresh();
   }
 

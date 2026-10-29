@@ -36,7 +36,7 @@ export const FAQ_HOME: Pregunta[] = [
   GENERALES.verificacion,
   GENERALES.resenas,
   { pregunta: "¿Funciona en toda Bogotá?", respuesta: "Está pensado para las 20 localidades de Bogotá. Elige la tuya al buscar para ver proveedores que atienden cerca de ti." },
-  { pregunta: "Soy proveedor, ¿cómo me registro?", respuesta: "Entra a «Soy proveedor», crea tu cuenta gratis y completa tu perfil. Tendrás tu propia página con dirección lastresb.com.co/tu-nombre, código QR y reseñas de tus clientes." },
+  { pregunta: "Soy proveedor, ¿cómo me registro?", respuesta: "Entra a «Iniciar sesión», elige «Soy proveedor», crea tu cuenta gratis y completa tu perfil. Tendrás tu propia página con dirección lastresb.com.co/tu-nombre, código QR y reseñas de tus clientes." },
 ];
 
 export const FAQ_CATEGORIAS: Pregunta[] = [

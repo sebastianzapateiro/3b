@@ -6,7 +6,7 @@ import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
 
-export function FormRegistro() {
+export function FormRegistro({ alIngresar }: { alIngresar: () => void }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [enviadoA, setEnviadoA] = useState("");
@@ -24,7 +24,7 @@ export function FormRegistro() {
       declaraMayorDeEdad: datos.get("mayorDeEdad") === "on",
       // Lo valida y registra el servidor (hooks de auth.ts → consentimientos).
       ...({ aceptaPoliticas: datos.get("politicas") === "on" } as object),
-      callbackURL: "/ingresar?verificado=1",
+      callbackURL: "/ingreso?verificado=1",
     });
     setCargando(false);
     if (error) return setError(mensajeDeError(error));
@@ -38,7 +38,7 @@ export function FormRegistro() {
           Te enviamos un enlace a <b>{enviadoA}</b>. Ábrelo para confirmar tu correo y luego ingresa.
         </Aviso>
         <p className="text-[15px] leading-normal text-tinta-2">¿No te llegó? Revisa la carpeta de spam o intenta ingresar: te lo enviamos de nuevo.</p>
-        <Link href="/ingresar" className={botonPrincipal}>Ir a ingresar</Link>
+        <button type="button" onClick={alIngresar} className={botonPrincipal}>Ir a ingresar</button>
       </div>
     );
   }

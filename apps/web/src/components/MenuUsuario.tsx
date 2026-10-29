@@ -28,13 +28,13 @@ export function MenuUsuario({ compacto = false }: { compacto?: boolean }) {
   if (!data?.user) {
     if (compacto) {
       return (
-        <Link href="/ingresar" aria-label="Iniciar sesión" className="flex size-11 items-center justify-center rounded-full text-tinta">
+        <Link href="/ingreso" aria-label="Iniciar sesión" className="flex size-11 items-center justify-center rounded-full text-tinta">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1-4 4-6 8-6s7 2 8 6" /></svg>
         </Link>
       );
     }
     return (
-      <Link href="/ingresar" className="flex h-11 items-center rounded-xl bg-tinta px-5 text-[15px] font-semibold text-white hover:bg-verde-oscuro">
+      <Link href="/ingreso" className="flex h-11 items-center rounded-xl bg-tinta px-5 text-[15px] font-semibold text-white hover:bg-verde-oscuro">
         Iniciar sesión
       </Link>
     );

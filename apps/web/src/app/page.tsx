@@ -296,7 +296,7 @@ export default function Home() {
               </p>
               <span className="self-start rounded-lg bg-amarillo px-2.5 py-1.5 font-mono text-sm text-tinta sm:hidden">lastresb.com.co/tu-nombre</span>
               <Link
-                href="/proveedores/registro"
+                href="/ingreso"
                 className="mt-1 flex h-13 items-center justify-center rounded-campo bg-crema px-7 text-base font-bold text-tinta sm:mt-0 sm:h-[54px] sm:self-start sm:bg-amarillo"
               >
                 Registrarme como proveedor

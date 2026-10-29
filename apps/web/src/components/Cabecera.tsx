@@ -5,8 +5,8 @@ import { Logo } from "@/components/Logo";
 import { MenuUsuario } from "@/components/MenuUsuario";
 
 /**
- * Cabecera pública mínima y enfocada en la acción: encontrar un servicio o registrarse como proveedor.
- * Escritorio: logo, Categorías, Cómo funciona, «Soy proveedor» (botón secundario) e «Iniciar sesión» (acción principal).
+ * Cabecera pública mínima y enfocada en la acción: encontrar un servicio o ingresar.
+ * Escritorio: logo, Categorías, Cómo funciona e «Iniciar sesión» (acción principal, única entrada a /ingreso).
  * Celular: hamburguesa a la izquierda, logo al centro y perfil a la derecha.
  * Lo institucional (Nosotros, Contacto, Guías, Por localidad, legales) vive en el pie de página.
  */
@@ -19,7 +19,6 @@ export function Cabecera() {
         <nav aria-label="Principal" className="flex items-center gap-1.5">
           <EnlaceNav href="/categorias" prefijos={["/servicios"]}>Categorías</EnlaceNav>
           <EnlaceNav href="/como-funciona">Cómo funciona</EnlaceNav>
-          <Link href="/proveedores/registro" className="ml-2 flex h-11 items-center rounded-xl border-2 border-tinta px-[18px] text-[15px] font-bold text-tinta hover:bg-white">Soy proveedor</Link>
           <MenuUsuario />
         </nav>
       </div>
@@ -34,8 +33,7 @@ export function Cabecera() {
         >
           <Link role="menuitem" href="/categorias" className={itemMenu}>Categorías</Link>
           <Link role="menuitem" href="/como-funciona" className={itemMenu}>Cómo funciona</Link>
-          <Link role="menuitem" href="/proveedores/registro" className={`${itemMenu} border-t border-borde-suave font-semibold`}>Soy proveedor</Link>
-          <Link role="menuitem" href="/ingresar" className={itemMenu}>Iniciar sesión</Link>
+          <Link role="menuitem" href="/ingreso" className={`${itemMenu} border-t border-borde-suave font-semibold`}>Iniciar sesión</Link>
         </Desplegable>
         <Link href="/" aria-label="LasTresB, inicio" className="flex justify-center text-tinta"><Logo /></Link>
         <span className="flex justify-end"><MenuUsuario compacto /></span>

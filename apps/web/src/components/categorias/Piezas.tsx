@@ -82,7 +82,7 @@ export function TarjetaProveedores() {
         <li>Recibe contactos por WhatsApp.</li>
         <li>Construye tu reputación con reseñas verificadas.</li>
       </ul>
-      <Link href="/proveedores/registro" className="flex h-[52px] items-center justify-center self-start rounded-campo bg-amarillo px-7 text-base font-bold text-tinta max-sm:self-stretch">Registrar mi servicio</Link>
+      <Link href="/ingreso" className="flex h-[52px] items-center justify-center self-start rounded-campo bg-amarillo px-7 text-base font-bold text-tinta max-sm:self-stretch">Registrar mi servicio</Link>
     </section>
   );
 }
