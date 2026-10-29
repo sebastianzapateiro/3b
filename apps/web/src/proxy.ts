@@ -16,7 +16,7 @@ const RUTAS_PUBLICAS = [
   "/registro",
   "/recuperar",
   "/nueva-clave",
-  "/cuenta/consentimiento",
+  "/consentimiento",
   "/api",
   "/_next",
   "/iconos",
@@ -83,7 +83,7 @@ export async function proxy(request: Request) {
 
     if (!tieneConsentimiento[0]) {
       return NextResponse.redirect(
-        new URL("/cuenta/consentimiento", request.url)
+        new URL("/consentimiento", request.url)
       );
     }
   }
