@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
-import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
+import { crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
 import { exigirBackoffice } from "@/lib/verificacion";
 import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
-/** B4 · Usuarios, roles y suspensión (CU-70 a CU-72). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
+/** B4 · Usuarios: crear, roles y suspensión (CU-70 a CU-72). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
 const ROLES = [
   { v: "comprador", t: "Comprador" },
   { v: "proveedor", t: "Proveedor" },
@@ -20,7 +20,8 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
   await exigirBackoffice(true);
   const sp = await searchParams;
   const lista = await listarUsuarios(sp.q);
-  const elegido = lista.find((u) => u.id === sp.u) ?? lista[0];
+  const creando = sp.nuevo === "1";
+  const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
 
   return (
     <>
@@ -29,6 +30,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           <input name="q" type="search" defaultValue={sp.q} aria-label="Buscar usuario" placeholder="Correo, nombre o teléfono" className="min-w-0 flex-1 bg-transparent text-[15px] outline-none" />
         </form>
+        <Link href="/admin/usuarios?nuevo=1" className={botonOscuro}>Crear usuario</Link>
       </Encabezado>
 
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
@@ -59,6 +61,30 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
             </tbody>
           </table>
         </section>
+
+        {creando && (
+          <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
+            <Aviso ok={sp.ok} error={sp.error} />
+            <form action={crearUsuario} className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+              <h2 className="font-display text-xl font-bold">Crear usuario</h2>
+              <label htmlFor="nombre" className={etiquetaAdmin}>Nombre</label>
+              <input id="nombre" name="nombre" required minLength={2} maxLength={80} autoComplete="off" placeholder="Ej: Laura Gómez" className={campoAdmin} />
+              <label htmlFor="correo" className={etiquetaAdmin}>Correo</label>
+              <input id="correo" name="correo" type="email" required maxLength={120} autoComplete="off" placeholder="nombre@correo.com" className={campoAdmin} />
+              <fieldset className="mt-1 flex flex-col gap-2.5 text-[15px]">
+                <legend className={`${etiquetaAdmin} mb-2`}>Roles</legend>
+                {ROLES.map((r) => (
+                  <label key={r.v} className="flex items-center gap-2.5"><input type="checkbox" name="rol" value={r.v} className="size-5 accent-verde" />{r.t}</label>
+                ))}
+              </fieldset>
+              <span className="text-[13px] leading-[1.45] text-gris">Le enviamos un correo para que elija su clave. Al entrar por primera vez acepta las políticas; los roles de backoffice además le piden activar 2FA.</span>
+              <div className="flex gap-2">
+                <button type="submit" className={botonOscuro}>Crear y enviar invitación</button>
+                <Link href="/admin/usuarios" className="inline-flex h-11 items-center px-3 text-sm font-semibold text-gris">Cancelar</Link>
+              </div>
+            </form>
+          </section>
+        )}
 
         {elegido && (
           <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">

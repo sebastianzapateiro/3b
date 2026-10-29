@@ -8,6 +8,7 @@ export const PARAMETROS: Parametro[] = [
   { clave: "otp_vigencia_min", etiqueta: "Vigencia del OTP (min)", grupo: "Verificación", defecto: 5 },
   { clave: "otp_intentos", etiqueta: "Intentos de OTP antes del bloqueo", grupo: "Verificación", defecto: 3 },
   { clave: "plazo_rut_dias", etiqueta: "Plazo para cargar RUT (días)", grupo: "Verificación", defecto: 30 },
+  { clave: "invitacion_vigencia_h", etiqueta: "Vigencia de la invitación a una cuenta nueva (h)", grupo: "Verificación", defecto: 72 },
   { clave: "apto_menores_meses", etiqueta: "Revalidar «Apto para menores» (meses)", grupo: "Verificación", defecto: 6 },
   { clave: "recordatorio_calificar_dias", etiqueta: "Recordatorio para calificar (días)", grupo: "Reseñas y moderación", defecto: null },
   { clave: "reportes_para_ocultar", etiqueta: "Reportes para ocultar provisionalmente", grupo: "Reseñas y moderación", defecto: 3 },
