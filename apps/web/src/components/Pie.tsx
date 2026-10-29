@@ -12,7 +12,6 @@ const titulo = "font-display text-base font-bold text-tinta";
 /**
  * Pie de página: marca y cuatro columnas de enlaces (Categorías, Servicios por localidad, Para proveedores, LasTresB).
  * TODO: redes sociales (Instagram, etc.): el sitio aún no tiene enlaces; agregarlos aquí cuando existan.
- * TODO: páginas «Nosotros» y «Contacto»: no existen todavía, por eso no se enlazan.
  */
 export function Pie() {
   const destacadas = LOCALIDADES_DESTACADAS.map((s) => LOCALIDADES_BOGOTA.find((l) => l.slug === s)!);
@@ -45,6 +44,8 @@ export function Pie() {
 
         <nav aria-label="LasTresB" className="flex flex-col">
           <h2 className={titulo}>LasTresB</h2>
+          <Link href="/nosotros" className={enlace}>Nosotros</Link>
+          <Link href="/contacto" className={enlace}>Contacto</Link>
           <Link href="/guias" className={enlace}>Guías</Link>
           <Link href="/terminos" className={enlace}>Términos</Link>
           <Link href="/privacidad" className={enlace}>Privacidad</Link>

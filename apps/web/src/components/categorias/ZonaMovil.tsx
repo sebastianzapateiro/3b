@@ -52,10 +52,10 @@ export function ZonaMovil({ children }: { children: React.ReactNode }) {
   return (
     <div data-filtro={filtro ?? undefined} className="group flex flex-col gap-3">
       <div role="group" aria-label="Filtros rápidos" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-        <button type="button" aria-pressed={filtro === "urgente"} onClick={() => alternar("urgente")} className={`${chip} ${filtro === "urgente" ? "border-tinta bg-tinta text-white" : "border-[#D5D8D8] bg-white text-tinta"}`}>Urgente</button>
-        <button type="button" aria-pressed={filtro === "24h"} onClick={() => alternar("24h")} className={`${chip} ${filtro === "24h" ? "border-tinta bg-tinta text-white" : "border-[#D5D8D8] bg-white text-tinta"}`}>24 h</button>
-        <button type="button" onClick={cerca} className={`${chip} border-[#D5D8D8] bg-white text-tinta`}>Cerca</button>
-        <button type="button" onClick={() => hoja.current?.showModal()} className={`${chip} border-[#D5D8D8] bg-white text-tinta`}>Filtros</button>
+        <button type="button" aria-pressed={filtro === "urgente"} onClick={() => alternar("urgente")} className={`${chip} ${filtro === "urgente" ? "border-tinta bg-tinta text-white" : "border-borde-campo bg-white text-tinta"}`}>Urgente</button>
+        <button type="button" aria-pressed={filtro === "24h"} onClick={() => alternar("24h")} className={`${chip} ${filtro === "24h" ? "border-tinta bg-tinta text-white" : "border-borde-campo bg-white text-tinta"}`}>24 h</button>
+        <button type="button" onClick={cerca} className={`${chip} border-borde-campo bg-white text-tinta`}>Cerca</button>
+        <button type="button" onClick={() => hoja.current?.showModal()} className={`${chip} border-borde-campo bg-white text-tinta`}>Filtros</button>
       </div>
       {mensaje && <p role="status" className="text-sm text-gris">{mensaje}</p>}
       {filtro && <p className="text-sm text-gris">Mostrando solo los oficios cuyos proveedores suelen atender urgencias. <button type="button" onClick={() => setFiltro(null)} className="inline-flex min-h-11 items-center font-semibold text-tinta underline">Quitar filtro</button></p>}
@@ -68,7 +68,7 @@ export function ZonaMovil({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col gap-1.5"><label htmlFor="h-loc" className="text-sm font-semibold">Localidad</label><select id="h-loc" name="localidad" className="h-12 rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-base"><option value="">Toda Bogotá</option>{LOCALIDADES_BOGOTA.map((l) => <option key={l.slug} value={l.slug}>{l.nombre}</option>)}</select></div>
           <label className="flex min-h-11 items-center justify-between gap-3 text-[15px]">Atienden urgencias<input type="checkbox" role="switch" checked={hojaUrgente} onChange={(e) => setHojaUrgente(e.target.checked)} className="size-6 accent-verde" /></label>
           <label className="flex min-h-11 items-center justify-between gap-3 text-[15px]">Atienden 24 horas<input type="checkbox" role="switch" checked={hojaUrgente} onChange={(e) => setHojaUrgente(e.target.checked)} className="size-6 accent-verde" /></label>
-          <button type="submit" className="h-12 rounded-lg bg-tinta text-base font-semibold text-white">Ver resultados</button>
+          <button type="submit" className="h-12 rounded-campo bg-tinta text-base font-semibold text-white">Ver resultados</button>
         </form>
       </dialog>
     </div>

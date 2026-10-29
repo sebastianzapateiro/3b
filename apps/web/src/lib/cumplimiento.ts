@@ -6,10 +6,10 @@ import { desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { diasHabilesEntre } from "@las3b/shared";
 
-const { reclamos, solicitudesDatos, proveedores, user, politicas, festivos, contactos, resenas, servicios } = schema;
+const { mensajesContacto, reclamos, solicitudesDatos, proveedores, user, politicas, festivos, contactos, resenas, servicios } = schema;
 
 export const ETIQUETA_SOLICITUD = { consulta: "Consulta de datos", rectificacion: "Corrección de datos", supresion: "Supresión de datos", exportacion: "Copia de datos" } as const;
-export const BANDEJAS = ["todo", "reclamos", "datos", "politicas"] as const;
+export const BANDEJAS = ["todo", "reclamos", "datos", "mensajes", "politicas"] as const;
 export type Bandeja = (typeof BANDEJAS)[number];
 
 export type FilaTramite = {
@@ -62,7 +62,7 @@ export async function bandejaCumplimiento(bandeja: Bandeja): Promise<FilaTramite
 }
 
 export async function contarAbiertos() {
-  const [r] = (await db.execute(sql`SELECT (SELECT count(*)::int FROM reclamos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')) AS n`)) as unknown as { n: number }[];
+  const [r] = (await db.execute(sql`SELECT (SELECT count(*)::int FROM reclamos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM mensajes_contacto WHERE estado = 'nuevo') AS n`)) as unknown as { n: number }[];
   return r?.n ?? 0;
 }
 
@@ -96,4 +96,9 @@ export async function politicasVigentes() {
   const todas = await db.select({ tipo: politicas.tipo, version: politicas.version, desde: politicas.vigenteDesde }).from(politicas).orderBy(desc(politicas.vigenteDesde));
   const vistas = new Set<string>();
   return todas.filter((p) => (vistas.has(p.tipo) ? false : (vistas.add(p.tipo), true)));
+}
+
+/** Mensajes del formulario de /contacto (los nuevos primero). */
+export async function listarMensajes() {
+  return db.select().from(mensajesContacto).orderBy(sql`(${mensajesContacto.estado} = 'nuevo') DESC`, desc(mensajesContacto.createdAt)).limit(100);
 }

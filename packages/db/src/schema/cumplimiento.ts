@@ -85,3 +85,16 @@ export const configuracion = pgTable("configuracion", {
   valor: jsonb().notNull(),
   actualizadoEn: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Mensajes del formulario público de /contacto. El equipo los atiende desde el backoffice (Reclamos y datos). */
+export const mensajesContacto = pgTable("mensajes_contacto", {
+  id: uuid().primaryKey().defaultRandom(),
+  nombre: text().notNull(),
+  correo: text().notNull(),
+  motivo: text().notNull(),
+  mensaje: text().notNull(),
+  autorizaDatos: boolean().notNull().default(false),
+  /** nuevo | atendido */
+  estado: text().notNull().default("nuevo"),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});

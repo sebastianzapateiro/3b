@@ -195,3 +195,17 @@ export const FAQ_RETIRO: Pregunta[] = [
   { pregunta: "¿Necesito cuenta para reportar?", respuesta: "No. Solo necesitas un correo para que podamos contactarte." },
   { pregunta: "¿Puedo reportar una reseña o un perfil?", respuesta: "Sí, con el botón «Reportar este perfil» o desde la página de reclamos." },
 ];
+
+export const FAQ_NOSOTROS: Pregunta[] = [
+  { pregunta: "¿LasTresB presta los servicios?", respuesta: "No. Es un portal de contacto: muestra proveedores verificados y te deja escribirles por WhatsApp. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor." },
+  GENERALES.costo,
+  { pregunta: "¿En qué ciudades funciona?", respuesta: "Por ahora solo en Bogotá, en sus 20 localidades." },
+  { pregunta: "¿Qué servicios no ofrece LasTresB?", respuesta: "Por su nivel de riesgo, LasTresB no ofrece transporte de personas ni servicios de salud o cuidado de personas. Los fletes y trasteos transportan solo carga." },
+];
+
+export const FAQ_CONTACTO: Pregunta[] = [
+  { pregunta: "¿Cuánto tardan en responder?", respuesta: "Revisamos los mensajes en orden de llegada y te respondemos al correo que dejes. Para reclamos y solicitudes sobre tus datos existen canales con plazos legales: úsalos si es tu caso." },
+  { pregunta: "¿Dónde presento un reclamo sobre un proveedor?", respuesta: "En la página de reclamos. Allí queda radicado y tiene un plazo de respuesta en días hábiles." },
+  { pregunta: "¿Cómo consulto, corrijo o elimino mis datos?", respuesta: "Desde Mi cuenta, en la sección Privacidad. Allí haces la solicitud y ves su estado." },
+  { pregunta: "¿Puedo escribir si soy proveedor?", respuesta: "Sí. Elige el motivo «Soy proveedor» y cuéntanos tu duda sobre el registro o la verificación." },
+];

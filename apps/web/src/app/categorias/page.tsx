@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { CATEGORIAS, TODAS_LAS_SUBCATEGORIAS } from "@las3b/shared";
-import { AcordeonMovil } from "@/components/categorias/AcordeonMovil";
+import { GaleriaMovil } from "@/components/categorias/GaleriaMovil";
 import { BuscadorCategorias } from "@/components/categorias/Buscador";
 import { FONDO_NEUTRO, TarjetaCategoria, TarjetaProveedores } from "@/components/categorias/Piezas";
 import { ZonaMovil } from "@/components/categorias/ZonaMovil";
@@ -33,8 +33,8 @@ export default function Categorias() {
 
         <BuscadorCategorias />
 
-        {/* Celular: chips rápidos y acordeón */}
-        <div className="md:hidden"><ZonaMovil><AcordeonMovil /></ZonaMovil></div>
+        {/* Celular: chips rápidos y galería de tarjetas con foto */}
+        <div className="md:hidden"><ZonaMovil><GaleriaMovil /></ZonaMovil></div>
 
         {/* Tablet 2 × 2 y escritorio 4 en fila, todas del mismo alto */}
         <div className="hidden items-stretch gap-4 md:grid md:grid-cols-2 lg:grid-cols-4">
