@@ -56,7 +56,7 @@ export const auth = betterAuth({
   },
   socialProviders: google,
   session: {
-    expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el backoffice usa 8 h, ver proxy.ts
+    expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el equipo del backoffice, 8 h: ver lib/verificacion.ts
     updateAge: 60 * 60 * 24,
   },
   user: {
@@ -91,7 +91,8 @@ export const auth = betterAuth({
     },
   },
   rateLimit: { enabled: true, window: 60, max: 30 },
-  plugins: [twoFactor({ issuer: "LasTresB" }), nextCookies()],
+  // «Confiar en este equipo» dura lo mismo que la sesión del backoffice (8 h); por defecto Better Auth usa 30 días.
+  plugins: [twoFactor({ issuer: "LasTresB", trustDeviceMaxAge: 8 * 60 * 60 }), nextCookies()],
 });
 
 export type Session = typeof auth.$Infer.Session;

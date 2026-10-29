@@ -3,19 +3,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components/cuenta";
+import { PasoSegundoFactor } from "@/components/SegundoFactor";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 export function FormIngresar({ destino }: { destino: string }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
+  // Cuentas con 2FA (equipo del backoffice): tras la clave se pide el código en esta misma pantalla.
+  const [pideCodigo, setPideCodigo] = useState(false);
 
   async function ingresar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const datos = new FormData(e.currentTarget);
     setCargando(true);
     setError("");
-    const { error } = await authClient.signIn.email({
+    const { data, error } = await authClient.signIn.email({
       email: String(datos.get("correo")),
       password: String(datos.get("clave")),
       // Better Auth navega aquí al ingresar; también es el destino del enlace si reenvía la verificación.
@@ -26,8 +29,25 @@ export function FormIngresar({ destino }: { destino: string }) {
       setCargando(false);
       return;
     }
+    if ((data as { twoFactorRedirect?: boolean } | null)?.twoFactorRedirect) {
+      setCargando(false);
+      return setPideCodigo(true);
+    }
+    entrar();
+  }
+
+  function entrar() {
     router.replace(destino);
     router.refresh();
+  }
+
+  if (pideCodigo) {
+    return (
+      <div className="flex flex-col gap-3.5">
+        <p className="text-[15px] leading-normal text-tinta-2">Tu cuenta tiene verificación en dos pasos. Abre tu app autenticadora y escribe el código de LasTresB.</p>
+        <PasoSegundoFactor onVerificado={entrar} onVolver={() => setPideCodigo(false)} />
+      </div>
+    );
   }
 
   return (

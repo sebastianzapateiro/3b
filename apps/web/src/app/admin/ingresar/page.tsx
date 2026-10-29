@@ -7,9 +7,10 @@ export const metadata = { title: "Ingreso al backoffice", robots: { index: false
 export const dynamic = "force-dynamic";
 
 /** B1 · Ingreso al backoffice con segundo factor. Mockup: docs/mockups/BO_Ingreso.dc.html. */
-export default async function IngresoAdmin() {
+export default async function IngresoAdmin({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const v = await verificarSesionAdmin();
   if (!v.error) redirect("/admin");
+  const { vencida } = await searchParams;
 
   return (
     <div className="flex min-h-dvh flex-wrap bg-[#F3EFE7]">
@@ -22,15 +23,15 @@ export default async function IngresoAdmin() {
           <h2 className="font-display text-[40px] font-extrabold leading-[1.08] tracking-[-1px]">Acceso del equipo LasTresB</h2>
           <p className="text-base leading-relaxed text-[#C9D1CF]">Aquí se revisan documentos de identidad y datos personales. Por eso el ingreso exige segundo factor y cada acción queda registrada en la auditoría.</p>
           <ul className="flex flex-col gap-3 text-[15px] text-[#DDE3E1]">
-            <li className="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3FB394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Sesión separada de la cuenta pública</li>
+            <li className="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3FB394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>La sesión del equipo dura 8 horas</li>
             <li className="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5B700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z" /></svg>Código de app autenticadora (TOTP) obligatorio</li>
             <li className="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E4694B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z" /><path d="M8 9h8M8 13h8M8 17h5" /></svg>Accesos a documentos auditados</li>
           </ul>
         </div>
-        <span className="text-[13px] text-[#A9B4B1]">¿Perdiste tu celular? Pide a un administrador que restablezca tu 2FA.</span>
+        <span className="text-[13px] text-[#A9B4B1]">¿Perdiste tu celular? Usa uno de tus códigos de respaldo o pide a un administrador que restablezca tu 2FA.</span>
       </section>
       <section className="flex min-w-0 flex-[1_1_520px] items-center justify-center px-6 py-10">
-        <FormIngresoAdmin />
+        <FormIngresoAdmin aviso={vencida ? "Tu sesión del equipo cumplió su tiempo máximo. Ingresa de nuevo." : undefined} />
       </section>
     </div>
   );

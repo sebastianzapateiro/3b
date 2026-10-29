@@ -105,15 +105,13 @@ pnpm db:cifrar-documentos   # cuenta documentos en texto plano; --aplicar los ci
 - Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
 - Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
 - Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella. Carga de documentos al bucket `privado` (URL firmada + validación de tipo real) en el alta y en el panel; el equipo los abre por `/admin/documentos/[id]` con auditoría.
-- Backoffice B1–B8 con rol + 2FA (QR al configurar), creación de usuarios con invitación por correo, auditoría de solo inserción, parámetros en `configuracion`.
+- Backoffice B1–B8 con rol + 2FA (QR al configurar; `/ingresar` también pide el código; códigos de respaldo utilizables; sesión del equipo de 8 h por `sesion_backoffice_h`; «confiar en este equipo» 8 h), creación de usuarios con invitación por correo, auditoría de solo inserción, parámetros en `configuracion`.
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
 - Autorización Ley 1918: el alta la firma con casilla, pero el backoffice la marca como «Falta» si no hay archivo; unificar criterio.
 - Fotos del portafolio al bucket `publico` (aún no hay carga).
 - OTP real por WhatsApp (hoy en consola).
-- Sesión de 8 h del backoffice: documentada pero no aplicada (hoy 30 días).
-- `/ingresar` no sabe pedir el código 2FA: una cuenta con 2FA debe entrar por `/admin/ingresar`.
 - `GET /api/v1/proveedores`; límites de clics repetidos en contacto; `POST /api/v1/contactos` antiguo por unificar.
 - Seguridad: una `DATABASE_URL` real quedó en el historial de git (commit `5a12a79`); rotar la clave de la base.
 

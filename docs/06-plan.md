@@ -79,7 +79,7 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ## [ ] 7. Backoffice: acceso y cola de aprobación (B1)
 
-> **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Además: crear usuarios con invitación por correo y QR para el 2FA (29 oct). «Abrir» documento ya usa `/admin/documentos/[id]`: URL firmada (minutos en `configuracion`) y registro en `auditoria` por cada apertura. Falta: sesión de 8 h (hoy 30 días); que `/ingresar` pida el código 2FA o redirija a `/admin/ingresar`.
+> **Estado (29 oct 2026):** acceso con rol + 2FA, tablero, aprobaciones, revisión, alta asistida, y además B2–B8 (moderación, usuarios, catálogo, cumplimiento, auditoría). Además: crear usuarios con invitación por correo y QR para el 2FA (29 oct). «Abrir» documento ya usa `/admin/documentos/[id]`: URL firmada (minutos en `configuracion`) y registro en `auditoria` por cada apertura. Sesión del equipo de 8 h, 2FA desde `/ingresar` y códigos de respaldo hechos (29 oct).
 
 
 - Proteger `/admin/*` (middleware o layout de servidor): sesión + rol en `usuario_roles` (`verificador`, `moderador`, `admin`) + 2FA TOTP activo; sesión de 8 h. Ingreso en `/admin/ingresar` (`BO_Ingreso.dc.html`).
