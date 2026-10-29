@@ -2,7 +2,7 @@ import { JsonLd } from "@/components/JsonLd";
 import type { Pregunta } from "@/lib/faqs";
 
 /** Preguntas frecuentes al final de cada sección, con datos estructurados FAQPage. */
-export function Faq({ preguntas, titulo = "Preguntas frecuentes" }: { preguntas: Pregunta[]; titulo?: string }) {
+export function Faq({ preguntas, titulo = "Preguntas frecuentes", lateral = false }: { preguntas: Pregunta[]; titulo?: string; lateral?: boolean }) {
   const datos = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -14,8 +14,10 @@ export function Faq({ preguntas, titulo = "Preguntas frecuentes" }: { preguntas:
   };
 
   return (
-    <section aria-labelledby="faq" className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 pb-14 pt-2 sm:px-6">
+    <section aria-labelledby="faq" className={lateral ? "mx-auto grid w-full max-w-[1200px] gap-4 px-5 pb-14 pt-2 sm:px-6 lg:grid-cols-[200px_1fr] lg:gap-10" : "mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 pb-14 pt-2 sm:px-6"}>
       <JsonLd datos={datos} />
+      {lateral && <span aria-hidden="true" className="hidden font-display text-lg font-bold lg:block">FAQ</span>}
+      <div className="flex flex-col gap-3">
       <h2 id="faq" className="font-display text-[22px] font-bold sm:text-[28px]">{titulo}</h2>
       <div className="flex flex-col gap-2.5">
         {preguntas.map((p) => (
@@ -29,6 +31,7 @@ export function Faq({ preguntas, titulo = "Preguntas frecuentes" }: { preguntas:
             <p className="px-4 pb-4 text-[15px] leading-relaxed text-tinta-2">{p.respuesta}</p>
           </details>
         ))}
+      </div>
       </div>
     </section>
   );

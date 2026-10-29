@@ -39,6 +39,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const cal = uno(sp.cal) === "4" || uno(sp.cal) === "4.5" ? uno(sp.cal)! : "0";
   const precioMax = Number(uno(sp.precioMax)) || undefined;
   const tambien = varios(sp.tambien);
+  const urgencias = uno(sp.urgente) === "1";
   const pagina = Math.max(1, Number(uno(sp.pagina)) || 1);
 
   const resultado = await buscarProveedores({
@@ -49,6 +50,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     insignias,
     calificacionMin: Number(cal) || undefined,
     precioMax,
+    urgencias,
     orden,
     pagina,
   });
@@ -63,7 +65,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     const p = new URLSearchParams();
     const actual: Record<string, string | string[] | undefined> = {
       q, localidad, categoria, orden, cal: cal === "0" ? undefined : cal, precioMax: precioMax ? String(precioMax) : undefined,
-      insignia: insignias, tambien, pagina: pagina > 1 ? String(pagina) : undefined,
+      insignia: insignias, tambien, urgente: urgencias ? "1" : undefined, pagina: pagina > 1 ? String(pagina) : undefined,
     };
     for (const [k, v] of Object.entries({ ...actual, ...cambios })) {
       if (v == null) continue;
