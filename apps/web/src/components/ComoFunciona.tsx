@@ -18,9 +18,9 @@ const PANEL: Record<ColorPanel, { fondo: string; pastilla: string; claro: boolea
 function Paso({ paso, n, id }: { paso: PasoComo; n: number; id?: string }) {
   const p = PANEL[paso.panel];
   return (
-    <li id={id} className="flex scroll-mt-24 flex-col overflow-hidden rounded-[30px] border border-borde bg-white sm:min-h-[280px] sm:flex-row-reverse">
-      <div className={`flex flex-none items-center justify-center px-2.5 py-4 sm:w-[360px] sm:px-3 ${p.fondo}`}>
-        <Pantallazo icono={paso.icono} sobreClaro={p.claro} />
+    <li id={id} className="flex scroll-mt-24 flex-col overflow-hidden rounded-[30px] border border-borde bg-white sm:flex-row-reverse">
+      <div className="flex flex-none items-center justify-center px-5 pb-1 pt-5 sm:w-[340px] sm:p-5 sm:pl-0">
+        <Pantallazo icono={paso.icono} />
       </div>
       <div className="flex flex-1 items-center gap-4 px-5 py-6 sm:gap-6 sm:px-8 sm:py-8">
         {/* Bola con el número del paso, a la izquierda. */}

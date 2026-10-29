@@ -138,12 +138,10 @@ function Pantalla({ icono }: { icono: IconoPaso }) {
   }
 }
 
-export function Pantallazo({ icono, sobreClaro }: { icono: IconoPaso; sobreClaro?: boolean }) {
+export function Pantallazo({ icono }: { icono: IconoPaso }) {
   return (
-    <div aria-hidden="true" className="flex w-full flex-col items-center gap-1.5">
-      {/* Se agranda el pantallazo para que el color solo asome como marco. */}
-      <div className="flex w-full justify-center [zoom:1.1] sm:[zoom:1.35]"><Pantalla icono={icono} /></div>
-      <span className={`text-xs font-semibold ${sobreClaro ? "text-tinta" : "text-white/90"}`}>Así se ve en LasTresB</span>
+    <div aria-hidden="true" className="flex w-full justify-center [zoom:1.1] sm:[zoom:1.25]">
+      <Pantalla icono={icono} />
     </div>
   );
 }
