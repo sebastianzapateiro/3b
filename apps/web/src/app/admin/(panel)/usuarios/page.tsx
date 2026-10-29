@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { cambiarExigencia2fa, crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
 import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
-import { exigirBackoffice } from "@/lib/verificacion";
+import { exigencia2fa, exigirBackoffice } from "@/lib/verificacion";
 import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
 /** B4 · Usuarios: crear, roles y suspensión (CU-70 a CU-72). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
@@ -19,7 +19,7 @@ const fecha = (d: Date | null) => (d ? new Date(d).toLocaleDateString("es-CO", {
 export default async function Usuarios({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await exigirBackoffice(true);
   const sp = await searchParams;
-  const lista = await listarUsuarios(sp.q);
+  const [lista, exige2fa] = await Promise.all([listarUsuarios(sp.q), exigencia2fa()]);
   const creando = sp.nuevo === "1";
   const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
 
@@ -62,6 +62,27 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
           </table>
         </section>
 
+        <form action={cambiarExigencia2fa} className={`${tarjeta} order-last flex min-w-0 flex-[3_1_520px] flex-col gap-3 p-[22px]`}>
+          <h2 className="font-display text-xl font-bold">Segundo factor por rol</h2>
+          <p className="text-sm leading-normal text-gris">Decide qué roles del equipo deben usar código de app autenticadora para entrar. Quien ya lo tiene activo lo sigue usando. Si una persona tiene varios roles, se le exige si alguno de ellos lo exige.</p>
+          <ul className="flex flex-col">
+            {[
+              { v: "admin", t: "Admin", fijo: true, nota: "Siempre obligatorio: ve datos y documentos de todo el sistema." },
+              { v: "verificador", t: "Verificador", fijo: false, nota: "Revisa documentos de identidad." },
+              { v: "moderador", t: "Moderador", fijo: false, nota: "Modera reseñas y reportes." },
+            ].map((r) => (
+              <li key={r.v} className="flex items-center justify-between gap-3 border-t border-borde-suave py-3 first:border-0">
+                <span className="flex flex-col"><b className="text-[15px]">{r.t}</b><span className="text-[13px] text-gris">{r.nota}</span></span>
+                <label className={`flex items-center gap-2 text-sm font-semibold ${r.fijo ? "text-gris" : ""}`}>
+                  <input type="checkbox" name={r.v} defaultChecked={exige2fa[r.v as keyof typeof exige2fa]} disabled={r.fijo} className="size-5 accent-verde" />
+                  Exigir 2FA
+                </label>
+              </li>
+            ))}
+          </ul>
+          <button type="submit" className="h-[42px] self-start rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Guardar</button>
+        </form>
+
         {creando && (
           <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
             <Aviso ok={sp.ok} error={sp.error} />
@@ -77,7 +98,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                   <label key={r.v} className="flex items-center gap-2.5"><input type="checkbox" name="rol" value={r.v} className="size-5 accent-verde" />{r.t}</label>
                 ))}
               </fieldset>
-              <span className="text-[13px] leading-[1.45] text-gris">Le enviamos un correo para que elija su clave. Al entrar por primera vez acepta las políticas; los roles de backoffice además le piden activar 2FA.</span>
+              <span className="text-[13px] leading-[1.45] text-gris">Le enviamos un correo para que elija su clave. Al entrar por primera vez acepta las políticas y, si su rol lo exige, activa el 2FA.</span>
               <div className="flex gap-2">
                 <button type="submit" className={botonOscuro}>Crear y enviar invitación</button>
                 <Link href="/admin/usuarios" className="inline-flex h-11 items-center px-3 text-sm font-semibold text-gris">Cancelar</Link>
@@ -98,7 +119,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                   <label key={r.v} className="flex items-center gap-2.5"><input type="checkbox" name="rol" value={r.v} defaultChecked={elegido.roles.includes(r.v)} className="size-5 accent-verde" />{r.t}</label>
                 ))}
               </fieldset>
-              <span className="text-[13px] leading-[1.45] text-gris">Los roles de backoffice exigen 2FA activo para entrar. El último Admin no puede quitarse el rol.</span>
+              <span className="text-[13px] leading-[1.45] text-gris">Admin siempre exige 2FA; verificador y moderador, según «Segundo factor por rol». El último Admin no puede quitarse el rol.</span>
               <button type="submit" className="h-[42px] self-start rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Guardar roles</button>
             </form>
 

@@ -36,7 +36,7 @@ Conjunto de roles por usuario (`usuario_roles`): `comprador`, `proveedor`, `veri
 
 **Implementado (29 oct 2026):**
 - `src/proxy.ts` (convención de Next 16, runtime Node.js) exige sesión en `/admin`, `/cuenta`, `/panel` y `/proveedores`, y manda a `/consentimiento` a quien no tenga consentimiento vigente (Google, invitados).
-- Backoffice: `lib/verificacion.ts` exige rol `verificador`/`moderador`/`admin` + 2FA activo. Ingreso en `/admin/ingresar`; la primera vez muestra un QR (clave manual como respaldo) y códigos de respaldo.
+- Backoffice: `lib/verificacion.ts` exige rol `verificador`/`moderador`/`admin`. El 2FA es obligatorio siempre para `admin`; para verificador y moderador lo decide un admin en `/admin/usuarios` → «Segundo factor por rol» (`configuracion`: `exige_2fa_verificador`, `exige_2fa_moderador`; activado si no hay valor). Con varios roles se exige si alguno lo exige. Cada cambio queda en `auditoria`. Ingreso en `/admin/ingresar`; la primera vez muestra un QR (clave manual como respaldo) y códigos de respaldo.
 - El admin crea cuentas en `/admin/usuarios`: la cuenta nace sin clave y recibe un enlace de invitación a `/nueva-clave` (vigencia en `configuracion`, `invitacion_vigencia_h`). El primer admin se crea con `pnpm admin:crear`.
 - Límite de peticiones de Better Auth: 30 por minuto.
 - Sesión del equipo: `lib/verificacion.ts` cierra la sesión si pasaron más de `sesion_backoffice_h` horas (8) desde el ingreso y manda a `/admin/ingresar?vencida=1`. «Confiar en este equipo» dura 8 h (`trustDeviceMaxAge`).

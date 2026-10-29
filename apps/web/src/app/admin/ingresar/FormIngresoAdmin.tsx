@@ -30,13 +30,14 @@ export function FormIngresoAdmin({ aviso }: { aviso?: string }) {
       setCorreo(correoIngresado);
       return setPaso(2);
     }
-    // Sin 2FA no hay acceso al backoffice. Si la cuenta tiene rol de equipo, se configura aquí; si no, se cierra la sesión.
+    // Sin rol de equipo se cierra la sesión. Si sus roles exigen 2FA y no lo tiene, se configura aquí.
     const clave = String(datos.get("clave"));
     const yo = await fetch("/api/v1/yo").then((r) => (r.ok ? r.json() : null)).catch(() => null);
     if (!yo?.backoffice) {
       await authClient.signOut();
       return setError("Esta cuenta no tiene acceso al backoffice.");
     }
+    if (!yo.exige2fa) return entrar();
     setCargando(true);
     const { data: config, error: errorConfig } = await authClient.twoFactor.enable({ password: clave });
     setCargando(false);

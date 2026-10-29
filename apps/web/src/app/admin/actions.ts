@@ -16,7 +16,7 @@ import { auth } from "@/lib/auth";
 import { enviarCorreo } from "@/lib/correo";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { parametro } from "@/lib/parametros";
-import { exigirBackoffice } from "@/lib/verificacion";
+import { exigencia2fa, exigirBackoffice, guardarExigencia2fa, ROLES_2FA_OPCIONAL } from "@/lib/verificacion";
 
 const { proveedores, usuarioRoles, user, session, twoFactor, categorias, terminosBusqueda, proveedorInsignias, insignias, proveedorCategorias, proveedorLocalidades, serviciosProveedor, configuracion } = schema;
 
@@ -189,6 +189,21 @@ export async function crearUsuario(formData: FormData) {
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "usuario_creado", objetoTipo: "usuario", objetoId: nuevo.id, metadatos: { roles } });
   revalidatePath("/admin", "layout");
   volver("/admin/usuarios", { u: nuevo.id, ok: `Cuenta creada. Enviamos la invitación a ${correo}.` });
+}
+
+/** B4 · Qué roles del equipo deben usar 2FA. Solo admin; el rol admin siempre lo exige y no se puede cambiar. */
+export async function cambiarExigencia2fa(formData: FormData) {
+  const actor = await exigirBackoffice(true);
+  const antes = await exigencia2fa();
+  const cambios: Record<string, { antes: boolean; despues: boolean }> = {};
+  for (const rol of ROLES_2FA_OPCIONAL) {
+    const exige = formData.get(rol) === "on";
+    if (exige === antes[rol]) continue;
+    await guardarExigencia2fa(rol, exige);
+    cambios[rol] = { antes: antes[rol], despues: exige };
+  }
+  if (Object.keys(cambios).length) await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "exigencia_2fa_actualizada", objetoTipo: "configuracion", metadatos: cambios });
+  volver("/admin/usuarios", { ok: Object.keys(cambios).length ? "Exigencia de segundo factor guardada." : "No hubo cambios." });
 }
 
 export async function guardarRoles(formData: FormData) {
