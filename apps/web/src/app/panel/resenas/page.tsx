@@ -16,7 +16,7 @@ export default async function ResenasPanel({ searchParams }: { searchParams: Pro
       {sp.error && <Aviso tono="error">{sp.error}</Aviso>}
       <p className="text-[15px] leading-normal text-tinta-2">Puedes responder cada reseña una sola vez, y la respuesta no se puede editar. Responde con respeto: la ven todos.</p>
 
-      {lista.length === 0 && <p className="rounded-[22px] border border-borde-suave bg-white p-5 text-[15px] text-tinta-2">Todavía no tienes reseñas. Se publican cuando un cliente que te escribió desde Las 3B te califica.</p>}
+      {lista.length === 0 && <p className="rounded-[22px] border border-borde-suave bg-white p-5 text-[15px] text-tinta-2">Todavía no tienes reseñas. Se publican cuando un cliente que te escribió desde LasTresB te califica.</p>}
 
       {lista.map((r) => {
         const prom = Math.round((r.puntualidad + r.calidad + r.calidadPrecio + r.cumplimiento) / 4);

@@ -2,7 +2,7 @@ import { Faq } from "@/components/Faq";
 import { FAQ_COOKIES } from "@/lib/faqs";
 import { meta } from "@/lib/seo";
 
-export const metadata = meta({ titulo: "Política de cookies", descripcion: "Qué cookies usa Las 3B, para qué sirven y cómo aceptarlas o rechazarlas.", ruta: "/cookies" });
+export const metadata = meta({ titulo: "Política de cookies", descripcion: "Qué cookies usa LasTresB, para qué sirven y cómo aceptarlas o rechazarlas.", ruta: "/cookies" });
 
 /**
  * Política de cookies (Ley 1581 de 2012). Describe lo que el sitio usa hoy.

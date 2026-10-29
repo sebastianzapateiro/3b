@@ -25,6 +25,8 @@ export async function exigirProveedor() {
       aniosExperiencia: proveedores.aniosExperiencia,
       emiteFactura: proveedores.emiteFactura,
       ofreceGarantia: proveedores.ofreceGarantia,
+      atiendeUrgencias: proveedores.atiendeUrgencias,
+      disponible24h: proveedores.disponible24h,
       motivoRechazo: proveedores.motivoRechazo,
       rutFechaLimite: proveedores.rutFechaLimite,
       promedio: proveedores.promedio,

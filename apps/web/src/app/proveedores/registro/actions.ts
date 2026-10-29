@@ -244,6 +244,7 @@ export async function guardarPaso3(formData: FormData) {
   const exigeMenores = await verificarCategoriaExigeMenores((prov?.categoriaId as number | null | undefined) ?? null);
   if (formData.get("aceptaTerminosProveedor") !== "on") return { error: "Debes aceptar los términos para proveedores." };
   if (formData.get("aceptaDatos") !== "on") return { error: "Debes autorizar el tratamiento de tus datos personales para verificar tu identidad." };
+  if (formData.get("declaraNoPermitidos") !== "on") return { error: "Debes declarar que no ofrecerás transporte de personas ni servicios de salud o cuidado de personas." };
   if (exigeMenores && formData.get("autorizaLey1918") !== "on") {
     return { error: "Tu categoría trabaja con menores: debes autorizar la consulta de antecedentes (Ley 1918)." };
   }
@@ -251,7 +252,7 @@ export async function guardarPaso3(formData: FormData) {
     const h = await headers();
     await registrarConsentimientos(
       usuario.id,
-      ["terminos_proveedores", "tratamiento_datos", ...(exigeMenores ? (["autorizacion_ley_1918"] as const) : [])],
+      ["terminos_proveedores", "tratamiento_datos", "declaracion_servicios_no_permitidos", ...(exigeMenores ? (["autorizacion_ley_1918"] as const) : [])],
       { ip: ipDeLaPeticion(h), userAgent: h.get("user-agent") },
     );
   } catch (e) {

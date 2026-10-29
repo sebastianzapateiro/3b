@@ -43,6 +43,9 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
         <legend className="mb-1 text-sm font-semibold">Cómo trabajas</legend>
         <label className="flex min-h-11 items-center gap-2.5"><input type="checkbox" name="emiteFactura" defaultChecked={Boolean(p.emiteFactura)} className="size-5 accent-verde" />Emito factura</label>
         <label className="flex min-h-11 items-center gap-2.5"><input type="checkbox" name="ofreceGarantia" defaultChecked={Boolean(p.ofreceGarantia)} className="size-5 accent-verde" />Ofrezco garantía por mi trabajo</label>
+        <label className="flex min-h-11 items-center gap-2.5"><input type="checkbox" name="atiendeUrgencias" defaultChecked={p.atiendeUrgencias} className="size-5 accent-verde" />Atiendo urgencias el mismo día</label>
+        <label className="flex min-h-11 items-center gap-2.5"><input type="checkbox" name="disponible24h" defaultChecked={p.disponible24h} className="size-5 accent-verde" />Atiendo 24 horas, incluidos fines de semana y festivos</label>
+        <p className="text-sm text-gris">Estas etiquetas las declaras tú y se muestran en tu tarjeta. LasTresB no presta el servicio ni garantiza tiempos de llegada.</p>
       </fieldset>
 
       <div className="rounded-[14px] bg-piedra p-4 text-sm leading-normal text-tinta-2">

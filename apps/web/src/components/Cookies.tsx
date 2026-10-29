@@ -73,7 +73,7 @@ export function BannerCookies({ activa }: { activa: boolean }) {
   return (
     <div role="dialog" aria-labelledby="cookies-titulo" className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-[720px] flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-4 shadow-[0_12px_40px_rgba(27,38,35,0.18)] sm:flex-row sm:items-center sm:gap-5 sm:p-5">
       <div className="flex flex-1 flex-col gap-1">
-        <b id="cookies-titulo" className="text-base">Cookies para mejorar Las 3B</b>
+        <b id="cookies-titulo" className="text-base">Cookies para mejorar LasTresB</b>
         <p className="text-sm leading-normal text-tinta-2">
           Usamos cookies necesarias para que el sitio funcione y, si nos dejas, cookies de analítica para saber qué páginas sirven. Puedes cambiar tu decisión cuando quieras. <Link href="/cookies" className="font-semibold text-verde underline">Más información</Link>
         </p>

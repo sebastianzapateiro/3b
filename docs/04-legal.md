@@ -17,7 +17,7 @@ Mapa de obligaciones, no opinión jurídica. Textos completos en Drive (carpeta 
 
 ## Ley 1918 de 2018 (menores)
 
-Insignia "Apto para menores" obligatoria en Clases y en Cuidado de personas, tras consultar el registro de inhabilidades con autorización del proveedor. Requiere que la empresa esté constituida (NIT). Prohibido publicar fotos con menores identificables.
+Insignia "Apto para menores" obligatoria en Clases y en Recreacionistas, tras consultar el registro de inhabilidades con autorización del proveedor. Requiere que la empresa esté constituida (NIT). Prohibido publicar fotos con menores identificables.
 
 ## Otras reglas
 

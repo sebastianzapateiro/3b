@@ -5,7 +5,7 @@ import { FAQ_RETIRO } from "@/lib/faqs";
 import { meta } from "@/lib/seo";
 import { solicitarRetiro } from "./actions";
 
-export const metadata = meta({ titulo: "Retiro de contenido y derechos de autor", descripcion: "Cómo pedir la revisión y el retiro de una foto, texto o perfil que infringe tus derechos en Las 3B.", ruta: "/retiro-de-contenido" });
+export const metadata = meta({ titulo: "Retiro de contenido y derechos de autor", descripcion: "Cómo pedir la revisión y el retiro de una foto, texto o perfil que infringe tus derechos en LasTresB.", ruta: "/retiro-de-contenido" });
 
 const campo = "h-12 w-full rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-base";
 
@@ -22,7 +22,7 @@ export default async function RetiroDeContenido({ searchParams }: { searchParams
           ) : (
             <form action={solicitarRetiro} className="flex flex-col gap-3.5">
               {sp.error && <p role="alert" className="rounded-xl bg-ladrillo-suave p-3 text-[15px] text-ladrillo-oscuro">{sp.error}</p>}
-              <div className="flex flex-col gap-1.5"><label htmlFor="enlace" className="text-sm font-semibold">Enlace del contenido en Las 3B</label><input id="enlace" name="enlace" type="url" required placeholder="https://lastresb.com.co/..." className={campo} /></div>
+              <div className="flex flex-col gap-1.5"><label htmlFor="enlace" className="text-sm font-semibold">Enlace del contenido en LasTresB</label><input id="enlace" name="enlace" type="url" required placeholder="https://lastresb.com.co/..." className={campo} /></div>
               <div className="grid gap-3.5 sm:grid-cols-2">
                 <div className="flex flex-col gap-1.5"><label htmlFor="tipo" className="text-sm font-semibold">Qué es</label><select id="tipo" name="tipo" className={campo}><option value="foto">Una foto</option><option value="perfil">Un perfil</option><option value="servicio">Un servicio o precio</option><option value="resena">Una reseña</option><option value="respuesta">Una respuesta a una reseña</option></select></div>
                 <div className="flex flex-col gap-1.5"><label htmlFor="motivo" className="text-sm font-semibold">Motivo</label><select id="motivo" name="motivo" className={campo}><option value="derechos_de_autor">Infringe mis derechos de autor</option><option value="datos_personales">Publica datos personales míos</option><option value="suplantacion">Me suplanta</option><option value="menores">Muestra a menores</option><option value="otro">Otro</option></select></div>

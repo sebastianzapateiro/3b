@@ -13,7 +13,7 @@ const INSIGNIAS = [
   { clave: "verificado", nombre: "Verificado", como: "Se otorga cuando el equipo aprueba tu perfil." },
   { clave: "formalizado", nombre: "Formalizado", como: "Se otorga cuando tu RUT está verificado." },
   { clave: "certificado", nombre: "Certificado en su oficio", como: "Sube tu matrícula o certificación para solicitarla." },
-  { clave: "apto_menores", nombre: "Apto para menores", como: "Para clases y cuidado de personas: firmas la autorización (Ley 1918) y el equipo consulta el registro. Dura 6 meses." },
+  { clave: "apto_menores", nombre: "Apto para menores", como: "Para clases y recreacionistas, que trabajan con menores: firmas la autorización (Ley 1918) y el equipo consulta el registro. Dura 6 meses." },
 ];
 const fecha = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("es-CO", { dateStyle: "medium", timeZone: "UTC" });
 

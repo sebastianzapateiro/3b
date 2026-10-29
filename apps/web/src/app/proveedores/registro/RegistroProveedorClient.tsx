@@ -152,7 +152,7 @@ export function RegistroProveedorClient() {
           Estado: <b>pendiente</b>. Revisaremos tu información y documentos en los próximos días.
         </Aviso>
         <p className="mt-6 text-[15px] text-tinta-2">
-          Mientras tanto, puedes seguir usando Las 3B como comprador.
+          Mientras tanto, puedes seguir usando LasTresB como comprador.
         </p>
         <Link href="/" className={botonPrincipal}>
           Ir al inicio
@@ -459,6 +459,12 @@ export function RegistroProveedorClient() {
               <input id="aceptaDatos" name="aceptaDatos" type="checkbox" required className={casilla} />
               <label htmlFor="aceptaDatos" className="text-sm leading-snug text-tinta-2">
                 Autorizo el tratamiento de mis datos personales (documento, fecha de nacimiento, dirección) para verificar mi identidad, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.
+              </label>
+            </div>
+            <div className="flex items-start gap-2">
+              <input id="declaraNoPermitidos" name="declaraNoPermitidos" type="checkbox" required className={casilla} />
+              <label htmlFor="declaraNoPermitidos" className="text-sm leading-snug text-tinta-2">
+                Declaro que no ofreceré transporte de personas ni servicios de salud o cuidado de personas, ni en mi categoría ni registrándome en otra. Ver <Link href="/terminos-proveedores" target="_blank" className="font-semibold text-verde underline">términos para proveedores</Link>.
               </label>
             </div>
             {requiereMenores && (
