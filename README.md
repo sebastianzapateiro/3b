@@ -31,30 +31,49 @@ Van en `.env` (raíz: comandos de base de datos) **y** en `apps/web/.env.local` 
 | `RESEND_API_KEY` | Envío de correos | Opcional en local: sin ella los enlaces salen en la consola de `pnpm dev` |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Ingreso con Google | Opcional: sin ellas el botón no aparece |
 
-### Primer administrador
-
-```bash
-# 1. Crea tu cuenta en http://localhost:3000/registro (tú eliges la clave)
-pnpm admin:crear tu-correo@ejemplo.com
-# 2. Entra a http://localhost:3000/admin/ingresar y escanea el QR del 2FA
-```
-
-El resto del equipo se invita desde **/admin/usuarios → Crear usuario** (reciben un enlace para elegir su clave).
-
 ## Comandos
 
-```bash
-pnpm dev                    # web en http://localhost:3000
-pnpm typecheck
-pnpm build
-pnpm db:generate            # nueva migración tras cambiar packages/db/src/schema/*
-pnpm db:migrate             # aplica migraciones a DATABASE_URL
-pnpm db:seed                # localidades, insignias, taxonomía (idempotente)
-pnpm db:studio
-pnpm admin:crear <correo>   # da rol admin a una cuenta existente
-pnpm db:cifrar-documentos   # revisa documentos en texto plano; --aplicar los cifra
-pnpm docs:diagramas         # regenera los SVG de docs/diagramas/ desde docs/07-diagramas.md
-```
+Todos se corren desde la raíz del repositorio.
+
+> ⚠️ **Los comandos de base de datos actúan sobre `DATABASE_URL`, que hoy es la misma base de producción** (local y Vercel comparten Supabase). Revisa antes de correr `db:migrate`, `db:seed`, `admin:crear` o `db:cifrar-documentos --aplicar`.
+
+### Desarrollo
+
+| Comando | Qué hace |
+|---|---|
+| `pnpm dev` | Levanta la web en http://localhost:3000. Sin `RESEND_API_KEY`, los correos (verificación, recuperación, invitaciones) salen en esta consola. |
+| `pnpm typecheck` | Revisa los tipos de TypeScript en todo el monorepo. |
+| `pnpm build` | Compila para producción. Usa `pnpm build --force` si cambiaste variables de entorno (Turborepo guarda el build en caché). |
+
+### Base de datos
+
+| Comando | Qué hace | Cuándo |
+|---|---|---|
+| `pnpm db:generate` | Crea una migración SQL en `packages/db/drizzle/` a partir de los cambios en `packages/db/src/schema/*`. | Después de cambiar el esquema. Revisa el SQL generado antes de aplicarlo. |
+| `pnpm db:migrate` | Aplica las migraciones pendientes. Los avisos `NOTICE … already exists, skipping` son normales. | Tras `db:generate` o al traer migraciones de otra rama. |
+| `pnpm db:seed` | Carga localidades, insignias, taxonomía con sinónimos y festivos. Se puede correr varias veces. | Base nueva o tras cambiar la taxonomía. |
+| `pnpm db:studio` | Abre Drizzle Studio para ver y editar tablas en el navegador. | Consultas puntuales. Cuidado: edita producción. |
+| `pnpm db:cifrar-documentos` | Cuenta los documentos de proveedores guardados en texto plano. Con `pnpm db:cifrar-documentos --aplicar` los cifra (AES-256-GCM). | Si aparecen documentos sin cifrar. Necesita `DOCUMENTOS_CLAVE`. |
+
+### Cuentas del equipo
+
+| Comando | Qué hace |
+|---|---|
+| `pnpm admin:crear <correo>` | Da rol **admin** a una cuenta que ya existe, marca su correo como verificado y lo registra en `auditoria`. No crea la cuenta ni cambia la clave. |
+
+**Primer administrador** (o recuperar el acceso si no queda ningún admin):
+
+1. Crea la cuenta en `/ingreso` (en local http://localhost:3000/ingreso, en producción https://www.lastresb.com.co/ingreso). La clave la eliges tú.
+2. Desde tu terminal: `pnpm admin:crear tu-correo@ejemplo.com`
+3. Entra por `/admin/ingresar` y escanea el QR del 2FA con tu app autenticadora (Google Authenticator, Authy, 1Password…). Guarda los códigos de respaldo.
+
+El resto del equipo se invita desde **/admin/usuarios → Crear usuario**: reciben un correo para elegir su clave. Ahí mismo se asignan roles, se suspenden cuentas, se restablece el 2FA y se decide qué roles lo exigen (admin siempre).
+
+### Documentación
+
+| Comando | Qué hace |
+|---|---|
+| `pnpm docs:diagramas` | Regenera los SVG de `docs/diagramas/` desde `docs/07-diagramas.md`. Usa el Chrome instalado; otra ruta: `CHROME=/ruta/al/chrome pnpm docs:diagramas`. |
 
 ## Estructura
 
