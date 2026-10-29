@@ -7,7 +7,8 @@ import { db, schema } from "@las3b/db";
 import { ipDeLaPeticion } from "@/lib/consentimientos";
 
 export async function auditar(a: {
-  actorId: string;
+  /** null = acción del sistema (por ejemplo, ocultar una reseña con muchos reportes). */
+  actorId: string | null;
   rol: string | null;
   accion: string;
   objetoTipo?: string;

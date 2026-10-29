@@ -183,7 +183,9 @@ export async function suspenderUsuario(formData: FormData) {
   const actor = await exigirBackoffice(true);
   const usuarioId = z.string().min(1).parse(texto(formData, "usuarioId"));
   const tipo = z.enum(["aviso", "provisional"]).parse(texto(formData, "tipo"));
-  const motivo = texto(formData, "motivo");
+  const detalle = texto(formData, "motivo");
+  const predefinido = texto(formData, "predefinido");
+  const motivo = [predefinido, detalle].filter(Boolean).join(": ");
   if (motivo.length < 5) volver("/admin/usuarios", { u: usuarioId, error: "Escribe el motivo." });
   if (usuarioId === actor.user.id) volver("/admin/usuarios", { u: usuarioId, error: "No puedes suspender tu propia cuenta." });
 

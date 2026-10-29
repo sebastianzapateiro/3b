@@ -7,5 +7,6 @@ export const MOTIVOS_RECHAZO = [
   "Menor de edad",
   "Contenido del perfil no permitido",
   "Posible suplantación de identidad",
+  "Ofrece servicios no permitidos (transporte de personas, salud o cuidado de personas)",
   "Otro (explica abajo)",
 ] as const;

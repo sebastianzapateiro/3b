@@ -15,7 +15,7 @@ function Icono({ children }: { children: React.ReactNode }) {
 const ETIQUETA_ROL: Record<string, string> = { admin: "Admin", moderador: "Moderador", verificador: "Verificador" };
 
 /** Menú lateral del backoffice (mockups BO_*). Moderación, Reclamos y datos y Auditoría se construyen aparte. */
-export function MenuAdmin({ nombre, rol, pendientes, esAdmin }: { nombre: string; rol: string; pendientes: number; esAdmin: boolean }) {
+export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin }: { nombre: string; rol: string; pendientes: number; reportes: number; tramites: number; esAdmin: boolean }) {
   const ruta = usePathname();
   const router = useRouter();
 
@@ -25,14 +25,14 @@ export function MenuAdmin({ nombre, rol, pendientes, esAdmin }: { nombre: string
       titulo: "Operación",
       items: [
         { href: "/admin/aprobaciones", texto: "Aprobaciones", marca: pendientes, icono: <Icono><circle cx="9" cy="8" r="4" /><path d="M2 21c0-4 3-6 7-6s7 2 7 6M16 11l2 2 4-4" /></Icono> },
-        { href: "/admin/moderacion", texto: "Moderación", pronto: true, icono: <Icono><path d="M5 21V4h12l-2 4 2 4H5" /></Icono> },
+        { href: "/admin/moderacion", texto: "Moderación", marca: reportes, icono: <Icono><path d="M5 21V4h12l-2 4 2 4H5" /></Icono> },
       ],
     },
     {
       titulo: "Cumplimiento",
       items: [
-        { href: "/admin/cumplimiento", texto: "Reclamos y datos", pronto: true, icono: <Icono><path d="M6 3h9l4 4v14H6z" /><path d="M14 3v5h5M9 13h7M9 17h5" /></Icono> },
-        { href: "/admin/auditoria", texto: "Auditoría", pronto: true, icono: <Icono><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></Icono> },
+        { href: "/admin/cumplimiento", texto: "Reclamos y datos", marca: tramites, icono: <Icono><path d="M6 3h9l4 4v14H6z" /><path d="M14 3v5h5M9 13h7M9 17h5" /></Icono> },
+        { href: "/admin/auditoria", texto: "Auditoría y parámetros", icono: <Icono><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" /></Icono> },
       ],
     },
     ...(esAdmin

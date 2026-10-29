@@ -3,6 +3,7 @@ import { guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admi
 import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
 import { exigirBackoffice } from "@/lib/verificacion";
+import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
 /** B4 · Usuarios, roles y suspensión (CU-70 a CU-72). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
 const ROLES = [
@@ -84,8 +85,10 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                   <label className="flex items-start gap-2.5"><input type="radio" name="tipo" value="aviso" defaultChecked className="mt-0.5 size-[18px] accent-verde" /><span><b>Con aviso previo</b><br /><span className="text-gris">Recibe el motivo y tiene 5 días hábiles para dar su versión</span></span></label>
                   <label className="flex items-start gap-2.5"><input type="radio" name="tipo" value="provisional" className="mt-0.5 size-[18px] accent-verde" /><span><b>Provisional inmediata</b><br /><span className="text-gris">Solo fraude, amenazas o riesgo para personas</span></span></label>
                 </fieldset>
-                <label htmlFor="motivo" className="text-sm font-semibold">Motivo</label>
-                <input id="motivo" name="motivo" required placeholder="Ej: reclamos repetidos por incumplimiento" className={campoAdmin} />
+                <label htmlFor="predefinido" className="text-sm font-semibold">Motivo predefinido</label>
+                <select id="predefinido" name="predefinido" className={campoAdmin}><option value="">Otro (lo escribo abajo)</option><option value={MOTIVO_SERVICIOS_NO_PERMITIDOS}>{MOTIVO_SERVICIOS_NO_PERMITIDOS}</option></select>
+                <label htmlFor="motivo" className="text-sm font-semibold">Detalle del motivo</label>
+                <input id="motivo" name="motivo" placeholder="Ej: reclamos repetidos por incumplimiento" className={campoAdmin} />
                 <label htmlFor="duracion" className="text-sm font-semibold">Duración (solo suspensión provisional)</label>
                 <div className="flex gap-2">
                   <select id="duracion" name="duracion" className={campoAdmin}><option value="fecha">Hasta una fecha</option><option value="indefinida">Indefinida</option></select>

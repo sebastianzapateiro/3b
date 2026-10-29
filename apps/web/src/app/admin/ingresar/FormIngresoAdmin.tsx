@@ -103,7 +103,7 @@ export function FormIngresoAdmin() {
         <span className="text-sm font-semibold text-gris">Paso {paso === 1 ? 1 : 2} de 2</span>
         <h1 className="font-display text-[34px] font-extrabold leading-[1.1] tracking-[-1px]">{paso === 1 ? "Ingresa a tu cuenta" : paso === "config" ? "Configura tu segundo factor" : "Código de verificación"}</h1>
         <p className="text-base leading-normal text-tinta-2">
-          {paso === 1 ? "Usa el correo y la clave de tu cuenta de Las 3B." : paso === "config" ? "Es la primera vez que entras al backoffice: vincula una app autenticadora (Google Authenticator, Authy, 1Password…)." : <>Abre tu app autenticadora y escribe el código de Las 3B para <b>{correo}</b>.</>}
+          {paso === 1 ? "Usa el correo y la clave de tu cuenta de LasTresB." : paso === "config" ? "Es la primera vez que entras al backoffice: vincula una app autenticadora (Google Authenticator, Authy, 1Password…)." : <>Abre tu app autenticadora y escribe el código de LasTresB para <b>{correo}</b>.</>}
         </p>
       </div>
 

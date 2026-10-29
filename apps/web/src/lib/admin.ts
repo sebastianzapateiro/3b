@@ -75,6 +75,17 @@ export async function datosTablero(rango: RangoTablero) {
       ) t`),
   );
 
+  const demanda = filas<{ oficio: string; localidad: string | null; n: number; conWhatsapp: number }>(
+    await db.execute(sql`
+      SELECT coalesce(c.nombre, nullif(trim(s.texto_libre), ''), 'Sin especificar') AS oficio, l.nombre AS localidad,
+             count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp"
+      FROM solicitudes_servicio s
+      LEFT JOIN categorias c ON c.slug = s.oficio_slug
+      LEFT JOIN localidades l ON l.id = s.localidad_id
+      WHERE s.cuenta_como_demanda AND s.created_at >= ${desde}
+      GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 10`),
+  );
+
   const dias = pend?.antiguo ? Math.floor((Date.now() - new Date(pend.antiguo).getTime()) / 86_400_000) : 0;
   return {
     pendientes: pend?.n ?? 0,
@@ -85,6 +96,7 @@ export async function datosTablero(rango: RangoTablero) {
     porcentajeResena: cont?.n ? Math.round(((res?.n ?? 0) / cont.n) * 100) : 0,
     porCategoria,
     porLocalidad,
+    demanda,
     estados: Object.fromEntries(estados.map((e) => [e.estado, e.n])) as Record<string, number>,
     alertas: { reclamosPronto: recl?.pronto ?? 0, menoresPorVencer: menores?.n ?? 0, rutPorVencer: rut?.n ?? 0, documentosEnUnaHora: masivo?.n ?? 0 },
   };

@@ -191,7 +191,7 @@ export default async function Revision({ params, searchParams }: { params: Promi
               {aplicaMenores ? (
                 <span className="text-tinta-2">Aplica: ver autorización firmada → consultar el registro de la Policía → registrar resultado y soporte → vence en 6 meses.</span>
               ) : (
-                <span className="text-gris">No aplica: no eligió Clases ni Cuidado de personas.</span>
+                <span className="text-gris">No aplica: no eligió Clases ni Recreacionistas.</span>
               )}
             </div>
           </section>

@@ -16,7 +16,7 @@ export async function enviarCorreo({ para, asunto, texto }: Correo) {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          from: "Las 3B <noreply@lastresb.com.co>",
+          from: "LasTresB <noreply@lastresb.com.co>",
           to: [para],
           subject: asunto,
           text: texto,

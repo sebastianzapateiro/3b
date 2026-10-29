@@ -19,7 +19,7 @@ export default async function IngresoAdmin() {
           <span className="ml-1.5 flex h-[26px] items-center rounded-full bg-white/12 px-2.5 text-[13px] font-semibold">Backoffice</span>
         </span>
         <div className="my-auto flex max-w-[460px] flex-col gap-5">
-          <h2 className="font-display text-[40px] font-extrabold leading-[1.08] tracking-[-1px]">Acceso del equipo Las 3B</h2>
+          <h2 className="font-display text-[40px] font-extrabold leading-[1.08] tracking-[-1px]">Acceso del equipo LasTresB</h2>
           <p className="text-base leading-relaxed text-[#C9D1CF]">Aquí se revisan documentos de identidad y datos personales. Por eso el ingreso exige segundo factor y cada acción queda registrada en la auditoría.</p>
           <ul className="flex flex-col gap-3 text-[15px] text-[#DDE3E1]">
             <li className="flex items-center gap-2.5"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3FB394" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Sesión separada de la cuenta pública</li>

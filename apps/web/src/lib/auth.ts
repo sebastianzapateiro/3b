@@ -18,7 +18,7 @@ const google = googleHabilitado
   : undefined;
 
 export const auth = betterAuth({
-  appName: "Las 3B",
+  appName: "LasTresB",
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -37,7 +37,7 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       void enviarCorreo({
         para: user.email,
-        asunto: "Cambia tu clave de Las 3B",
+        asunto: "Cambia tu clave de LasTresB",
         texto: `Hola, ${user.name}. Para crear una clave nueva abre este enlace (vence en 1 hora):\n${url}\n\nSi no lo pediste, ignora este correo.`,
       });
     },
@@ -49,7 +49,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       void enviarCorreo({
         para: user.email,
-        asunto: "Confirma tu correo en Las 3B",
+        asunto: "Confirma tu correo en LasTresB",
         texto: `Hola, ${user.name}. Confirma tu correo abriendo este enlace:\n${url}`,
       });
     },
@@ -91,7 +91,7 @@ export const auth = betterAuth({
     },
   },
   rateLimit: { enabled: true, window: 60, max: 30 },
-  plugins: [twoFactor({ issuer: "Las 3B" }), nextCookies()],
+  plugins: [twoFactor({ issuer: "LasTresB" }), nextCookies()],
 });
 
 export type Session = typeof auth.$Infer.Session;

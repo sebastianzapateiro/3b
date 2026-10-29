@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Encabezado, tarjeta } from "@/components/admin/Ui";
 import { datosTablero, type RangoTablero } from "@/lib/admin";
+import { totalReportesPendientes } from "@/lib/moderacion";
 
 /** B7 · Tablero. Mockup: docs/mockups/BO_Tablero.dc.html. */
 const RANGOS: Record<RangoTablero, string> = { "7": "Últimos 7 días", "30": "Últimos 30 días", mes: "Este mes" };
@@ -20,6 +21,7 @@ export default async function Tablero({ searchParams }: { searchParams: Promise<
   const { rango: r } = await searchParams;
   const rango: RangoTablero = r === "30" || r === "mes" ? r : "7";
   const d = await datosTablero(rango);
+  const reportes = await totalReportesPendientes().catch(() => 0);
   const maxCat = Math.max(1, ...d.porCategoria.map((c) => c.n));
 
   return (
@@ -41,11 +43,11 @@ export default async function Tablero({ searchParams }: { searchParams: Promise<
             <b className={numero}>{d.pendientes}</b>
             <span className="text-[13px] text-amarillo-oscuro">{d.pendientes > 0 ? `El más antiguo espera ${d.diasMasAntiguo} días` : "Todo al día"}</span>
           </Link>
-          <div className={`${tarjeta} flex flex-[1_1_220px] flex-col gap-1.5 rounded-[18px] p-[18px]`}>
+          <Link href="/admin/moderacion" className={`${tarjeta} flex flex-[1_1_220px] flex-col gap-1.5 rounded-[18px] p-[18px]`}>
             <span className="text-sm font-semibold text-gris">Reportes por moderar</span>
-            <b className={numero}>—</b>
-            <span className="text-[13px] text-gris">Moderación: se construye aparte</span>
-          </div>
+            <b className={numero}>{reportes}</b>
+            <span className="text-[13px] text-gris">Meta: atender en 48 h</span>
+          </Link>
           <div className={`${tarjeta} flex flex-[1_1_220px] flex-col gap-1.5 rounded-[18px] border-[#F0C9BE] p-[18px]`}>
             <span className="text-sm font-semibold text-gris">Reclamos y solicitudes abiertos</span>
             <b className={numero}>{d.reclamosAbiertos}</b>
@@ -56,6 +58,27 @@ export default async function Tablero({ searchParams }: { searchParams: Promise<
             <b className={`${numero} text-verde`}>{d.contactos}</b>
             <span className="text-[13px] text-gris">{d.porcentajeResena} % terminaron en reseña</span>
           </div>
+        </section>
+
+        <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-display text-xl font-bold">Demanda sin cubrir</h2>
+            <span className="text-[13px] text-gris">Personas que pidieron un servicio sin proveedores suficientes</span>
+          </div>
+          {d.demanda.length === 0 ? (
+            <p className="text-[15px] text-gris">Aún no hay solicitudes en este periodo.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm tabular-nums">
+                <thead><tr className="text-left text-gris"><th className="py-2 font-semibold">Servicio</th><th className="py-2 font-semibold">Localidad</th><th className="py-2 text-right font-semibold">Solicitudes</th><th className="py-2 text-right font-semibold">Con WhatsApp</th></tr></thead>
+                <tbody>
+                  {d.demanda.map((x, i) => (
+                    <tr key={i} className="border-t border-borde-suave"><td className="py-2.5">{x.oficio}</td><td>{x.localidad ?? "Cualquiera"}</td><td className="text-right">{x.n}</td><td className="text-right">{x.conWhatsapp}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         <div className="flex flex-wrap items-start gap-5">
