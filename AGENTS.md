@@ -83,6 +83,7 @@ pnpm db:generate            # nueva migración tras cambiar packages/db/src/sche
 pnpm db:migrate             # aplica migraciones a DATABASE_URL
 pnpm db:seed                # localidades, insignias, taxonomía (idempotente)
 pnpm db:studio
+pnpm usuarios [rol|texto]   # lista las cuentas (solo lectura)
 pnpm admin:crear <correo>   # rol admin a una cuenta existente (primer admin)
 pnpm db:cifrar-documentos   # cuenta documentos en texto plano; --aplicar los cifra
 pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md (usa el Chrome instalado)

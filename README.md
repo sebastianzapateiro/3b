@@ -59,6 +59,8 @@ Todos se corren desde la raíz del repositorio.
 
 | Comando | Qué hace |
 |---|---|
+| `pnpm usuarios` | Lista las cuentas creadas: correo, nombre, roles, correo verificado, 2FA, forma de ingreso, estado de proveedor, suspensión y fecha (hora de Bogotá). Solo lectura. |
+| `pnpm usuarios admin` | Filtra por rol (`comprador`, `proveedor`, `verificador`, `moderador`, `admin`). Con otro texto filtra por correo o nombre: `pnpm usuarios gmail.com`. |
 | `pnpm admin:crear <correo>` | Da rol **admin** a una cuenta que ya existe, marca su correo como verificado y lo registra en `auditoria`. No crea la cuenta ni cambia la clave. |
 
 **Primer administrador** (o recuperar el acceso si no queda ningún admin):

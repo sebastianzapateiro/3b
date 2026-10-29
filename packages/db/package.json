@@ -14,7 +14,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seed.ts",
     "admin:crear": "tsx src/admin-crear.ts",
-    "db:cifrar-documentos": "tsx src/cifrar-documentos.ts"
+    "db:cifrar-documentos": "tsx src/cifrar-documentos.ts",
+    "usuarios": "tsx src/usuarios.ts"
   },
   "dependencies": {
     "@las3b/shared": "workspace:*",
