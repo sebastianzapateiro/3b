@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { abrirDocumento, aprobarProveedor, rechazarProveedor } from "@/app/admin/actions";
+import { aprobarProveedor, rechazarProveedor } from "@/app/admin/actions";
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
 import { etiquetaSegmento, obtenerRevision } from "@/lib/admin";
+import { documentosExigidos } from "@/lib/documentos";
 import { MOTIVOS_RECHAZO } from "@/lib/motivos-rechazo";
 
 /** B1, B2 · Revisión de proveedor, documentos, decisión e insignias. Mockup: docs/mockups/BO_Revision.dc.html. */
@@ -14,16 +15,6 @@ const ESTADO: Record<string, { texto: string; tono: "amarillo" | "verde" | "rojo
   pausado: { texto: "Pausado", tono: "gris" },
   pausado_por_rut: { texto: "Pausado por RUT", tono: "gris" },
   suspendido: { texto: "Suspendido", tono: "rojo" },
-};
-
-const TIPO_DOC: Record<string, string> = {
-  documento_frente: "Cédula · frente",
-  documento_reverso: "Cédula · reverso",
-  rut: "RUT",
-  camara_comercio: "Cámara de comercio",
-  matricula: "Matrícula",
-  autorizacion_ley_1918: "Autorización Ley 1918",
-  portafolio: "Portafolio",
 };
 
 const mb = (bytes: number) => `${(bytes / 1_048_576).toFixed(1).replace(".", ",")} MB`;
@@ -43,17 +34,9 @@ export default async function Revision({ params, searchParams }: { params: Promi
   if (!p) notFound();
 
   const estado = ESTADO[p.estado] ?? { texto: p.estado, tono: "gris" as const };
-  const exigidos = [
-    { tipo: "documento_frente", nombre: "Cédula · frente" },
-    { tipo: "documento_reverso", nombre: "Cédula · reverso" },
-    ...(p.categorias.some((c) => c.matricula) ? [{ tipo: "matricula", nombre: "Matrícula" }] : []),
-    ...(p.segmento !== "independiente_sin_rut" || p.categorias.some((c) => c.rut) ? [{ tipo: "rut", nombre: "RUT" }] : []),
-    ...(p.segmento === "empresa" ? [{ tipo: "camara_comercio", nombre: "Cámara de comercio" }] : []),
-    ...(p.categorias.some((c) => c.menores) ? [{ tipo: "autorizacion_ley_1918", nombre: "Autorización Ley 1918" }] : []),
-  ];
+  const exigidos = documentosExigidos(p.segmento, p.categorias).filter((e) => e.exigido);
   const aplicaMenores = p.categorias.some((c) => c.menores);
   const tieneRut = p.insignias.some((i) => i.clave === "formalizado");
-  const abierto = p.documentos.find((d) => d.id === sp.doc);
   const puedeDecidir = p.estado === "pendiente" || p.estado === "en_revision" || p.estado === "borrador";
 
   return (
@@ -103,14 +86,11 @@ export default async function Revision({ params, searchParams }: { params: Promi
               {exigidos.map((e) => {
                 const d = p.documentos.find((x) => x.tipo === e.tipo);
                 return d ? (
-                  <div key={e.tipo} className={`flex flex-[1_1_220px] flex-col gap-2 rounded-2xl p-3.5 ${abierto?.id === d.id ? "border-2 border-verde" : "border border-[#EAE3D5]"}`}>
+                  <div key={e.tipo} className="flex flex-[1_1_220px] flex-col gap-2 rounded-2xl border border-[#EAE3D5] p-3.5">
                     <b className="text-[15px]">{e.nombre}</b>
-                    <span className="text-[13px] text-gris">{d.mime.split("/")[1]?.toUpperCase()} · {mb(d.bytes)}{abierto?.id === d.id && " · abierto ahora"}</span>
-                    <form action={abrirDocumento}>
-                      <input type="hidden" name="proveedorId" value={p.id} />
-                      <input type="hidden" name="documentoId" value={d.id} />
-                      <button type="submit" className="h-9 rounded-[10px] border-[1.5px] border-borde-campo bg-white px-3 text-[13px] font-semibold">Abrir</button>
-                    </form>
+                    <span className="text-[13px] text-gris">{d.mime.split("/")[1]?.toUpperCase()} · {mb(d.bytes)}</span>
+                    {/* Enlace normal (sin prefetch): cada visita registra la apertura en la auditoría. */}
+                    <a href={`/admin/documentos/${d.id}`} target="_blank" rel="noopener noreferrer" className="inline-flex h-9 items-center self-start rounded-[10px] border-[1.5px] border-borde-campo bg-white px-3 text-[13px] font-semibold">Abrir</a>
                   </div>
                 ) : (
                   <div key={e.tipo} className="flex flex-[1_1_220px] flex-col gap-2 rounded-2xl border-[1.5px] border-dashed border-ladrillo-claro bg-[#FDF3F0] p-3.5">
@@ -120,12 +100,6 @@ export default async function Revision({ params, searchParams }: { params: Promi
                 );
               })}
             </div>
-            {abierto && (
-              <div className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl bg-[#2A3532] p-4 text-center text-[#DDE3E1]">
-                <b className="text-base">{TIPO_DOC[abierto.tipo] ?? abierto.tipo}</b>
-                <span className="text-[13px] text-[#A9B4B1]">La apertura quedó registrada en la auditoría. La vista del archivo estará disponible cuando se conecte el almacenamiento privado (URL firmada de 5 min).</span>
-              </div>
-            )}
           </section>
 
           <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>

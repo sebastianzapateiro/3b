@@ -58,7 +58,7 @@ Decisiones: una reseña por contacto · documento cifrado y archivos en bucket p
 ### Datos privados
 
 - **Número de documento:** cifrado en la aplicación con AES-256-GCM (`packages/db/src/cifrado.ts`), formato `v1:<iv>:<cifrado>`. La clave `DOCUMENTOS_CLAVE` vive solo en variables de entorno; la base nunca la ve. `documento_huella` (HMAC-SHA256) permite detectar duplicados sin descifrar. Solo se descifra para la entrega de datos del art. 53 (auditada).
-- **Archivos:** Supabase Storage. `privado` (JPG, PNG, HEIC, PDF; 10 MB; sin políticas, solo el servidor con la service role key; lectura por URL firmada de 5 min auditada) y `publico` (JPG, PNG, WebP; 5 MB; fotos tras moderación). La subida desde el alta está pendiente.
+- **Archivos:** Supabase Storage. `privado` (JPG, PNG, HEIC, PDF; 10 MB; sin políticas, solo el servidor con la service role key; lectura por URL firmada de 5 min auditada) y `publico` (JPG, PNG, WebP; 5 MB; fotos tras moderación). Subida: el servidor firma una URL de un solo uso con nombre aleatorio, el navegador sube directo (Vercel no admite cuerpos de más de 4,5 MB) y el servidor confirma el tipo real por la firma de bytes antes de registrarlo; si no cumple, lo borra. Requisitos por segmento y categoría en `documentosExigidos` (`lib/documentos.ts`), única fuente para alta, panel y backoffice. Pendiente: antivirus.
 - **Pendiente de decidir:** cifrar también dirección de notificaciones y fecha de nacimiento.
 
 ## Infraestructura (MVP)

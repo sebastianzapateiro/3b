@@ -10,6 +10,7 @@ import {
   verificarOTP,
 } from "./actions";
 import { Encabezado, Aviso, campo, etiqueta, botonPrincipal } from "@/components/cuenta";
+import { CargaDocumento, type DocumentoRequerido } from "@/components/CargaDocumento";
 
 type Paso = 1 | 2 | 3 | "otp" | "recibido";
 
@@ -21,6 +22,7 @@ export function RegistroProveedorClient() {
   const [isPending, startTransition] = useTransition();
   const [requiereRut, setRequiereRut] = useState(false);
   const [requiereMenores, setRequiereMenores] = useState(false);
+  const [documentos, setDocumentos] = useState<DocumentoRequerido[]>([]);
 
   const asyncGuardarPaso1 = async (fd: FormData) => {
     const res = await guardarPaso1(fd);
@@ -44,6 +46,7 @@ export function RegistroProveedorClient() {
       setError(res.error);
       return false;
     }
+    setDocumentos(res?.documentos ?? []);
     setPaso(3);
     return true;
   };
@@ -391,6 +394,19 @@ export function RegistroProveedorClient() {
               className={campo}
             />
           </div>
+          <fieldset className="flex flex-col gap-2.5">
+            <legend className={`${etiqueta} mb-1.5`}>Fotos de tus documentos</legend>
+            {documentos.map((d) => (
+              <CargaDocumento
+                key={d.tipo}
+                doc={d}
+                onCargado={(tipo, cargado) => setDocumentos((ds) => ds.map((x) => (x.tipo === tipo ? { ...x, cargado } : x)))}
+              />
+            ))}
+            <p className="text-xs leading-snug text-gris">
+              JPG, PNG, HEIC o PDF hasta 10 MB. Se guardan en privado y solo los ve nuestro equipo de verificación. Nada de esto aparece en tu página.
+            </p>
+          </fieldset>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="direccionNotificaciones" className={etiqueta}>
               Dirección de notificaciones
@@ -415,25 +431,7 @@ export function RegistroProveedorClient() {
               className={campo}
             />
           </div>
-          {requiereRut && (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="rut" className={etiqueta}>
-                RUT <span className="text-verde-oscuro font-semibold">(obligatorio)</span>
-              </label>
-              <input
-                id="rut"
-                name="rut"
-                type="text"
-                placeholder="Ej: 900.123.456-7"
-                required
-                className={campo}
-              />
-              <p className="text-xs text-gris">
-                Tu categoría o segmento exige RUT desde el registro.
-              </p>
-            </div>
-          )}
-          {!requiereRut && (
+          {!(documentos.find((d) => d.tipo === "rut")?.antesDeEnviar ?? requiereRut) && (
             <div className="flex items-start gap-2 pt-1">
               <input
                 id="declaraRutDiferido"

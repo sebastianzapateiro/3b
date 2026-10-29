@@ -55,8 +55,9 @@ apps/web/src/
     admin/(panel)/         B1–B8: tablero, aprobaciones, proveedores/[id], proveedores/nuevo, moderacion,
                            usuarios (crear, roles, suspender), catalogo, cumplimiento, auditoria
     api/auth/[...all]      Better Auth
-    api/v1/                health, yo, contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
-  lib/                     Lógica de negocio (regla 7): busqueda, portafolio(-completo), resenas, panel, admin,
+    admin/documentos/[id]  Abre un documento privado: auditoría + redirección a URL firmada
+    api/v1/                health, yo, yo/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
+  lib/                     Lógica de negocio (regla 7): documentos (requisitos, subida, apertura), almacenamiento (Storage REST), busqueda, portafolio(-completo), resenas, panel, admin,
                            moderacion, cumplimiento, auditoria(-consulta), parametros, verificacion (guardia backoffice),
                            consentimientos, correo (Resend o consola), seo, seo-servicios, publicacion, guias, faqs
   components/              UI pública; components/admin/ para el backoffice
@@ -103,12 +104,13 @@ pnpm db:cifrar-documentos   # cuenta documentos en texto plano; --aplicar los ci
 - Semillas: 20 localidades, insignias, taxonomía por oficios con sinónimos, festivos de Colombia.
 - Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
 - Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
-- Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella.
+- Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella. Carga de documentos al bucket `privado` (URL firmada + validación de tipo real) en el alta y en el panel; el equipo los abre por `/admin/documentos/[id]` con auditoría.
 - Backoffice B1–B8 con rol + 2FA (QR al configurar), creación de usuarios con invitación por correo, auditoría de solo inserción, parámetros en `configuracion`.
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
-- Subida de archivos al bucket `privado` y «Abrir documento» con URL firmada de 5 min (regla 2). Buckets ya creados.
+- Autorización Ley 1918: el alta la firma con casilla, pero el backoffice la marca como «Falta» si no hay archivo; unificar criterio.
+- Fotos del portafolio al bucket `publico` (aún no hay carga).
 - OTP real por WhatsApp (hoy en consola).
 - Sesión de 8 h del backoffice: documentada pero no aplicada (hoy 30 días).
 - `/ingresar` no sabe pedir el código 2FA: una cuenta con 2FA debe entrar por `/admin/ingresar`.

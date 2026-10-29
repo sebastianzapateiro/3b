@@ -3,6 +3,7 @@
  * Solo se usa desde páginas protegidas por `exigirBackoffice`.
  * Los datos privados (documento, dirección, fecha de nacimiento) se devuelven enmascarados.
  */
+import { documentosExigidos } from "@/lib/documentos";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 
@@ -193,14 +194,9 @@ export async function listarCola(cola: Cola, f: { q?: string; segmento?: string;
   return base.map((b) => {
     const misCats = cats.filter((c) => c.pid === b.id);
     const tipos = new Set(docs.filter((d) => d.pid === b.id).map((d) => d.tipo));
-    const requisitos: { texto: string; ok: boolean }[] = [
-      { texto: "Cédula 2 caras", ok: tipos.has("documento_frente") && tipos.has("documento_reverso") },
-    ];
-    if (b.segmento === "empresa") requisitos.push({ texto: "Cámara de comercio", ok: tipos.has("camara_comercio") });
-    if (b.segmento === "independiente_con_rut" || b.segmento === "empresa" || misCats.some((c) => c.rut))
-      requisitos.push({ texto: "RUT", ok: tipos.has("rut") });
-    if (misCats.some((c) => c.matricula)) requisitos.push({ texto: "Matrícula", ok: tipos.has("matricula") });
-    if (misCats.some((c) => c.menores)) requisitos.push({ texto: "Ley 1918 firmada", ok: tipos.has("autorizacion_ley_1918") });
+    const requisitos = documentosExigidos(b.segmento, misCats)
+      .filter((r) => r.exigido)
+      .map((r) => ({ texto: r.nombre, ok: tipos.has(r.tipo) }));
     const e = espera(b.creado);
     return {
       id: b.id,

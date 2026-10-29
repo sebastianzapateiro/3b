@@ -77,15 +77,6 @@ export async function rechazarProveedor(formData: FormData) {
   volver("/admin/aprobaciones", { ok: "Proveedor rechazado. Quedó el motivo registrado." });
 }
 
-/** Regla 2: cada apertura de un documento privado se registra. Aún no hay almacenamiento privado conectado. */
-export async function abrirDocumento(formData: FormData) {
-  const actor = await exigirBackoffice();
-  const proveedorId = uuid.parse(texto(formData, "proveedorId"));
-  const documentoId = uuid.parse(texto(formData, "documentoId"));
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "documento_abierto", objetoTipo: "proveedor", objetoId: proveedorId, metadatos: { documentoId } });
-  volver(`/admin/proveedores/${proveedorId}`, { doc: documentoId });
-}
-
 /* ───────────── Alta asistida ───────────── */
 
 const altaAsistida = z.object({

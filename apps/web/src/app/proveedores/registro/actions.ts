@@ -7,6 +7,7 @@
  */
 import { auth } from "@/lib/auth";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
+import { estadoDocumentos } from "@/lib/documentos";
 import { headers } from "next/headers";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { slugSchema } from "@las3b/shared";
@@ -188,10 +189,11 @@ export async function guardarPaso2(formData: FormData) {
     }
   }
 
-  return { ok: true };
+  // Paso 3 muestra un cargador por cada documento que exigen el segmento y la categoría.
+  return { ok: true, documentos: (await estadoDocumentos(p.id)).lista };
 }
 
-/** Paso 3 · Verificación: documento, dirección, fecha nacimiento, RUT (si aplica), OTP. */
+/** Paso 3 · Verificación: documento, dirección, fecha nacimiento, archivos exigidos (regla 2), OTP. */
 export async function guardarPaso3(formData: FormData) {
   const usuario = await obtenerUsuario();
   if (!usuario) return { error: "Debes iniciar sesión." };
@@ -205,7 +207,6 @@ export async function guardarPaso3(formData: FormData) {
   const direccionNotificaciones = String(formData.get("direccionNotificaciones") ?? "").trim();
   const fechaNacimientoRaw = formData.get("fechaNacimiento");
   const fechaNacimiento = fechaNacimientoRaw ? String(fechaNacimientoRaw) : null;
-  const rut = String(formData.get("rut") ?? "").trim();
 
   if (!tipoDocumento || !documento || !direccionNotificaciones || !fechaNacimiento) {
     return { error: "Faltan campos requeridos de verificación." };
@@ -231,14 +232,10 @@ export async function guardarPaso3(formData: FormData) {
     .where(eq(proveedores.id, p.id))
     .limit(1);
 
-  const exigeRut =
-    prov?.segmento === "empresa" ||
-    (prov?.categoriaId != null &&
-      (await verificarCategoriaExigeRut(prov.categoriaId as number)));
-
-  if (exigeRut && !rut) {
-    return { error: "El RUT es obligatorio para tu categoría o segmento." };
-  }
+  // Los archivos se suben aparte (URL firmada); aquí solo se comprueba que estén los obligatorios.
+  const docs = await estadoDocumentos(p.id);
+  if (docs.faltan.length) return { error: `Falta cargar: ${docs.faltan.join(", ")}.` };
+  const exigeRut = docs.lista.some((d) => d.tipo === "rut" && d.antesDeEnviar);
 
   // Consentimientos (RF-19, Ley 1581): casillas no premarcadas; se guarda versión, fecha e IP.
   const exigeMenores = await verificarCategoriaExigeMenores((prov?.categoriaId as number | null | undefined) ?? null);
