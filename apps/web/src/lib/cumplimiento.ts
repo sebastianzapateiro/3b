@@ -61,11 +61,6 @@ export async function bandejaCumplimiento(bandeja: Bandeja): Promise<FilaTramite
   return filas.sort((a, b) => a.restantes - b.restantes || a.creado.getTime() - b.creado.getTime());
 }
 
-export async function contarAbiertos() {
-  const [r] = (await consultar(sql`SELECT (SELECT count(*)::int FROM reclamos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM mensajes_contacto WHERE estado = 'nuevo') AS n`)) as unknown as { n: number }[];
-  return r?.n ?? 0;
-}
-
 export async function detalleReclamo(id: string) {
   const [r] = await db.select().from(reclamos).where(eq(reclamos.id, id)).limit(1);
   if (!r) return null;

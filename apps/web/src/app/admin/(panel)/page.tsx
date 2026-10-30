@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Encabezado, tarjeta } from "@/components/admin/Ui";
-import { datosTablero, type RangoTablero } from "@/lib/admin";
-import { totalReportesPendientes } from "@/lib/moderacion";
+import { contadoresMenu, datosTablero, type RangoTablero } from "@/lib/admin";
 
 /** B7 · Tablero. Mockup: docs/mockups/BO_Tablero.dc.html. */
 const RANGOS: Record<RangoTablero, string> = { "7": "Últimos 7 días", "30": "Últimos 30 días", mes: "Este mes" };
@@ -20,8 +19,7 @@ const numero = "font-display text-[40px] leading-none tabular-nums";
 export default async function Tablero({ searchParams }: { searchParams: Promise<{ rango?: string }> }) {
   const { rango: r } = await searchParams;
   const rango: RangoTablero = r === "30" || r === "mes" ? r : "7";
-  const d = await datosTablero(rango);
-  const reportes = await totalReportesPendientes().catch(() => 0);
+  const [d, { reportes }] = await Promise.all([datosTablero(rango), contadoresMenu()]);
   const maxCat = Math.max(1, ...d.porCategoria.map((c) => c.n));
 
   return (

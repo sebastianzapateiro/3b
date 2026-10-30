@@ -143,7 +143,3 @@ export async function revisarReincidencia(proveedorId: string, ventanaDias: numb
   return false;
 }
 
-export async function totalReportesPendientes() {
-  const [r] = filas<{ n: number }>(await consultar(sql`SELECT count(DISTINCT (tipo_objeto, objeto_id))::int AS n FROM reportes WHERE NOT resuelto`));
-  return r?.n ?? 0;
-}
