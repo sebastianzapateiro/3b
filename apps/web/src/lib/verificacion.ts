@@ -6,6 +6,7 @@
  * El 2FA es obligatorio siempre para `admin`; para verificador y moderador lo decide un admin
  * (`configuracion`: exige_2fa_<rol>, activado por defecto).
  */
+import { cache } from "react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -54,7 +55,8 @@ export type VerificacionAdmin = {
   error: string | null;
 };
 
-export async function verificarSesionAdmin(): Promise<VerificacionAdmin> {
+/** Una sola verificación por petición: el layout del panel y la página la comparten (cache de React). */
+export const verificarSesionAdmin = cache(async (): Promise<VerificacionAdmin> => {
   const session = await auth.api.getSession({ headers: await headers() });
 
   if (!session?.user) {
@@ -81,7 +83,7 @@ export async function verificarSesionAdmin(): Promise<VerificacionAdmin> {
   }
 
   return { user: usuario, rol, roles, error: null };
-}
+});
 
 /** Para páginas del panel: sin acceso válido redirige a /admin/ingresar. Con `soloAdmin`, exige el rol admin. */
 export async function exigirBackoffice(soloAdmin = false) {

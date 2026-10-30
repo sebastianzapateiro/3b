@@ -100,6 +100,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Sin `RESEND_API_KEY`: los enlaces de verificación, recuperación e invitación salen en la consola de `pnpm dev`.
 - **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver de Postgres no conecta («Failed to get session»).
 - Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».
+- La base está en **us-west-2 (Oregón)**: ~170 ms por consulta desde Bogotá. Las funciones de Vercel corren en `pdx1` (`apps/web/vercel.json`) para quedar al lado. Better Auth usa `cookieCache` (5 min): cambios al usuario hechos con SQL directo no se ven en `getSession` hasta que vence; para datos que el usuario edita usa `auth.api.updateUser`.
 - La instancia de Supabase es pequeña (~0,5 GB): pocas conexiones. En `next build` cada proceso usa 1 conexión; en Vercel `DATABASE_URL` va por el puerto **6543** (modo transacción). Si el modo sesión (5432) se llena (`EMAXCONNSESSION`), cerrar conexiones inactivas viejas desde el SQL Editor de Supabase.
 
 ## Estado
