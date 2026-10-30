@@ -15,7 +15,7 @@ Dueño: Sebastián Zapateiro. Responde en español, conciso. Analiza y muestra h
    - El mockup de la pantalla en [`docs/mockups/`](docs/mockups/README.md).
 2. **Antes de escribir**, revisa el código vecino y copia su estilo (nombres en español, comentario de cabecera con módulo y RF/CU, funciones pequeñas).
 3. **Al terminar** una tarea:
-   - `pnpm typecheck` y `pnpm build` sin errores (no hay tests ni lint todavía).
+   - `pnpm typecheck`, `pnpm test` (vitest, solo lógica pura en `apps/web/src/**/*.test.ts`) y `pnpm build` sin errores (no hay lint todavía).
    - Prueba la pantalla con `pnpm dev` cuando aplique.
    - Marca la tarea en `docs/06-plan.md` y actualiza la sección **Estado** de este archivo.
    - Si cambió la arquitectura (servicios, tablas, flujos de seguridad), actualiza el diagrama en `docs/07-diagramas.md` y corre `pnpm docs:diagramas`.
@@ -78,6 +78,7 @@ docs/                      Visión, requerimientos, casos de uso, arquitectura, 
 ```bash
 pnpm dev                    # web en http://localhost:3000
 pnpm typecheck
+pnpm test                   # vitest (lógica pura: códigos, mensajes de WhatsApp, ubicación)
 pnpm build                  # usa --force si cambiaste variables de entorno (Turborepo cachea el build)
 pnpm db:generate            # nueva migración tras cambiar packages/db/src/schema/*
 pnpm db:migrate             # aplica migraciones a DATABASE_URL
