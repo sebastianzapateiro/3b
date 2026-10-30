@@ -16,6 +16,9 @@ import { auth } from "@/lib/auth";
 import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
+import { guardarCompletitud } from "@/lib/completitud";
+import { categoriasSinPrecio, oficioDelServicio } from "@/lib/precios";
+import { hoyBogota, VALORES_FUENTE } from "@/lib/seguimiento";
 import { exigencia2fa, exigirBackoffice, guardarExigencia2fa, ROLES_2FA_OPCIONAL } from "@/lib/verificacion";
 
 const { proveedores, usuarioRoles, user, session, twoFactor, categorias, terminosBusqueda, proveedorInsignias, insignias, proveedorCategorias, proveedorLocalidades, serviciosProveedor, configuracion } = schema;
@@ -97,6 +100,7 @@ const altaAsistida = z.object({
   unidad: z.enum(["visita", "hora", "clase", "trabajo"]).default("visita"),
   slug: slugSchema,
   origen: z.string().default("En persona"),
+  fuente: z.enum(VALORES_FUENTE).optional().or(z.literal("").transform(() => undefined)),
 });
 
 export async function crearProveedorAsistido(formData: FormData) {
@@ -144,6 +148,9 @@ export async function crearProveedorAsistido(formData: FormData) {
       ...protegerDocumento(d.documento),
       direccionNotificaciones: d.direccion,
       fechaNacimiento: d.fechaNacimiento || null,
+      fuenteOrigen: d.fuente ?? null,
+      primerContacto: hoyBogota(),
+      ultimoContacto: hoyBogota(),
     })
     .returning({ id: proveedores.id });
   const id = nuevo!.id;
@@ -152,8 +159,11 @@ export async function crearProveedorAsistido(formData: FormData) {
   await db.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: id, categoriaId })));
   await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: id, localidadId })));
   if (d.servicio) {
-    await db.insert(serviciosProveedor).values({ proveedorId: id, categoriaId: categoriaIds[0], nombre: d.servicio, precioDesde: d.precio?.replace(/\D/g, "") || null, unidad: d.unidad });
+    const sinPrecio = await categoriasSinPrecio([categoriaIds[0]!]);
+    await db.insert(serviciosProveedor).values({ proveedorId: id, categoriaId: categoriaIds[0], nombre: d.servicio, precioDesde: sinPrecio ? null : d.precio?.replace(/\D/g, "") || null, unidad: sinPrecio ? "trabajo" : d.unidad });
   }
+
+  await guardarCompletitud(id);
 
   if (invitar) {
     const { url, horas } = await crearInvitacion(usuarioId, DESTINO_PROVEEDOR_INVITADO);
@@ -166,6 +176,125 @@ export async function crearProveedorAsistido(formData: FormData) {
       ? `Borrador de ${d.nombrePublico} creado y la invitación enviada a ${correo}. Envíasela también por WhatsApp con el botón de abajo.`
       : `Borrador de ${d.nombrePublico} creado. Carga sus documentos aquí o envíale la invitación cuando tenga correo.`,
   });
+}
+
+const fechaOpcional = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Revisa la fecha.").optional().or(z.literal("").transform(() => undefined));
+
+const esquemaSeguimiento = z.object({
+  fuente: z.enum(VALORES_FUENTE).optional().or(z.literal("").transform(() => undefined)),
+  primerContacto: fechaOpcional,
+  ultimoContacto: fechaOpcional,
+  proximaAccion: z.string().trim().max(200, "La próxima acción admite hasta 200 caracteres.").optional(),
+  notas: z.string().trim().max(2000, "Las notas admiten hasta 2000 caracteres.").optional(),
+});
+
+/** B1 · Seguimiento interno: fuente, fechas de contacto, próxima acción y notas. Solo el equipo lo ve. */
+export async function guardarSeguimiento(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const ruta = `/admin/proveedores/${id}`;
+  const r = esquemaSeguimiento.safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string")));
+  if (!r.success) volver(ruta, { error: r.error.issues[0]?.message ?? "Revisa los datos." });
+  const d = r.data;
+
+  await db
+    .update(proveedores)
+    .set({ fuenteOrigen: d.fuente ?? null, primerContacto: d.primerContacto ?? null, ultimoContacto: d.ultimoContacto ?? null, proximaAccion: d.proximaAccion || null, notasInternas: d.notas || null, updatedAt: new Date() })
+    .where(eq(proveedores.id, id));
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "seguimiento_actualizado", objetoTipo: "proveedor", objetoId: id });
+  revalidatePath(ruta);
+  volver(ruta, { ok: "Seguimiento guardado." });
+}
+
+const esquemaPerfilEquipo = z.object({
+  nombrePublico: z.string().trim().min(2, "Escribe el nombre público."),
+  whatsapp: z.string().transform((v) => v.replace(/[^\d+]/g, "")).pipe(z.string().regex(/^\+?\d{10,13}$/, "Revisa el WhatsApp.")),
+  presentacion: z.string().trim().max(280, "La presentación admite hasta 280 caracteres.").optional(),
+  aniosExperiencia: z.coerce.number().int().min(0).max(80).optional().or(z.literal("").transform(() => undefined)),
+});
+
+/**
+ * B1 · Edita el perfil público a nombre del proveedor: textos, zonas y lo que declara.
+ * No toca datos sensibles (documento, RUT, nacimiento, dirección, archivos), el estado ni los oficios (cambian las exigencias de RUT y Ley 1918).
+ * Queda en la auditoría con quien lo hizo.
+ */
+export async function editarPerfilComoEquipo(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const ruta = `/admin/proveedores/${id}`;
+  const r = esquemaPerfilEquipo.safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string")));
+  if (!r.success) volver(ruta, { error: r.error.issues[0]?.message ?? "Revisa los datos." });
+
+  const localidadIds = formData.getAll("localidad").map(Number).filter(Number.isInteger);
+  if (localidadIds.length === 0) volver(ruta, { error: "Elige al menos una localidad." });
+
+  const [p] = await db.select({ slug: proveedores.slug }).from(proveedores).where(eq(proveedores.id, id)).limit(1);
+  if (!p) volver("/admin/aprobaciones", { error: "Proveedor no encontrado." });
+  await db
+    .update(proveedores)
+    .set({
+      nombrePublico: r.data.nombrePublico,
+      whatsapp: r.data.whatsapp,
+      presentacion: r.data.presentacion || null,
+      aniosExperiencia: r.data.aniosExperiencia ?? null,
+      emiteFactura: formData.has("emiteFactura"),
+      ofreceGarantia: formData.has("ofreceGarantia"),
+      atiendeUrgencias: formData.has("atiendeUrgencias"),
+      disponible24h: formData.has("disponible24h"),
+      visitaAConvenir: formData.has("visitaAConvenir"),
+      updatedAt: new Date(),
+    })
+    .where(eq(proveedores.id, id));
+  await db.delete(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, id));
+  await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: id, localidadId })));
+  await guardarCompletitud(id);
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "perfil_editado_por_equipo", objetoTipo: "proveedor", objetoId: id });
+  revalidatePath(ruta);
+  revalidatePath(`/${p.slug}`);
+  volver(ruta, { ok: "Perfil actualizado a nombre del proveedor." });
+}
+
+const esquemaServicioEquipo = z.object({
+  nombre: z.string().trim().min(2, "Escribe el nombre del servicio.").max(80),
+  descripcion: z.string().trim().max(140, "El detalle admite hasta 140 caracteres.").optional(),
+  precio: z.string().optional(),
+  unidad: z.enum(["visita", "hora", "clase", "metro2", "trayecto", "trabajo"]).default("visita"),
+});
+
+/** B1 · Agrega o corrige un servicio del proveedor (sin `servicioId` crea uno). Los servicios de Aseo no guardan precio. */
+export async function guardarServicioComoEquipo(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const ruta = `/admin/proveedores/${id}`;
+  const servicioId = texto(formData, "servicioId");
+  const r = esquemaServicioEquipo.safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string")));
+  if (!r.success) volver(ruta, { error: r.error.issues[0]?.message ?? "Revisa los datos." });
+
+  const { categoriaId, sinPrecio } = await oficioDelServicio(id, Number(formData.get("categoriaId")) || null);
+  const datos = {
+    nombre: r.data.nombre,
+    descripcion: r.data.descripcion || null,
+    precioDesde: sinPrecio ? null : r.data.precio?.replace(/\D/g, "") || null,
+    unidad: sinPrecio ? ("trabajo" as const) : r.data.unidad,
+    categoriaId,
+  };
+  if (servicioId) await db.update(serviciosProveedor).set(datos).where(and(eq(serviciosProveedor.id, Number(servicioId)), eq(serviciosProveedor.proveedorId, id)));
+  else await db.insert(serviciosProveedor).values({ proveedorId: id, ...datos });
+
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "perfil_editado_por_equipo", objetoTipo: "proveedor", objetoId: id, metadatos: { servicio: datos.nombre } });
+  revalidatePath(ruta);
+  volver(ruta, { ok: servicioId ? "Servicio actualizado." : "Servicio agregado." });
+}
+
+/** B1 · Oculta un servicio del perfil (no se borra). */
+export async function quitarServicioComoEquipo(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const ruta = `/admin/proveedores/${id}`;
+  await db.update(serviciosProveedor).set({ visible: false }).where(and(eq(serviciosProveedor.id, z.coerce.number().int().parse(formData.get("servicioId"))), eq(serviciosProveedor.proveedorId, id)));
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "perfil_editado_por_equipo", objetoTipo: "proveedor", objetoId: id, metadatos: { servicio_quitado: true } });
+  revalidatePath(ruta);
+  volver(ruta, { ok: "Servicio quitado." });
 }
 
 /** Adónde llega el proveedor invitado después de crear su clave: revisa, acepta términos y envía a revisión. */

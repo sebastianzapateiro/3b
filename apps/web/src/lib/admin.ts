@@ -4,6 +4,7 @@
  * Los datos privados (documento, dirección, fecha de nacimiento) se devuelven enmascarados.
  */
 import { cache } from "react";
+import { calcularCompletitud, estadoPerfil } from "@/lib/completitud";
 import { documentosExigidos } from "@/lib/documentos";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db, schema, consultar } from "@las3b/db";
@@ -235,12 +236,12 @@ export async function obtenerRevision(id: string) {
 
   const [cats, locs, docs, insig, servicios, [u]] = await Promise.all([
     db
-      .select({ nombre: categorias.nombre, rut: categorias.exigeRutDesdeAlta, matricula: categorias.exigeMatricula, menores: categorias.exigeInsigniaMenores })
+      .select({ id: categorias.id, slug: categorias.slug, nombre: categorias.nombre, rut: categorias.exigeRutDesdeAlta, matricula: categorias.exigeMatricula, menores: categorias.exigeInsigniaMenores })
       .from(proveedorCategorias)
       .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
       .where(eq(proveedorCategorias.proveedorId, id)),
     db
-      .select({ nombre: localidades.nombre })
+      .select({ id: localidades.id, nombre: localidades.nombre })
       .from(proveedorLocalidades)
       .innerJoin(localidades, eq(localidades.id, proveedorLocalidades.localidadId))
       .where(eq(proveedorLocalidades.proveedorId, id)),
@@ -250,7 +251,7 @@ export async function obtenerRevision(id: string) {
       .from(proveedorInsignias)
       .innerJoin(insignias, eq(insignias.id, proveedorInsignias.insigniaId))
       .where(eq(proveedorInsignias.proveedorId, id)),
-    db.select({ n: sql<number>`count(*)::int` }).from(schema.serviciosProveedor).where(eq(schema.serviciosProveedor.proveedorId, id)),
+    db.select().from(schema.serviciosProveedor).where(and(eq(schema.serviciosProveedor.proveedorId, id), eq(schema.serviciosProveedor.visible, true))).orderBy(asc(schema.serviciosProveedor.orden), asc(schema.serviciosProveedor.id)),
     db.select({ correo: user.email, correoVerificado: user.emailVerified }).from(user).where(eq(user.id, p.usuarioId)).limit(1),
   ]);
 
@@ -261,6 +262,7 @@ export async function obtenerRevision(id: string) {
     .orderBy(desc(auditoria.createdAt))
     .limit(12);
 
+  const { porcentaje, faltan } = await calcularCompletitud(id);
   const doc = p.documentoCifrado ?? "";
   const nacimiento = p.fechaNacimiento ? new Date(`${p.fechaNacimiento}T00:00:00Z`) : null;
   const edad = nacimiento ? Math.floor((Date.now() - nacimiento.getTime()) / (365.25 * 86_400_000)) : null;
@@ -274,6 +276,15 @@ export async function obtenerRevision(id: string) {
     slug: p.slug,
     segmento: p.segmento,
     presentacion: p.presentacion,
+    aniosExperiencia: p.aniosExperiencia,
+    completitud: porcentaje,
+    faltanPerfil: faltan,
+    estadoPerfil: estadoPerfil(p.estado, porcentaje),
+    fuenteOrigen: p.fuenteOrigen,
+    primerContacto: p.primerContacto,
+    ultimoContacto: p.ultimoContacto,
+    proximaAccion: p.proximaAccion,
+    notasInternas: p.notasInternas,
     emiteFactura: Boolean(p.emiteFactura),
     rutFechaLimite: p.rutFechaLimite,
     creado: p.createdAt,
@@ -290,9 +301,12 @@ export async function obtenerRevision(id: string) {
     correoVerificado: Boolean(u?.correoVerificado),
     categorias: cats,
     localidades: locs.map((l) => l.nombre),
+    localidadIds: locs.map((l) => l.id),
+    declaraciones: { emiteFactura: Boolean(p.emiteFactura), ofreceGarantia: Boolean(p.ofreceGarantia), atiendeUrgencias: p.atiendeUrgencias, disponible24h: p.disponible24h, visitaAConvenir: p.visitaAConvenir },
     documentos: docs,
     insignias: insig,
-    totalServicios: servicios[0]?.n ?? 0,
+    servicios,
+    totalServicios: servicios.length,
     historial,
   };
 }

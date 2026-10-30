@@ -5,6 +5,7 @@ import { crearProveedorAsistido, reenviarInvitacion } from "@/app/admin/actions"
 import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
 import { esCorreoFicticio, estadoInvitaciones } from "@/lib/invitaciones";
 import { parametro } from "@/lib/parametros";
+import { FUENTES_ORIGEN } from "@/lib/seguimiento";
 
 /** B1 · Alta asistida de un proveedor (CU-51). Mockup: docs/mockups/BO_NuevoProveedor.dc.html. */
 const grupo = "flex flex-col gap-1.5";
@@ -122,6 +123,8 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
               <li className="flex gap-2.5"><span className="flex size-[26px] flex-none items-center justify-center rounded-full bg-amarillo font-bold text-tinta">3</span>Sube lo que falte, acepta términos y autorización de datos, firma la Ley 1918 si aplica y envía su perfil a revisión.</li>
             </ol>
             <p className="rounded-xl bg-amarillo-suave px-3.5 py-3 text-sm leading-[1.45] text-amarillo-oscuro">El equipo no puede aceptar términos ni autorizaciones por el proveedor (Ley 1581). Hasta que lo haga, el perfil queda en borrador.</p>
+            <label htmlFor="fuente" className="text-sm font-semibold">Fuente de origen</label>
+            <select id="fuente" name="fuente" defaultValue="" className={campoAdmin}><option value="">Sin definir</option>{FUENTES_ORIGEN.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select>
             <label htmlFor="origen" className="text-sm font-semibold">Cómo llegó</label>
             <select id="origen" name="origen" className={campoAdmin}><option>En persona</option><option>Por teléfono</option><option>Jornada de registro en barrio</option><option>Referido por otro proveedor</option></select>
             <button type="submit" name="accion" value="invitar" className="h-[50px] rounded-xl bg-tinta text-base font-bold text-white">Crear y enviar invitación</button>

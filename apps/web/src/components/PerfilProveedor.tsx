@@ -52,7 +52,7 @@ function BotonWhatsApp({ href, clase }: { href: string | null; clase: string }) 
   const contenido = (
     <>
       <IconoWhatsApp tam={20} />
-      Escribir por WhatsApp
+      Contactar por WA
     </>
   );
   return href ? (
@@ -149,7 +149,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
                       </span>
                     </span>
                     <b className="text-[15px] tabular-nums lg:text-base">
-                      {s.precioDesde ? `desde ${pesos.format(Number(s.precioDesde))}` : "a convenir"}
+                      {s.precioDesde ? `desde ${pesos.format(Number(s.precioDesde))}` : "a convenir con el proveedor"}
                     </b>
                   </div>
                 ))}

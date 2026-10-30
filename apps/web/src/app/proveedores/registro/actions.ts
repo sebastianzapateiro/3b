@@ -8,6 +8,8 @@
 import { auth } from "@/lib/auth";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { estadoDocumentos } from "@/lib/documentos";
+import { guardarCompletitud } from "@/lib/completitud";
+import { categoriasSinPrecio, proveedorSinPrecio } from "@/lib/precios";
 import { headers } from "next/headers";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { slugSchema } from "@las3b/shared";
@@ -132,7 +134,8 @@ export async function guardarPaso1(formData: FormData) {
     localidadId,
   });
 
-  return { ok: true, proveedorId: p.id, requiereRut: exigeRut, requiereMenores: await verificarCategoriaExigeMenores(categoriaId) };
+  await guardarCompletitud(p.id);
+  return { ok: true, proveedorId: p.id, requiereRut: exigeRut, requiereMenores: await verificarCategoriaExigeMenores(categoriaId), sinPrecio: await categoriasSinPrecio([categoriaId]) };
 }
 
 /** Paso 2 · Qué ofrece y dónde: servicios, presentación, experiencia, localidades adicionales. */
@@ -159,7 +162,8 @@ export async function guardarPaso2(formData: FormData) {
     .set({ presentacion, aniosExperiencia, updatedAt: new Date() })
     .where(eq(proveedores.id, p.id));
 
-  // Reemplazar servicios
+  // Reemplazar servicios (Aseo no guarda precio: es «a convenir»)
+  const sinPrecio = await proveedorSinPrecio(p.id);
   await db.delete(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, p.id));
   if (serviciosRaw.length > 0) {
     await db.insert(serviciosProveedor).values(
@@ -167,8 +171,8 @@ export async function guardarPaso2(formData: FormData) {
         proveedorId: p.id,
         nombre: nombre.trim(),
         descripcion: null,
-        precioDesde: preciosRaw[i] ?? null,
-        unidad: (unidadesRaw[i] ?? "visita") as any,
+        precioDesde: sinPrecio ? null : preciosRaw[i] || null,
+        unidad: (sinPrecio ? "trabajo" : (unidadesRaw[i] ?? "visita")) as any,
         orden: i,
         visible: true,
       })),
@@ -189,6 +193,7 @@ export async function guardarPaso2(formData: FormData) {
     }
   }
 
+  await guardarCompletitud(p.id);
   // Paso 3 muestra un cargador por cada documento que exigen el segmento y la categoría.
   return { ok: true, documentos: (await estadoDocumentos(p.id)).lista };
 }

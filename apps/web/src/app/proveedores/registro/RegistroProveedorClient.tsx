@@ -22,6 +22,7 @@ export function RegistroProveedorClient() {
   const [isPending, startTransition] = useTransition();
   const [requiereRut, setRequiereRut] = useState(false);
   const [requiereMenores, setRequiereMenores] = useState(false);
+  const [sinPrecio, setSinPrecio] = useState(false);
   const [documentos, setDocumentos] = useState<DocumentoRequerido[]>([]);
 
   const asyncGuardarPaso1 = async (fd: FormData) => {
@@ -33,6 +34,7 @@ export function RegistroProveedorClient() {
     if (res?.ok) {
       setRequiereRut(!!res.requiereRut);
       setRequiereMenores(!!res.requiereMenores);
+      setSinPrecio(!!res.sinPrecio);
       setPaso(2);
       return true;
     }
@@ -280,26 +282,31 @@ export function RegistroProveedorClient() {
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className={etiqueta}>Servicios y precios (mínimo 1)</label>
+            <label className={etiqueta}>{sinPrecio ? "Servicios (mínimo 1)" : "Servicios y precios (mínimo 1)"}</label>
+            {sinPrecio && <p className="text-sm leading-normal text-gris">El precio es «a convenir con el cliente»: no lo publicas en tu página.</p>}
             <div id="servicios" className="flex flex-col gap-2">
               <div className="flex flex-col sm:flex-row sm:gap-3 gap-1.5">
                 <input
                   name="servicios[]"
-                  placeholder="Ej: Visita de diagnóstico"
+                  placeholder={sinPrecio ? "Ej: Aseo de apartamento" : "Ej: Visita de diagnóstico"}
                   required
                   className={campo}
                 />
-                <input
-                  name="precios[]"
-                  type="number"
-                  placeholder="Desde"
-                  className={campo}
-                />
-                <select name="unidades[]" className={campo}>
-                  <option value="visita">Visita</option>
-                  <option value="hora">Hora</option>
-                  <option value="trabajo">Trabajo</option>
-                </select>
+                {!sinPrecio && (
+                  <>
+                    <input
+                      name="precios[]"
+                      type="number"
+                      placeholder="Desde"
+                      className={campo}
+                    />
+                    <select name="unidades[]" className={campo}>
+                      <option value="visita">Visita</option>
+                      <option value="hora">Hora</option>
+                      <option value="trabajo">Trabajo</option>
+                    </select>
+                  </>
+                )}
               </div>
             </div>
             <button
@@ -310,13 +317,13 @@ export function RegistroProveedorClient() {
                 const nodo = document.createElement("div");
                 nodo.className = "flex flex-col sm:flex-row sm:gap-3 gap-1.5";
                 nodo.innerHTML = `
-                  <input name="servicios[]" placeholder="Ej: Instalación de calentador" required class="${campo}" />
-                  <input name="precios[]" type="number" placeholder="Desde" class="${campo}" />
+                  <input name="servicios[]" placeholder="${sinPrecio ? "Ej: Limpieza profunda" : "Ej: Instalación de calentador"}" required class="${campo}" />
+                  ${sinPrecio ? "" : `<input name="precios[]" type="number" placeholder="Desde" class="${campo}" />
                   <select name="unidades[]" class="${campo}">
                     <option value="visita">Visita</option>
                     <option value="hora">Hora</option>
                     <option value="trabajo">Trabajo</option>
-                  </select>
+                  </select>`}
                   <button type="button" class="h-13 w-13 rounded-full bg-tinta text-white flex items-center justify-center sm:hidden" onclick="this.closest('div').remove()">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
                   </button>

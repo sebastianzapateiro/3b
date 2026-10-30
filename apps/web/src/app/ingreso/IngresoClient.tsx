@@ -166,7 +166,7 @@ export function IngresoClient({ destino, google, apple, aviso }: { destino: stri
                 <p className="text-base leading-normal text-tinta-2">
                   {tipo === "cliente"
                     ? "La necesitas para calificar a quienes contactaste por LasTresB."
-                    : "Es gratis. Después completas tus datos y el equipo revisa tu perfil antes de publicarlo."}
+                    : "Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp. Después completas tus datos y el equipo revisa tu perfil antes de publicarlo."}
                 </p>
               </div>
 

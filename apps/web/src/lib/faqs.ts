@@ -9,11 +9,11 @@ export type Pregunta = { pregunta: string; respuesta: string };
 const GENERALES = {
   costo: {
     pregunta: "¿Cuánto cuesta usar LasTresB?",
-    respuesta: "Nada. Buscar y contactar proveedores es gratis y LasTresB no cobra comisiones. Lo que pagas por el servicio va completo al proveedor.",
+    respuesta: "Nada. LasTresB es 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión. Contactas directo al proveedor por WhatsApp y lo que pagas por el servicio va completo a él.",
   },
   contacto: {
     pregunta: "¿Cómo contacto a un proveedor?",
-    respuesta: "Desde su perfil pulsas «Escribir por WhatsApp» y acuerdas con él el servicio, el precio y la fecha, sin intermediarios.",
+    respuesta: "Desde su perfil pulsas «Contactar por WA» y acuerdas con él el servicio, el precio y la fecha, sin intermediarios.",
   },
   responsabilidad: {
     pregunta: "¿LasTresB garantiza el servicio?",
@@ -184,7 +184,8 @@ export const FAQ_RESENAS: Pregunta[] = [
 ];
 
 export const FAQ_TERMINOS_PROVEEDORES: Pregunta[] = [
-  { pregunta: "¿LasTresB me cobra comisión?", respuesta: "No. Acuerdas precio, fecha y garantía directamente con tus clientes y LasTresB no recibe dinero por tus servicios." },
+  { pregunta: "¿LasTresB me cobra comisión?", respuesta: "No. LasTresB es 100% gratis para proveedores y clientes, sin costo de inscripción ni comisión. El cliente te contacta directo por WhatsApp y acuerdan servicio, precio, fecha y garantía entre ustedes; LasTresB no recibe dinero por tus servicios." },
+  { pregunta: "¿LasTresB es mi empleador?", respuesta: "No. LasTresB es una plataforma de contacto: no es empleador, contratista ni agencia de empleo, y no define horarios, jornadas ni condiciones del trabajo. La relación es independiente y la acuerdas directamente con tu cliente." },
   { pregunta: "¿Quién es dueño de mis fotos?", respuesta: "Tú. Nos das una licencia no exclusiva y gratuita, mientras tengas perfil, para mostrarlas en el portal y compartirlas para promocionar tu perfil." },
   { pregunta: "¿Pueden suspender mi perfil?", respuesta: "Sí, si incumples los términos. Normalmente te avisamos el motivo y tienes 5 días hábiles para dar tu versión; en casos de fraude o riesgo para personas puede ser inmediato y provisional." },
   { pregunta: "¿Puedo borrar una reseña que no me gusta?", respuesta: "No. Puedes responderla una vez y reportarla si incumple la política de reseñas." },

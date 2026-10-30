@@ -29,8 +29,8 @@ export const RESPONSABLE = {
 
 export const TRATAMIENTO_DATOS: TextoLegal = {
   tipo: "tratamiento_datos",
-  version: "2.0",
-  vigenteDesde: "2026-10-28",
+  version: "2.1",
+  vigenteDesde: "2026-10-30",
   titulo: "Política de tratamiento de datos personales",
   introduccion: "Esta política explica qué datos personales trata LasTresB, para qué, quién los recibe y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y sus normas reglamentarias.",
   pendientes: ["Razón social, NIT y correo de datos personales del responsable.", "Revisión de un abogado (finalidades, transferencias y plazos de conservación).", "Definir si aplica la inscripción en el Registro Nacional de Bases de Datos (SIC)."],
@@ -43,6 +43,7 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
       titulo: "2. Qué datos tratamos",
       lista: [
         "Cuentas de compradores: nombre, correo, celular (opcional), declaración de mayoría de edad, contactos que haces con proveedores y las reseñas que publicas.",
+        "Solicitudes de servicio (banner «¿Qué estás buscando?»): nombre, WhatsApp, lo que necesitas, la dirección o ubicación aproximada si decides darla, y el mensaje que envías a cada proveedor desde LasTresB.",
         "Proveedores: nombre público y de identificación, documento de identidad (cifrado), fecha de nacimiento, dirección de notificaciones, WhatsApp, RUT, matrícula o certificaciones, fotos de trabajos, presentación, servicios, precios y localidades.",
         "Proveedores en categorías con menores: la autorización firmada y el resultado de la consulta del registro de inhabilidades (Ley 1918 de 2018).",
         "Datos técnicos: dirección IP y dispositivo en los consentimientos y en el registro de auditoría; cookies según la política de cookies.",
@@ -54,6 +55,7 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
         "Crear y administrar tu cuenta y tu sesión.",
         "Verificar identidad y mayoría de edad de los proveedores, y publicar su portafolio.",
         "Facilitar que compradores y proveedores se contacten por WhatsApp, y permitir reseñas ligadas a un contacto real.",
+        "Atender tu solicitud de servicio: mostrarte los proveedores más cercanos, escribirte por WhatsApp para enviarte proveedores calificados cuando no haya resultados, y entender qué servicios se piden para ampliar la oferta.",
         "Prevenir fraude, suplantación y abusos; mantener la seguridad y la auditoría del sistema.",
         "Atender reclamos, solicitudes de datos y requerimientos de autoridades.",
         "Medir de forma agregada el uso del sitio, solo si aceptas las cookies de analítica.",
@@ -116,8 +118,8 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
 
 export const TERMINOS_PROVEEDORES: TextoLegal = {
   tipo: "terminos_proveedores",
-  version: "1.1",
-  vigenteDesde: "2026-10-28",
+  version: "1.2",
+  vigenteDesde: "2026-10-30",
   titulo: "Términos de uso para proveedores",
   introduccion: "Estos términos aplican a quien publica su portafolio en LasTresB para ofrecer servicios u oficios. Al registrarte los aceptas; complementan los términos de uso generales y la política de tratamiento de datos.",
   pendientes: ["Razón social y datos del titular del portal.", "Revisión de un abogado (licencia de contenido, exoneración de responsabilidad y régimen de suspensión).", "Confirmar el plazo para presentar el RUT y los descargos antes de una suspensión."],
@@ -129,13 +131,14 @@ export const TERMINOS_PROVEEDORES: TextoLegal = {
     { titulo: "4. Tu contenido y la licencia que nos das", parrafos: ["Tus fotos, textos y precios siguen siendo tuyos. Nos autorizas, de forma no exclusiva, gratuita y mientras tengas perfil, a mostrarlos en el portal y a compartirlos en redes sociales y buscadores para promocionar tu perfil. Declaras que tienes los derechos sobre lo que subes y que no infringe derechos de terceros, no muestra a menores ni incluye datos personales ajenos."], lista: ["Si crees que un contenido infringe tus derechos, usa el procedimiento de retiro de contenido.", "Podemos ocultar contenido que incumpla estos términos."] },
     { titulo: "5. Conducta prohibida", lista: ["Suplantar a otra persona o empresa.", "Publicar precios o servicios engañosos o ilegales.", "Pedir, ofrecer o comprar reseñas, o intentar borrarlas o alterarlas.", "Acosar, discriminar o amenazar a clientes o a otros proveedores.", "Usar los datos de contacto de los clientes para fines distintos a prestar el servicio solicitado."] },
     { titulo: "6. Reseñas", parrafos: ["Las reseñas provienen de personas que te contactaron desde LasTresB. No puedes borrarlas ni editarlas; puedes responder cada una una sola vez y reportar las que incumplan la política de reseñas."] },
-    { titulo: "7. Precios y pagos", parrafos: ["Acuerdas precio, fecha y garantía directamente con tus clientes. LasTresB no cobra comisiones ni recibe dinero por tus servicios. Los precios del portafolio son orientativos. Si en el futuro se ofrecen servicios pagos, se avisará con anticipación y requerirán tu aceptación."] },
+    { titulo: "7. Precios y pagos", parrafos: ["Acuerdas precio, fecha y garantía directamente con tus clientes. LasTresB no cobra comisiones ni recibe dinero por tus servicios. Los precios del portafolio son orientativos. En el servicio de aseo y limpieza no se publica precio: se acuerda directamente con el cliente."] },
     { titulo: "8. Tus obligaciones como prestador", parrafos: ["Eres el único responsable de la calidad y la garantía de tu trabajo, de tus obligaciones tributarias, de seguridad social y laborales, y de contar con los permisos, matrículas o licencias que tu oficio exija."] },
     { titulo: "9. Datos de tus clientes", parrafos: ["Los datos que un cliente te comparte para contratarte los tratas tú como responsable, conforme a la Ley 1581 de 2012. Úsalos solo para prestar el servicio."] },
     { titulo: "10. Reclamos de consumidores", parrafos: ["Si un consumidor presenta un reclamo sobre tu servicio, LasTresB podrá recibirlo, trasladártelo y entregarle tus datos de identificación y contacto cuando la ley lo exija (Ley 1480 de 2011). Aceptas esto al registrarte."] },
     { titulo: "11. Suspensión y terminación", parrafos: ["Podemos pausar o suspender tu perfil si incumples estos términos. Normalmente te avisaremos el motivo y tendrás 5 días hábiles para dar tu versión. En casos de fraude, amenazas o riesgo para las personas, la suspensión puede ser inmediata y provisional. Puedes pausar o cerrar tu perfil cuando quieras desde tu panel."] },
     { titulo: "12. Exoneración de responsabilidad", parrafos: ["LasTresB queda exonerada de responsabilidad por la prestación de tus servicios, por defectos, riesgos, garantías o incumplimientos ocurridos tras el contacto. La relación contractual y la responsabilidad civil son entre tú y tu cliente."] },
-    { titulo: "13. Cambios y ley aplicable", parrafos: ["Podemos actualizar estos términos y te avisaremos; si continúas usando el portal después del aviso, se entiende que los aceptas, salvo que la ley exija una nueva autorización. Se rigen por las leyes de Colombia y los jueces de Bogotá D.C."] },
+    { titulo: "13. Naturaleza de la plataforma", parrafos: ["LasTresB es una plataforma digital gratuita que permite a las personas encontrar proveedores de servicios del hogar y contactarlos directamente. LasTresB no es empleador, contratista, agencia de empleo ni intermediario laboral de los proveedores, y no presta los servicios publicados. Entre el proveedor y el cliente existe una relación independiente que ellos acuerdan directamente, incluyendo el alcance del servicio, el precio, el tiempo, la forma de pago y las condiciones del trabajo. LasTresB no define, supervisa ni garantiza horarios, jornadas, remuneración ni condiciones laborales, y no responde por las obligaciones que surjan entre proveedor y cliente. El uso de la plataforma no genera vínculo laboral, de subordinación ni de representación con LasTresB. Los proveedores son responsables de sus propias obligaciones legales, tributarias y de seguridad social. LasTresB puede suspender perfiles que ofrezcan servicios no permitidos o incumplan estos términos."] },
+    { titulo: "14. Cambios y ley aplicable", parrafos: ["Podemos actualizar estos términos y te avisaremos; si continúas usando el portal después del aviso, se entiende que los aceptas, salvo que la ley exija una nueva autorización. Se rigen por las leyes de Colombia y los jueces de Bogotá D.C."] },
   ],
 };
 

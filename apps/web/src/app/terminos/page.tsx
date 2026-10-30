@@ -14,7 +14,7 @@ export default function Terminos() {
     <>
     <main className="mx-auto max-w-3xl px-5 py-16">
       <h1 className="font-display text-4xl font-extrabold">Términos de uso</h1>
-      <p className="mt-4 text-sm text-gris">Versión 1.0 — Vigencia: 27 de octubre de 2026.</p>
+      <p className="mt-4 text-sm text-gris">Versión 1.1 — Vigencia: 27 de octubre de 2026. Última actualización: 30 de octubre de 2026.</p>
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="font-display text-2xl font-bold">1. Objeto</h2>
@@ -39,6 +39,20 @@ export default function Terminos() {
         <h2 className="font-display text-2xl font-bold">3. Elegibilidad</h2>
         <p className="leading-relaxed">El servicio está dirigido a personas mayores de 18 años con capacidad legal para contratar.</p>
         <p className="leading-relaxed">Al registrarse en LasTresB se aceptan estos términos.</p>
+
+        <h2 className="font-display text-2xl font-bold">4. Naturaleza de la plataforma</h2>
+        <p className="leading-relaxed">
+          LasTresB es una plataforma digital gratuita que permite a las personas encontrar proveedores de servicios del
+          hogar y contactarlos directamente. LasTresB no es empleador, contratista, agencia de empleo ni intermediario
+          laboral de los proveedores, y no presta los servicios publicados. Entre el proveedor y el cliente existe una
+          relación independiente que ellos acuerdan directamente, incluyendo el alcance del servicio, el precio, el
+          tiempo, la forma de pago y las condiciones del trabajo. LasTresB no define, supervisa ni garantiza horarios,
+          jornadas, remuneración ni condiciones laborales, y no responde por las obligaciones que surjan entre
+          proveedor y cliente. El uso de la plataforma no genera vínculo laboral, de subordinación ni de representación
+          con LasTresB. Los proveedores son responsables de sus propias obligaciones legales, tributarias y de
+          seguridad social. LasTresB puede suspender perfiles que ofrezcan servicios no permitidos o incumplan estos
+          términos.
+        </p>
       </section>
     </main>
     <Faq preguntas={FAQ_TERMINOS} />

@@ -1,11 +1,44 @@
 import { notFound } from "next/navigation";
-import { aprobarProveedor, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
+import { aprobarProveedor, editarPerfilComoEquipo, guardarServicioComoEquipo, guardarSeguimiento, quitarServicioComoEquipo, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
 import { CargaDocumentosEquipo } from "@/components/admin/CargaDocumentosEquipo";
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
-import { etiquetaSegmento, obtenerRevision } from "@/lib/admin";
+import { etiquetaSegmento, listarLocalidades, obtenerRevision } from "@/lib/admin";
+import { CATEGORIA_SIN_PRECIO } from "@/lib/precios";
 import { documentosExigidos, estadoDocumentos } from "@/lib/documentos";
 import { enlaceVigente, esCorreoFicticio, estadoInvitaciones, invitacionPorWhatsApp } from "@/lib/invitaciones";
 import { MOTIVOS_RECHAZO } from "@/lib/motivos-rechazo";
+import { FUENTES_ORIGEN } from "@/lib/seguimiento";
+
+const ESTADO_PERFIL = { borrador: "Perfil en borrador", completo: "Perfil completo", publicado: "Publicado" } as const;
+const DECLARACIONES = [
+  ["emiteFactura", "Emite factura"], ["ofreceGarantia", "Ofrece garantía"], ["atiendeUrgencias", "Atiende urgencias el mismo día"],
+  ["disponible24h", "Atiende 24 horas, incluidos fines de semana y festivos"], ["visitaAConvenir", "Visita a convenir con el cliente"],
+] as const;
+
+/** Campos de un servicio. Con varios oficios se elige a cuál pertenece; Aseo no lleva precio. */
+function CamposServicio({ oficios, servicio }: { oficios: { id: number; nombre: string; slug: string }[]; servicio?: { nombre: string; descripcion: string | null; precioDesde: string | null; unidad: string; categoriaId: number | null } }) {
+  const oficio = oficios.length === 1 ? oficios[0] : oficios.find((o) => o.id === servicio?.categoriaId);
+  const sinPrecio = oficio?.slug === CATEGORIA_SIN_PRECIO;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {oficios.length > 1 && (
+        <select name="categoriaId" defaultValue={servicio?.categoriaId ?? oficios[0]?.id} aria-label="Oficio" className={`${campoAdmin} flex-[1_1_100%]`}>{oficios.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}</select>
+      )}
+      <input name="nombre" required defaultValue={servicio?.nombre} placeholder="Servicio" aria-label="Servicio" className={`${campoAdmin} flex-[2_1_200px]`} />
+      <input name="descripcion" maxLength={140} defaultValue={servicio?.descripcion ?? ""} placeholder="Detalle (opcional)" aria-label="Detalle" className={`${campoAdmin} flex-[2_1_200px]`} />
+      {sinPrecio ? (
+        <span className="flex h-11 flex-[1_1_160px] items-center text-sm font-semibold text-tinta-2">A convenir con el cliente</span>
+      ) : (
+        <>
+          <input name="precio" inputMode="numeric" defaultValue={servicio?.precioDesde ?? ""} placeholder="Precio desde" aria-label="Precio desde" className={`${campoAdmin} flex-[1_1_120px]`} />
+          <select name="unidad" defaultValue={servicio?.unidad ?? "visita"} aria-label="Por" className={`${campoAdmin} flex-[1_1_120px]`}>
+            {[["visita", "Por visita"], ["hora", "Por hora"], ["clase", "Por clase"], ["metro2", "Por m²"], ["trayecto", "Por trayecto"], ["trabajo", "Por trabajo"]].map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+          </select>
+        </>
+      )}
+    </div>
+  );
+}
 
 /** B1, B2 · Revisión de proveedor, documentos, decisión e insignias. Mockup: docs/mockups/BO_Revision.dc.html. */
 const ESTADO: Record<string, { texto: string; tono: "amarillo" | "verde" | "rojo" | "gris" }> = {
@@ -26,13 +59,15 @@ const ACCIONES: Record<string, string> = {
   proveedor_aprobado: "Aprobado y publicado",
   proveedor_rechazado: "Rechazado",
   alta_asistida: "Alta asistida por el equipo",
+  seguimiento_actualizado: "Seguimiento actualizado",
+  perfil_editado_por_equipo: "Perfil editado por el equipo",
 };
 
 export default async function Revision({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { id } = await params;
   const sp = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const p = await obtenerRevision(id);
+  const [p, todasLocalidades] = await Promise.all([obtenerRevision(id), listarLocalidades()]);
   if (!p) notFound();
 
   const estado = ESTADO[p.estado] ?? { texto: p.estado, tono: "gris" as const };
@@ -157,6 +192,83 @@ export default async function Revision({ params, searchParams }: { params: Promi
             ].map((t) => (
               <label key={t} className="flex items-center gap-2.5 text-[15px]"><input type="checkbox" className="size-5 accent-verde" />{t}</label>
             ))}
+          </section>
+
+          <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-xl font-bold">Perfil: {p.completitud} % completo</h2>
+              <Chip tono={p.estadoPerfil === "publicado" ? "verde" : p.estadoPerfil === "completo" ? "amarillo" : "gris"}>{ESTADO_PERFIL[p.estadoPerfil]}</Chip>
+            </div>
+            <div className="h-2.5 overflow-hidden rounded-full bg-piedra" role="progressbar" aria-valuenow={p.completitud} aria-valuemin={0} aria-valuemax={100} aria-label="Completitud del perfil"><div className="h-full rounded-full bg-verde" style={{ width: `${p.completitud}%` }} /></div>
+            <p className="text-sm text-tinta-2">{p.faltanPerfil.length ? `Falta: ${p.faltanPerfil.join(", ")}.` : "Tiene todo lo mínimo para publicarse."}</p>
+            <details className="rounded-2xl bg-piedra px-4 py-3">
+              <summary className="text-sm font-semibold">Editar perfil a nombre del proveedor</summary>
+              <form action={editarPerfilComoEquipo} className="mt-3 flex flex-col gap-3">
+                <input type="hidden" name="proveedorId" value={p.id} />
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">Nombre público<input name="nombrePublico" required defaultValue={p.nombre} className={campoAdmin} /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">WhatsApp<input name="whatsapp" required defaultValue={p.whatsapp} inputMode="tel" className={campoAdmin} /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">Presentación <span className="font-normal text-gris">(hasta 280 caracteres)</span><textarea name="presentacion" rows={3} maxLength={280} defaultValue={p.presentacion ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">Años de experiencia<input name="aniosExperiencia" type="number" min={0} max={80} defaultValue={p.aniosExperiencia ?? ""} className={campoAdmin} /></label>
+                <fieldset className="flex flex-col gap-2"><legend className="mb-1 text-sm font-semibold">Localidades donde trabaja</legend>
+                  <div className="grid gap-x-3 gap-y-1 sm:grid-cols-2">
+                    {todasLocalidades.map((l) => <label key={l.id} className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" name="localidad" value={l.id} defaultChecked={p.localidadIds.includes(l.id)} className="size-[18px] accent-verde" />{l.nombre}</label>)}
+                  </div>
+                </fieldset>
+                <fieldset className="flex flex-col gap-1"><legend className="mb-1 text-sm font-semibold">Lo que declara</legend>
+                  {DECLARACIONES.map(([k, t]) => <label key={k} className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" name={k} defaultChecked={p.declaraciones[k]} className="size-[18px] accent-verde" />{t}</label>)}
+                </fieldset>
+                <button type="submit" className="h-11 self-start rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Guardar perfil</button>
+                <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría con tu nombre. No incluye datos sensibles (documento, RUT, nacimiento, dirección) ni los oficios; las fotos las sube el proveedor.</span>
+              </form>
+            </details>
+          </section>
+
+          <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-xl font-bold">Servicios y precios</h2>
+              <span className="text-[13px] text-gris">Aseo y limpieza va «a convenir», sin precio</span>
+            </div>
+            {p.servicios.map((s) => (
+              <div key={s.id} className="flex flex-col gap-2 rounded-2xl border border-[#EAE3D5] p-3.5">
+                <form action={guardarServicioComoEquipo} className="flex flex-col gap-2">
+                  <input type="hidden" name="proveedorId" value={p.id} /><input type="hidden" name="servicioId" value={s.id} />
+                  <CamposServicio oficios={p.categorias} servicio={s} />
+                  <button type="submit" className="h-10 self-start rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Guardar</button>
+                </form>
+                <form action={quitarServicioComoEquipo}>
+                  <input type="hidden" name="proveedorId" value={p.id} /><input type="hidden" name="servicioId" value={s.id} />
+                  <button type="submit" className="min-h-9 text-sm font-semibold text-ladrillo-oscuro">Quitar este servicio</button>
+                </form>
+              </div>
+            ))}
+            <details className="rounded-2xl bg-piedra px-4 py-3">
+              <summary className="text-sm font-semibold">Agregar un servicio</summary>
+              <form action={guardarServicioComoEquipo} className="mt-3 flex flex-col gap-2">
+                <input type="hidden" name="proveedorId" value={p.id} />
+                <CamposServicio oficios={p.categorias} />
+                <button type="submit" className="h-10 self-start rounded-xl bg-verde px-4 text-sm font-semibold text-white">Agregar servicio</button>
+              </form>
+            </details>
+          </section>
+
+          <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-xl font-bold">Seguimiento</h2>
+              <span className="text-[13px] text-gris">Solo lo ve el equipo</span>
+            </div>
+            <form action={guardarSeguimiento} className="flex flex-col gap-3">
+              <input type="hidden" name="proveedorId" value={p.id} />
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">Fuente de origen
+                <select name="fuente" defaultValue={p.fuenteOrigen ?? ""} className={campoAdmin}><option value="">Sin definir</option>{FUENTES_ORIGEN.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select>
+              </label>
+              <div className="flex flex-wrap gap-3">
+                <label className="flex flex-[1_1_160px] flex-col gap-1.5 text-sm font-semibold">Primer contacto<input name="primerContacto" type="date" defaultValue={p.primerContacto ?? ""} className={campoAdmin} /></label>
+                <label className="flex flex-[1_1_160px] flex-col gap-1.5 text-sm font-semibold">Último contacto<input name="ultimoContacto" type="date" defaultValue={p.ultimoContacto ?? ""} className={campoAdmin} /></label>
+              </div>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">Próxima acción<input name="proximaAccion" maxLength={200} defaultValue={p.proximaAccion ?? ""} placeholder="Ej: Pedirle las fotos de trabajos" className={campoAdmin} /></label>
+              <label className="flex flex-col gap-1.5 text-sm font-semibold">Notas<textarea name="notas" rows={3} maxLength={2000} defaultValue={p.notasInternas ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>
+              <button type="submit" className="h-11 self-start rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Guardar seguimiento</button>
+            </form>
           </section>
 
           <section className={`${tarjeta} flex flex-col gap-2.5 p-[22px]`}>
