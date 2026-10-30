@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { cambiarExigencia2fa, crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { cambiarClaveUsuario, cambiarExigencia2fa, crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
 import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
+import { CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { exigencia2fa, exigirBackoffice } from "@/lib/verificacion";
 import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
@@ -121,6 +122,17 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
               </fieldset>
               <span className="text-[13px] leading-[1.45] text-gris">Admin siempre exige 2FA; verificador y moderador, según «Segundo factor por rol». El último Admin no puede quitarse el rol.</span>
               <button type="submit" className="h-[42px] self-start rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Guardar roles</button>
+            </form>
+
+            <form action={cambiarClaveUsuario} className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+              <input type="hidden" name="usuarioId" value={elegido.id} />
+              <h2 className="font-display text-xl font-bold">Cambiar clave</h2>
+              <label htmlFor="clave" className={etiquetaAdmin}>Clave nueva</label>
+              <input id="clave" name="clave" type="password" required minLength={CLAVE_MIN} maxLength={CLAVE_MAX} autoComplete="new-password" placeholder="Mínimo 8 caracteres" className={campoAdmin} />
+              <label htmlFor="confirmacion" className={etiquetaAdmin}>Repite la clave</label>
+              <input id="confirmacion" name="confirmacion" type="password" required minLength={CLAVE_MIN} maxLength={CLAVE_MAX} autoComplete="new-password" placeholder="La misma de arriba" className={campoAdmin} />
+              <span className="text-[13px] leading-[1.45] text-gris">Se cierran sus sesiones, se anulan las invitaciones pendientes y le avisamos por correo. Compártele la clave por un canal privado. El 2FA no cambia.</span>
+              <button type="submit" className="h-[42px] self-start rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Cambiar clave</button>
             </form>
 
             <div className="flex flex-col gap-3 rounded-[20px] border border-[#F0C9BE] bg-white p-[22px]">

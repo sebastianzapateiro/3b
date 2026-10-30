@@ -13,6 +13,7 @@ import { slugSchema } from "@las3b/shared";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
+import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
 import { exigencia2fa, exigirBackoffice, guardarExigencia2fa, ROLES_2FA_OPCIONAL } from "@/lib/verificacion";
@@ -291,6 +292,21 @@ export async function restablecerDosFactor(formData: FormData) {
   await db.delete(session).where(eq(session.userId, usuarioId));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "dos_factor_restablecido", objetoTipo: "usuario", objetoId: usuarioId });
   volver("/admin/usuarios", { u: usuarioId, ok: "2FA restablecido. Deberá configurarlo de nuevo." });
+}
+
+/** B4 · El admin le asigna una clave nueva a una cuenta. La clave nunca va a la auditoría. */
+export async function cambiarClaveUsuario(formData: FormData) {
+  const actor = await exigirBackoffice(true);
+  const usuarioId = z.string().min(1).parse(texto(formData, "usuarioId"));
+  const clave = String(formData.get("clave") ?? "");
+  if (usuarioId === actor.user.id) volver("/admin/usuarios", { u: usuarioId, error: "Tu propia clave cámbiala desde Mi cuenta." });
+  if (clave.length < CLAVE_MIN || clave.length > CLAVE_MAX) volver("/admin/usuarios", { u: usuarioId, error: `La clave debe tener entre ${CLAVE_MIN} y ${CLAVE_MAX} caracteres.` });
+  if (clave !== String(formData.get("confirmacion") ?? "")) volver("/admin/usuarios", { u: usuarioId, error: "Las dos claves no coinciden." });
+
+  const hecho = await asignarClave(usuarioId, clave);
+  if (!hecho) volver("/admin/usuarios", { error: "No encontramos esa cuenta." });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "clave_asignada", objetoTipo: "usuario", objetoId: usuarioId });
+  volver("/admin/usuarios", { u: usuarioId, ok: "Clave cambiada y sesiones cerradas. Compártela con la persona por un canal privado." });
 }
 
 /* ───────────── Catálogo ───────────── */
