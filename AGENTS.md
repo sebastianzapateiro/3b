@@ -111,7 +111,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
 - Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
 - Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella. Carga de documentos al bucket `privado` (URL firmada + validación de tipo real) en el alta y en el panel; el equipo los abre por `/admin/documentos/[id]` con auditoría.
-- Backoffice B1–B8 con rol + 2FA (QR al configurar; `/ingreso` también pide el código; códigos de respaldo utilizables; sesión del equipo de 8 h por `sesion_backoffice_h`; «confiar en este equipo» 8 h; 2FA obligatorio para admin y configurable para verificador y moderador en `/admin/usuarios`), creación de usuarios con invitación por correo, auditoría de solo inserción, parámetros en `configuracion`.
+- Backoffice B1–B8 con rol + 2FA (QR al configurar; `/ingreso` también pide el código; códigos de respaldo utilizables; sesión del equipo de 8 h por `sesion_backoffice_h`; «confiar en este equipo» 8 h; 2FA obligatorio para admin y configurable para verificador y moderador en `/admin/usuarios`), creación de usuarios con invitación por correo, cambio de clave de una cuenta por un admin (`lib/claves.ts`: cierra sesiones, anula invitaciones y avisa por correo), auditoría de solo inserción, parámetros en `configuracion`.
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
