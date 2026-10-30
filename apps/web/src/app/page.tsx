@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
 import type { Metadata } from "next";
+import { FOTO_CATEGORIA } from "@/components/categorias/Piezas";
 import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
 import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/components/TarjetaProveedor";
@@ -206,20 +208,29 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
-            {CATEGORIAS.map((c) => (
-              <Link
-                key={c.slug}
-                href={`/categorias/${c.slug}`}
-                className={`flex h-[124px] min-w-0 flex-col justify-between rounded-[18px] p-3.5 sm:h-auto sm:min-h-40 sm:flex-[1_1_240px] sm:gap-4 sm:rounded-[22px] sm:p-5 ${TONO_CATEGORIA[c.icono]}`}
-              >
-                <IconoCategoria icono={c.icono} className="size-7 sm:size-8" />
-                <span className="flex flex-col gap-0.5 sm:gap-1">
-                  <b className="text-base sm:text-lg">{c.nombre}</b>
-                  <span className="text-xs sm:hidden">{c.corto}</span>
-                  <span className="hidden text-sm leading-snug sm:inline">{c.descripcion}</span>
-                </span>
-              </Link>
-            ))}
+            {CATEGORIAS.map((c) => {
+              const foto = FOTO_CATEGORIA[c.slug];
+              return (
+                <Link
+                  key={c.slug}
+                  href={`/categorias/${c.slug}`}
+                  className={`relative isolate flex h-[124px] min-w-0 flex-col justify-between overflow-hidden rounded-[18px] p-3.5 sm:h-auto sm:min-h-52 sm:flex-[1_1_240px] sm:gap-4 sm:rounded-[22px] sm:p-5 ${foto ? "bg-tinta text-white" : TONO_CATEGORIA[c.icono]}`}
+                >
+                  {foto && (
+                    <>
+                      <Image src={foto} alt="" fill sizes="(max-width: 640px) 50vw, 300px" className="-z-20 object-cover" />
+                      <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-tinta/95 via-tinta/50 to-tinta/10" />
+                    </>
+                  )}
+                  <IconoCategoria icono={c.icono} className="size-7 sm:size-8" />
+                  <span className="flex flex-col gap-0.5 sm:gap-1">
+                    <b className="text-base sm:text-lg">{c.nombre}</b>
+                    <span className="text-xs sm:hidden">{c.corto}</span>
+                    <span className="hidden text-sm leading-snug sm:inline">{c.descripcion}</span>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </section>
 
