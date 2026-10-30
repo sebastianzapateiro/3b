@@ -1,3 +1,4 @@
+import { ContenidoPanel } from "@/components/admin/ContenidoPanel";
 import { MenuAdmin } from "@/components/admin/MenuAdmin";
 import { totalPendientes } from "@/lib/admin";
 import { contarAbiertos } from "@/lib/cumplimiento";
@@ -15,7 +16,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   return (
     <div className="flex min-h-dvh flex-col bg-[#F3EFE7] lg:flex-row">
       <MenuAdmin nombre={user.name} rol={rol} pendientes={pendientes} reportes={reportes} tramites={tramites} esAdmin={roles.includes("admin")} />
-      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <ContenidoPanel>{children}</ContenidoPanel>
     </div>
   );
 }

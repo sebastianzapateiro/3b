@@ -8,19 +8,19 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 
-const RETARDO_MS = 150;
+export const RETARDO_MS = 150;
 /** Si la URL no cambia (acción sin redirección, error de red), la barra se cierra sola. */
-const TOPE_MS = 12_000;
+export const TOPE_MS = 12_000;
 
-/** true si el clic lleva a otra página del sitio y lo atiende el enrutador de Next. */
-function esNavegacionInterna(e: MouseEvent): boolean {
-  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
+/** Destino del clic si lleva a otra página del sitio y lo atiende el enrutador de Next; si no, null. */
+export function destinoInterno(e: MouseEvent): URL | null {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return null;
   const a = (e.target as Element | null)?.closest?.("a");
-  if (!a || !a.href || a.hasAttribute("download") || (a.target && a.target !== "_self")) return false;
+  if (!a || !a.href || a.hasAttribute("download") || (a.target && a.target !== "_self")) return null;
   const destino = new URL(a.href, location.href);
-  if (destino.origin !== location.origin) return false;
+  if (destino.origin !== location.origin) return null;
   // Solo cambia el ancla (#seccion): no hay carga.
-  return destino.pathname !== location.pathname || destino.search !== location.search;
+  return destino.pathname !== location.pathname || destino.search !== location.search ? destino : null;
 }
 
 function Barra() {
@@ -54,7 +54,7 @@ function Barra() {
         window.setTimeout(() => setProgreso(null), TOPE_MS),
       );
     };
-    const alClic = (e: MouseEvent) => esNavegacionInterna(e) && iniciar();
+    const alClic = (e: MouseEvent) => destinoInterno(e) && iniciar();
     const alEnviar = (e: SubmitEvent) => {
       const form = e.target as HTMLFormElement;
       if (form.target && form.target !== "_self") return;
@@ -63,12 +63,13 @@ function Barra() {
       const esServerAction = form.getAttribute("action")?.startsWith("javascript:") ?? false;
       if (!e.defaultPrevented || esServerAction) iniciar();
     };
-    document.addEventListener("click", alClic);
+    // Captura: el Link de Next cancela el clic (preventDefault) en su propio manejador; aquí se ve antes.
+    document.addEventListener("click", alClic, true);
     document.addEventListener("submit", alEnviar);
     window.addEventListener("popstate", iniciar);
     return () => {
       limpiar();
-      document.removeEventListener("click", alClic);
+      document.removeEventListener("click", alClic, true);
       document.removeEventListener("submit", alEnviar);
       window.removeEventListener("popstate", iniciar);
     };
