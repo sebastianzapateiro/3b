@@ -10,6 +10,9 @@ import { headers } from "next/headers";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { estadoDocumentos } from "@/lib/documentos";
 import { datosParaConfirmar, exigirProveedor } from "@/lib/panel";
+import { guardarCompletitud } from "@/lib/completitud";
+import { oficioDelServicio } from "@/lib/precios";
+import { marcarServicioPrestado } from "@/lib/servicios-prestados";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, proveedorLocalidades } = schema;
 
@@ -51,6 +54,7 @@ export async function guardarPerfil(formData: FormData) {
   await db.delete(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedor.id));
   await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: proveedor.id, localidadId })));
 
+  await guardarCompletitud(proveedor.id);
   pagina("/panel/perfil");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/perfil", { ok: "Perfil guardado." });
@@ -78,16 +82,18 @@ const esquemaServicio = z.object({
   unidad: z.enum(["visita", "hora", "clase", "metro2", "trayecto", "trabajo"]),
 });
 
-function datosServicio(formData: FormData) {
-  const r = esquemaServicio.safeParse(Object.fromEntries(formData));
+/** Los servicios de Aseo no guardan precio ni unidad de tiempo: el valor es «a convenir» (lib/precios.ts). */
+async function datosServicio(formData: FormData, proveedorId: string) {
+  const r = esquemaServicio.safeParse({ unidad: "trabajo", ...Object.fromEntries(formData) });
   if (!r.success) return volver("/panel/servicios", { error: r.error.issues[0]?.message ?? "Revisa los datos." });
-  const precio = r.data.precio?.replace(/\D/g, "");
-  return { nombre: r.data.nombre, descripcion: r.data.descripcion || null, precioDesde: precio || null, unidad: r.data.unidad };
+  const { categoriaId, sinPrecio } = await oficioDelServicio(proveedorId, Number(formData.get("categoriaId")) || null);
+  const precio = sinPrecio ? "" : r.data.precio?.replace(/\D/g, "");
+  return { nombre: r.data.nombre, descripcion: r.data.descripcion || null, precioDesde: precio || null, unidad: sinPrecio ? ("trabajo" as const) : r.data.unidad, categoriaId };
 }
 
 export async function agregarServicio(formData: FormData) {
   const { proveedor } = await exigirProveedor();
-  const d = datosServicio(formData);
+  const d = await datosServicio(formData, proveedor.id);
   await db.insert(serviciosProveedor).values({ proveedorId: proveedor.id, ...d });
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
@@ -97,7 +103,7 @@ export async function agregarServicio(formData: FormData) {
 export async function actualizarServicio(formData: FormData) {
   const { proveedor } = await exigirProveedor();
   const id = z.coerce.number().int().parse(formData.get("id"));
-  const d = datosServicio(formData);
+  const d = await datosServicio(formData, proveedor.id);
   await db.update(serviciosProveedor).set(d).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
@@ -128,6 +134,17 @@ export async function responderResena(formData: FormData) {
   pagina("/panel/resenas");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/resenas", { ok: "Respuesta publicada." });
+}
+
+/* Servicio prestado (CU-38): pide al cliente que califique */
+
+export async function marcarPrestado(formData: FormData) {
+  const { proveedor } = await exigirProveedor();
+  const contactoId = z.string().uuid().parse(formData.get("contactoId"));
+  const r = await marcarServicioPrestado(proveedor.id, contactoId);
+  if ("error" in r) return volver("/panel/contactos", { error: r.error });
+  pagina("/panel/contactos");
+  return volver("/panel/contactos", { ok: r.enviado === "correo" ? "Listo: le enviamos al cliente la invitación a calificar." : "Listo: el equipo de LasTresB le enviará al cliente la invitación a calificar por WhatsApp." });
 }
 
 /* Alta asistida: el proveedor confirma y envía a revisión (CU-51, Ley 1581) */

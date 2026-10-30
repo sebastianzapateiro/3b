@@ -5,7 +5,7 @@
 import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 
-const { contactos, resenas, proveedores } = schema;
+const { contactos, resenas, proveedores, servicios } = schema;
 
 export const CRITERIOS = [
   { clave: "puntualidad", texto: "Puntualidad", ayuda: "Llegó a la hora acordada" },
@@ -39,6 +39,22 @@ export async function contactoSinResena(proveedorId: string, usuarioId: string, 
   return c ?? null;
 }
 
+/**
+ * Contacto al que corresponde un código de servicio (CU-38) y que aún no tiene reseña.
+ * Sirve aunque el clic haya sido anónimo o desde otro dispositivo; si ya es de otra cuenta, no se puede usar.
+ */
+export async function contactoPorCodigo(proveedorId: string, codigo: string, usuarioId: string) {
+  const [c] = await db
+    .select({ id: contactos.id, categoriaId: contactos.categoriaId, compradorId: contactos.compradorId })
+    .from(servicios)
+    .innerJoin(contactos, eq(contactos.id, servicios.contactoId))
+    .leftJoin(resenas, eq(resenas.contactoId, contactos.id))
+    .where(and(eq(servicios.codigo, codigo.toUpperCase()), eq(contactos.proveedorId, proveedorId), isNull(resenas.id)))
+    .limit(1);
+  if (!c || (c.compradorId && c.compradorId !== usuarioId)) return null;
+  return { id: c.id, categoriaId: c.categoriaId };
+}
+
 export async function yaCalifico(proveedorId: string, usuarioId: string) {
   const [r] = await db.select({ id: resenas.id }).from(resenas).where(and(eq(resenas.proveedorId, proveedorId), eq(resenas.compradorId, usuarioId))).limit(1);
   return Boolean(r);
@@ -50,7 +66,9 @@ export async function crearResena(a: { contactoId: string; proveedorId: string; 
   await db.transaction(async (tx) => {
     // Si el clic fue anónimo, el contacto queda asociado a la cuenta de quien califica.
     await tx.update(contactos).set({ compradorId: a.compradorId, anonimoId: null }).where(eq(contactos.id, a.contactoId));
-    await tx.insert(resenas).values({ contactoId: a.contactoId, proveedorId: a.proveedorId, compradorId: a.compradorId, ...a.notas, comentario: a.comentario });
+    // «Servicio verificado» (CU-38): el contacto tiene código porque el proveedor marcó el servicio como prestado.
+    const [prestado] = await tx.select({ id: servicios.id }).from(servicios).where(eq(servicios.contactoId, a.contactoId)).limit(1);
+    await tx.insert(resenas).values({ contactoId: a.contactoId, proveedorId: a.proveedorId, compradorId: a.compradorId, ...a.notas, comentario: a.comentario, verificada: Boolean(prestado) });
     await recalcularReputacion(a.proveedorId, tx);
   });
 }

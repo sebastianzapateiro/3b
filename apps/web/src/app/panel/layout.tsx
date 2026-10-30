@@ -35,6 +35,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           { href: "/panel", texto: "Resumen" },
           { href: "/panel/perfil", texto: "Perfil" },
           { href: "/panel/servicios", texto: "Servicios" },
+          { href: "/panel/contactos", texto: "Contactos" },
           { href: "/panel/resenas", texto: "Reseñas" },
           { href: "/panel/verificacion", texto: "Verificación" },
         ]}

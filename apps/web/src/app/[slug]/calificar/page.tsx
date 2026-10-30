@@ -2,7 +2,8 @@ import Link from "next/link";
 import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { CRITERIOS, contactoSinResena, proveedorPorSlug, yaCalifico } from "@/lib/resenas";
+import { CODIGO_VALIDO } from "@/lib/calificacion";
+import { CRITERIOS, contactoPorCodigo, contactoSinResena, proveedorPorSlug, yaCalifico } from "@/lib/resenas";
 import { calificarProveedor } from "./actions";
 
 /** P5 · Calificar a un proveedor (CU-20). Mockup: docs/mockups/Calificar.md. */
@@ -11,18 +12,20 @@ export const dynamic = "force-dynamic";
 
 const aviso = "rounded-[18px] p-4 text-[15px] leading-normal";
 
-export default async function Calificar({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ error?: string; gracias?: string }> }) {
+export default async function Calificar({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ error?: string; gracias?: string; codigo?: string }> }) {
   const { slug } = await params;
   const sp = await searchParams;
   const proveedor = await proveedorPorSlug(slug);
   if (!proveedor) notFound();
 
+  // El enlace que recibe el cliente trae el código del servicio (CU-38); al ingresar vuelve aquí con él.
+  const codigo = CODIGO_VALIDO.test((sp.codigo ?? "").toUpperCase()) ? sp.codigo!.toUpperCase() : null;
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar${codigo ? `?codigo=${codigo}` : ""}` })}`);
 
   const anonimoId = (await cookies()).get("anonimo_id")?.value ?? null;
   const propio = proveedor.usuarioId === session.user.id;
-  const contacto = propio ? null : await contactoSinResena(proveedor.id, session.user.id, anonimoId);
+  const contacto = propio ? null : codigo ? await contactoPorCodigo(proveedor.id, codigo, session.user.id) : await contactoSinResena(proveedor.id, session.user.id, anonimoId);
   const calificado = !contacto && !propio && (await yaCalifico(proveedor.id, session.user.id));
 
   return (
@@ -52,11 +55,12 @@ export default async function Calificar({ params, searchParams }: { params: Prom
       ) : !contacto ? (
         <div className={`${aviso} bg-amarillo-suave text-amarillo-oscuro`}>
           <b>Primero contáctalo.</b> Para mantener las reseñas reales, solo puede calificar quien escribió al proveedor desde LasTresB.
-          <a href={`/api/v1/contactos/ir?p=${slug}&origen=perfil`} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-12 items-center justify-center rounded-campo bg-verde text-base font-semibold text-white">Escribir por WhatsApp</a>
+          <a href={`/api/v1/contactos/ir?p=${slug}&origen=perfil`} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-12 items-center justify-center rounded-campo bg-verde text-base font-semibold text-white">Contactar por WA</a>
         </div>
       ) : (
         <form action={calificarProveedor} className="flex flex-col gap-5 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6">
           <input type="hidden" name="slug" value={slug} />
+          {codigo && <input type="hidden" name="codigo" value={codigo} />}
           {sp.error && <p role="alert" className={`${aviso} bg-ladrillo-suave text-ladrillo-oscuro`}>{sp.error}</p>}
 
           {CRITERIOS.map((c) => (

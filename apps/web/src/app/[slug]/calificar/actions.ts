@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { contactoSinResena, crearResena, proveedorPorSlug } from "@/lib/resenas";
+import { CODIGO_VALIDO } from "@/lib/calificacion";
+import { contactoPorCodigo, contactoSinResena, crearResena, proveedorPorSlug } from "@/lib/resenas";
 
 const nota = z.coerce.number().int().min(1, "Califica los cuatro criterios.").max(5);
 const esquema = z.object({
@@ -21,18 +22,23 @@ const esquema = z.object({
 export async function calificarProveedor(formData: FormData) {
   const r = esquema.safeParse(Object.fromEntries(formData));
   const slug = String(formData.get("slug") ?? "");
-  const volver = (error: string): never => redirect(`/${slug}/calificar?${new URLSearchParams({ error })}`);
+  const codigoUrl = String(formData.get("codigo") ?? "");
+  const conCodigo: Record<string, string> = CODIGO_VALIDO.test(codigoUrl.toUpperCase()) ? { codigo: codigoUrl } : {};
+  const volver = (error: string): never => redirect(`/${slug}/calificar?${new URLSearchParams({ ...conCodigo, error })}`);
   if (!r.success) return volver(r.error.issues[0]?.message ?? "Revisa los datos.");
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar` })}`);
+  if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: `/${slug}/calificar${codigoUrl ? `?codigo=${encodeURIComponent(codigoUrl)}` : ""}` })}`);
 
   const proveedor = await proveedorPorSlug(r.data.slug);
   if (!proveedor) return volver("Este proveedor no está disponible.");
   if (proveedor.usuarioId === session.user.id) return volver("No puedes calificar tu propio perfil.");
 
   const anonimoId = (await cookies()).get("anonimo_id")?.value ?? null;
-  const contacto = await contactoSinResena(proveedor.id, session.user.id, anonimoId);
+  const codigo = String(formData.get("codigo") ?? "");
+  const contacto = CODIGO_VALIDO.test(codigo.toUpperCase())
+    ? await contactoPorCodigo(proveedor.id, codigo, session.user.id)
+    : await contactoSinResena(proveedor.id, session.user.id, anonimoId);
   if (!contacto) return volver("Solo puedes calificar a quien contactaste desde LasTresB, una vez por contacto.");
 
   await crearResena({

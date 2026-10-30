@@ -54,6 +54,7 @@ export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin
             titulo: "Administración",
             items: [
               { href: "/admin/usuarios", texto: "Usuarios y roles", icono: <Icono><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2 .6 3.3 2.3 3.5 5.5" /></Icono> },
+              { href: "/admin/solicitudes", texto: "Solicitudes de clientes", icono: <Icono><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12zM8 11h8M8 14h5" /></Icono> },
               { href: "/admin/catalogo", texto: "Catálogo", icono: <Icono><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" /></Icono> },
             ],
           },

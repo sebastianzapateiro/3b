@@ -10,7 +10,7 @@
 ## Contacto y servicio verificado
 
 - **CU-05:** registrar el clic en `contactos` (anónimo si no hay sesión) y abrir `wa.me` con categoría y localidad.
-- **CU-38 (Decisión):** el proveedor marca "Llegué" → se genera código de 6 caracteres en `servicios` y se envía al comprador. La reseña de ese contacto queda "Servicio verificado".
+- **CU-38 (Decisión, ajustada el 30 oct 2026):** el proveedor marca "Servicio prestado" en su panel (`/panel/contactos`; antes se llamaba "Llegué") → se genera código de 6 caracteres en `servicios` y se le pide al comprador que califique con un enlace que lleva el código. Con cuenta y correo sale por correo en el acto; sin cuenta (viene del buscador del inicio) queda en la cola de `/admin/solicitudes` para enviarlo por WhatsApp a mano, hasta contratar la API de WhatsApp. La reseña de ese contacto queda "Servicio verificado" (`resenas.verificada`) y solo esas contarán para el orden de los proveedores.
 - **CU-29:** el comprador ve sus códigos para usarlos en reclamos.
 
 ## Alta del proveedor (CU-30 / CU-32, Decisión)
