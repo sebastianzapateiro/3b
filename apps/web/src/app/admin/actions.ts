@@ -4,7 +4,7 @@
  * B1, B2, B4, B5 · Acciones del backoffice (Server Actions). Cada una exige sesión + rol + 2FA,
  * valida la entrada con zod y deja registro en `auditoria` (regla 3).
  */
-import { randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
@@ -13,9 +13,8 @@ import { slugSchema } from "@las3b/shared";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
-import { enviarCorreo } from "@/lib/correo";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
-import { parametro } from "@/lib/parametros";
+import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
 import { exigencia2fa, exigirBackoffice, guardarExigencia2fa, ROLES_2FA_OPCIONAL } from "@/lib/verificacion";
 
 const { proveedores, usuarioRoles, user, session, twoFactor, categorias, terminosBusqueda, proveedorInsignias, insignias, proveedorCategorias, proveedorLocalidades, serviciosProveedor, configuracion } = schema;
@@ -110,17 +109,25 @@ export async function crearProveedorAsistido(formData: FormData) {
   const localidadIds = formData.getAll("localidad").map(Number).filter(Number.isInteger);
   if (categoriaIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una categoría." });
   if (localidadIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una localidad." });
+  // Con el correo el proveedor ingresa después de crear su clave: sin él la invitación no le sirve.
+  const invitar = texto(formData, "accion") === "invitar";
+  if (invitar && !d.correo) volver("/admin/proveedores/nuevo", { error: "Para enviar la invitación el proveedor necesita un correo: con él ingresará. Agrégalo o guarda solo el borrador." });
 
   const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.slug, d.slug)).limit(1);
   if (existe) volver("/admin/proveedores/nuevo", { error: "Esa dirección de página ya está en uso." });
+  if (d.correo) {
+    const [cuenta] = await db.select({ id: user.id }).from(user).where(eq(user.email, d.correo.toLowerCase())).limit(1);
+    if (cuenta) volver("/admin/proveedores/nuevo", { error: "Ya hay una cuenta con ese correo. Si es la misma persona, que entre y se registre como proveedor desde su cuenta." });
+  }
 
   const segmento = d.tipo === "empresa" ? "empresa" : d.rut === "si" ? "independiente_con_rut" : "independiente_sin_rut";
   const usuarioId = randomUUID();
-  const correo = d.correo || `${usuarioId}@sin-correo.lastresb.invalid`;
+  const correo = d.correo ? d.correo.toLowerCase() : `${usuarioId}@sin-correo.lastresb.invalid`;
 
   // El proveedor confirma WhatsApp, acepta términos y crea su clave desde su propia invitación (Ley 1581):
   // aquí solo queda el borrador a su nombre.
-  await db.insert(user).values({ id: usuarioId, name: d.nombreLegal, email: correo, emailVerified: false, telefono: d.whatsapp });
+  // Con invitación el correo queda verificado: el enlace para crear la clave solo llega a ese buzón.
+  await db.insert(user).values({ id: usuarioId, name: d.nombreLegal, email: correo, emailVerified: invitar, telefono: d.whatsapp });
   const [nuevo] = await db
     .insert(proveedores)
     .values({
@@ -147,9 +154,43 @@ export async function crearProveedorAsistido(formData: FormData) {
     await db.insert(serviciosProveedor).values({ proveedorId: id, categoriaId: categoriaIds[0], nombre: d.servicio, precioDesde: d.precio?.replace(/\D/g, "") || null, unidad: d.unidad });
   }
 
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "alta_asistida", objetoTipo: "proveedor", objetoId: id, metadatos: { origen: d.origen } });
+  if (invitar) {
+    const { url, horas } = await crearInvitacion(usuarioId, DESTINO_PROVEEDOR_INVITADO);
+    await enviarInvitacionPorCorreo({ para: correo, nombre: d.nombreLegal, url, horas, motivo: `El equipo de LasTresB te registró como proveedor («${d.nombrePublico}»). Al entrar revisas tus datos, aceptas los términos y envías tu perfil a revisión.` });
+  }
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "alta_asistida", objetoTipo: "proveedor", objetoId: id, metadatos: { origen: d.origen, invitado: invitar } });
   revalidatePath("/admin", "layout");
-  volver("/admin/proveedores/nuevo", { ok: `Borrador de ${d.nombrePublico} creado.` });
+  volver(`/admin/proveedores/${id}`, {
+    ok: invitar
+      ? `Borrador de ${d.nombrePublico} creado y la invitación enviada a ${correo}. Envíasela también por WhatsApp con el botón de abajo.`
+      : `Borrador de ${d.nombrePublico} creado. Carga sus documentos aquí o envíale la invitación cuando tenga correo.`,
+  });
+}
+
+/** Adónde llega el proveedor invitado después de crear su clave: revisa, acepta términos y envía a revisión. */
+const DESTINO_PROVEEDOR_INVITADO = "/panel/confirmar";
+
+/** B1 · Crea un enlace nuevo (anula el anterior) y lo envía por correo. Solo para borradores con correo real. */
+export async function reenviarInvitacion(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const [p] = await db
+    .select({ usuarioId: proveedores.usuarioId, nombre: proveedores.nombrePublico, estado: proveedores.estado, correo: user.email, legal: user.name })
+    .from(proveedores)
+    .innerJoin(user, eq(user.id, proveedores.usuarioId))
+    .where(eq(proveedores.id, id))
+    .limit(1);
+  const vuelta = texto(formData, "vuelta") === "nuevo" ? "/admin/proveedores/nuevo" : `/admin/proveedores/${id}`;
+  if (!p) volver(vuelta, { error: "Proveedor no encontrado." });
+  if (esCorreoFicticio(p.correo)) volver(vuelta, { error: "Este proveedor no tiene correo: sin él no puede ingresar." });
+  if (p.estado !== "borrador") volver(vuelta, { error: "Solo se invita a perfiles en borrador." });
+
+  await db.update(user).set({ emailVerified: true, updatedAt: new Date() }).where(eq(user.id, p.usuarioId));
+  const { url, horas } = await crearInvitacion(p.usuarioId, DESTINO_PROVEEDOR_INVITADO);
+  await enviarInvitacionPorCorreo({ para: p.correo, nombre: p.legal, url, horas, motivo: `El equipo de LasTresB te registró como proveedor («${p.nombre}»). Al entrar revisas tus datos, aceptas los términos y envías tu perfil a revisión.` });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "invitacion_reenviada", objetoTipo: "proveedor", objetoId: id });
+  revalidatePath("/admin", "layout");
+  volver(vuelta, { ok: `Invitación enviada a ${p.correo}.` });
 }
 
 /* ───────────── Usuarios y roles ───────────── */
@@ -177,14 +218,8 @@ export async function crearUsuario(formData: FormData) {
   const nuevo = await ctx.internalAdapter.createUser({ name: nombre, email: correo, emailVerified: true }, { method: "admin" });
   if (roles.length) await db.insert(usuarioRoles).values(roles.map((rol) => ({ usuarioId: nuevo.id, rol, asignadoPor: actor.user.id })));
 
-  const token = randomBytes(24).toString("base64url");
-  const horas = await parametro("invitacion_vigencia_h");
-  await ctx.internalAdapter.createVerificationValue({ identifier: `reset-password:${token}`, value: nuevo.id, expiresAt: new Date(Date.now() + horas * 3_600_000) });
-  await enviarCorreo({
-    para: correo,
-    asunto: "Te crearon una cuenta en LasTresB",
-    texto: `Hola, ${nombre}. El equipo de LasTresB te creó una cuenta con este correo.\nPara elegir tu clave abre este enlace (vence en ${horas} horas):\n${ctx.baseURL.replace(/\/api\/auth$/, "")}/nueva-clave?token=${token}\n\nSi no esperabas este correo, ignóralo.`,
-  });
+  const { url, horas } = await crearInvitacion(nuevo.id);
+  await enviarInvitacionPorCorreo({ para: correo, nombre, url, horas, motivo: "El equipo de LasTresB te creó una cuenta con este correo." });
 
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "usuario_creado", objetoTipo: "usuario", objetoId: nuevo.id, metadatos: { roles } });
   revalidatePath("/admin", "layout");
@@ -260,33 +295,46 @@ export async function restablecerDosFactor(formData: FormData) {
 
 /* ───────────── Catálogo ───────────── */
 
+/** Edita una categoría o, sin `id`, crea una nueva (sin padre queda como categoría principal). */
 export async function guardarCategoria(formData: FormData) {
   const actor = await exigirBackoffice(true);
-  const id = z.coerce.number().int().parse(texto(formData, "id"));
+  const idTexto = texto(formData, "id");
+  const nueva = idTexto === "";
+  const id = nueva ? null : z.coerce.number().int().parse(idTexto);
+  const vuelta = nueva ? "nueva" : String(id);
   const slug = slugSchema.safeParse(texto(formData, "slug"));
   const nombre = texto(formData, "nombre");
-  if (!slug.success || nombre.length < 2) volver("/admin/catalogo", { c: String(id), error: "Revisa el nombre y el slug." });
-  const [choque] = await db.select({ id: categorias.id }).from(categorias).where(and(eq(categorias.slug, slug.data), sql`${categorias.id} <> ${id}`)).limit(1);
-  if (choque) volver("/admin/catalogo", { c: String(id), error: "Ese slug ya lo usa otra categoría." });
+  if (!slug.success || nombre.length < 2) volver("/admin/catalogo", { c: vuelta, error: "Revisa el nombre y el slug." });
+  const [choque] = await db
+    .select({ id: categorias.id })
+    .from(categorias)
+    .where(id === null ? eq(categorias.slug, slug.data) : and(eq(categorias.slug, slug.data), sql`${categorias.id} <> ${id}`))
+    .limit(1);
+  if (choque) volver("/admin/catalogo", { c: vuelta, error: "Ese slug ya lo usa otra categoría." });
 
-  await db
-    .update(categorias)
-    .set({
-      nombre,
-      slug: slug.data,
-      padreId: Number(texto(formData, "padreId")) || null,
-      exigeInsigniaMenores: formData.has("menores"),
-      exigeRutDesdeAlta: formData.has("rut"),
-      exigeMatricula: formData.has("matricula"),
-      activa: formData.has("activa"),
-    })
-    .where(eq(categorias.id, id));
+  const datos = {
+    nombre,
+    slug: slug.data,
+    padreId: Number(texto(formData, "padreId")) || null,
+    exigeInsigniaMenores: formData.has("menores"),
+    exigeRutDesdeAlta: formData.has("rut"),
+    exigeMatricula: formData.has("matricula"),
+    activa: formData.has("activa"),
+  };
+  let categoriaId: number;
+  if (id === null) {
+    const [c] = await db.insert(categorias).values(datos).returning({ id: categorias.id });
+    categoriaId = c!.id;
+  } else {
+    await db.update(categorias).set(datos).where(eq(categorias.id, id));
+    categoriaId = id;
+  }
 
   const terminos = [...new Set(texto(formData, "terminos").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))];
-  await db.delete(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, id));
-  if (terminos.length) await db.insert(terminosBusqueda).values(terminos.map((termino) => ({ termino, categoriaId: id })));
+  await db.delete(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, categoriaId));
+  if (terminos.length) await db.insert(terminosBusqueda).values(terminos.map((termino) => ({ termino, categoriaId })));
 
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "categoria_actualizada", objetoTipo: "categoria", objetoId: String(id) });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: nueva ? "categoria_creada" : "categoria_actualizada", objetoTipo: "categoria", objetoId: String(categoriaId) });
   revalidatePath("/categorias");
-  volver("/admin/catalogo", { c: String(id), ok: "Categoría guardada." });
+  volver("/admin/catalogo", { c: String(categoriaId), ok: nueva ? "Categoría creada." : "Categoría guardada." });
 }

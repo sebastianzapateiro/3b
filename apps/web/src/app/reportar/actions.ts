@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 import { auth } from "@/lib/auth";
 import { auditar } from "@/lib/auditoria";
 import { MOTIVOS_REPORTE } from "@/lib/reportes";
@@ -31,7 +31,7 @@ export async function reportarContenido(formData: FormData) {
 
   // Reseñas con suficientes reportes pendientes: se ocultan provisionalmente hasta que decida el equipo (nunca por ser negativas, lo decide la persona moderadora).
   if (d.tipo === "resena") {
-    const [{ n } = { n: 0 }] = (await db.execute(sql`SELECT count(*)::int AS n FROM reportes WHERE tipo_objeto = 'resena' AND objeto_id = ${d.id} AND NOT resuelto`)) as unknown as { n: number }[];
+    const [{ n } = { n: 0 }] = (await consultar(sql`SELECT count(*)::int AS n FROM reportes WHERE tipo_objeto = 'resena' AND objeto_id = ${d.id} AND NOT resuelto`)) as unknown as { n: number }[];
     if (n >= (await parametro("reportes_para_ocultar"))) {
       const [res] = await db.update(schema.resenas).set({ estado: "en_revision" }).where(and(eq(schema.resenas.id, d.id), eq(schema.resenas.estado, "visible"))).returning({ p: schema.resenas.proveedorId });
       if (res) {

@@ -2,11 +2,9 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { sql } from "drizzle-orm";
+import { consultar } from "@las3b/db";
 import { OFICIOS_ELIMINADOS, OFICIOS_RENOMBRADOS } from "@las3b/shared";
-
-const { user, consentimientos, politicas } = schema;
 
 const RUTAS_PUBLICAS = [
   "/",
@@ -75,25 +73,12 @@ export async function proxy(request: Request) {
     return NextResponse.redirect(new URL(ingreso, request.url));
   }
 
-  // Verificar que el usuario tenga consentimientos registrados (RF-19).
-  const [vigente] = await db
-    .select({ id: politicas.id })
-    .from(politicas)
-    .where(eq(politicas.esencial, true))
-    .limit(1);
-
-  if (vigente) {
-    const tieneConsentimiento = await db
-      .select({ id: consentimientos.id })
-      .from(consentimientos)
-      .where(eq(consentimientos.usuarioId, session.user.id))
-      .limit(1);
-
-    if (!tieneConsentimiento[0]) {
-      return NextResponse.redirect(
-        new URL("/consentimiento", request.url)
-      );
-    }
+  // Verificar que el usuario tenga consentimientos registrados (RF-19). Una sola consulta: la base está lejos.
+  const [c] = await consultar<{ falta: boolean }>(sql`
+    SELECT EXISTS (SELECT 1 FROM politicas WHERE esencial)
+       AND NOT EXISTS (SELECT 1 FROM consentimientos WHERE usuario_id = ${session.user.id}) AS falta`);
+  if (c?.falta) {
+    return NextResponse.redirect(new URL("/consentimiento", request.url));
   }
 
   return NextResponse.next();

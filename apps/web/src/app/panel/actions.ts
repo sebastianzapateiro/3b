@@ -6,7 +6,10 @@ import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@las3b/db";
-import { exigirProveedor } from "@/lib/panel";
+import { headers } from "next/headers";
+import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
+import { estadoDocumentos } from "@/lib/documentos";
+import { datosParaConfirmar, exigirProveedor } from "@/lib/panel";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, proveedorLocalidades } = schema;
 
@@ -125,4 +128,31 @@ export async function responderResena(formData: FormData) {
   pagina("/panel/resenas");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/resenas", { ok: "Respuesta publicada." });
+}
+
+/* Alta asistida: el proveedor confirma y envía a revisión (CU-51, Ley 1581) */
+
+export async function enviarARevision(formData: FormData) {
+  const { proveedor, usuario } = await exigirProveedor();
+  if (proveedor.estado !== "borrador") return volver("/panel", { error: "Tu perfil ya fue enviado a revisión." });
+
+  const docs = await estadoDocumentos(proveedor.id);
+  if (docs.faltan.length) return volver("/panel/confirmar", { error: `Falta cargar: ${docs.faltan.join(", ")}.` });
+  const { exigeLey1918 } = await datosParaConfirmar(proveedor.id);
+  // Casillas no premarcadas (regla 5): las marca el proveedor, nunca el equipo.
+  if (formData.get("aceptaTerminosProveedor") !== "on") return volver("/panel/confirmar", { error: "Debes aceptar los términos para proveedores." });
+  if (formData.get("aceptaDatos") !== "on") return volver("/panel/confirmar", { error: "Debes autorizar el tratamiento de tus datos personales para verificar tu identidad." });
+  if (formData.get("declaraNoPermitidos") !== "on") return volver("/panel/confirmar", { error: "Debes declarar que no ofrecerás transporte de personas ni servicios de salud o cuidado de personas." });
+  if (exigeLey1918 && formData.get("autorizaLey1918") !== "on") return volver("/panel/confirmar", { error: "Tu categoría trabaja con menores: debes autorizar la consulta de antecedentes (Ley 1918)." });
+
+  const h = await headers();
+  await registrarConsentimientos(
+    usuario.id,
+    ["terminos_proveedores", "tratamiento_datos", "declaracion_servicios_no_permitidos", ...(exigeLey1918 ? (["autorizacion_ley_1918"] as const) : [])],
+    { ip: ipDeLaPeticion(h), userAgent: h.get("user-agent") },
+  );
+  await db.update(proveedores).set({ estado: "pendiente", updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  revalidatePath("/panel", "layout");
+  revalidatePath("/admin", "layout");
+  return volver("/panel", { ok: "Listo: enviaste tu perfil a revisión. Te avisamos cuando quede publicado." });
 }

@@ -1,13 +1,13 @@
 /** B8 · Consulta del registro de auditoría (solo lectura) y alertas de uso anómalo. */
 import { and, desc, eq, gte, ilike, or, sql, type SQL } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 
 const { auditoria, user } = schema;
 
 export const FILTROS_ACCION: Record<string, { texto: string; acciones?: string[]; prefijo?: string }> = {
   todas: { texto: "Todas las acciones" },
-  documento: { texto: "Abrir documento", acciones: ["documento_abierto"] },
-  decision: { texto: "Aprobar / rechazar", acciones: ["proveedor_aprobado", "proveedor_rechazado", "alta_asistida"] },
+  documento: { texto: "Documentos", acciones: ["documento_abierto", "documento_cargado_equipo"] },
+  decision: { texto: "Aprobar / rechazar", acciones: ["proveedor_aprobado", "proveedor_rechazado", "alta_asistida", "invitacion_reenviada"] },
   moderar: { texto: "Moderar", prefijo: "moderacion_" },
   rol: { texto: "Cambiar rol", acciones: ["roles_actualizados", "admin_creado_por_script", "usuario_creado", "exigencia_2fa_actualizada"] },
   suspender: { texto: "Suspender", acciones: ["usuario_suspendido", "aviso_suspension", "dos_factor_restablecido"] },
@@ -21,6 +21,8 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   proveedor_aprobado: "Aprobar proveedor",
   proveedor_rechazado: "Rechazar proveedor",
   alta_asistida: "Alta asistida",
+  invitacion_reenviada: "Reenviar invitación",
+  documento_cargado_equipo: "Cargar documento (equipo)",
   roles_actualizados: "Asignar rol",
   usuario_creado: "Crear usuario",
   exigencia_2fa_actualizada: "Cambiar exigencia de 2FA",
@@ -34,6 +36,7 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   moderacion_eliminar: "Eliminar contenido",
   ocultar_provisional: "Ocultar provisionalmente",
   retiro_atendido: "Atender retiro",
+  categoria_creada: "Crear categoría",
   categoria_actualizada: "Editar categoría",
   parametros_actualizados: "Cambiar parámetros",
   auditoria_exportada: "Exportar auditoría",
@@ -68,7 +71,7 @@ export async function listarAuditoria(f: FiltroAuditoria, limite = 200) {
 
 /** Quien abrió más documentos de los permitidos por hora en las últimas 24 h (umbral: 30). */
 export async function alertaDocumentos(umbral = 30) {
-  const r = (await db.execute(sql`
+  const r = (await consultar(sql`
     SELECT u.name AS nombre, count(*)::int AS n, min(a.created_at) AS desde, max(a.created_at) AS hasta
     FROM auditoria a LEFT JOIN "user" u ON u.id = a.actor_id
     WHERE a.accion = 'documento_abierto' AND a.created_at >= now() - interval '24 hours'

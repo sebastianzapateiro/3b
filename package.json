@@ -15,6 +15,7 @@
     "db:seed": "pnpm --filter @las3b/db db:seed",
     "admin:crear": "pnpm --filter @las3b/db admin:crear",
     "db:cifrar-documentos": "pnpm --filter @las3b/db db:cifrar-documentos",
+    "usuarios": "pnpm --filter @las3b/db usuarios",
     "db:studio": "pnpm --filter @las3b/db db:studio",
     "docs:diagramas": "node scripts/diagramas.mjs"
   },

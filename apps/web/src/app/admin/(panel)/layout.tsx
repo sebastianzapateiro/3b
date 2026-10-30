@@ -1,7 +1,6 @@
+import { ContenidoPanel } from "@/components/admin/ContenidoPanel";
 import { MenuAdmin } from "@/components/admin/MenuAdmin";
-import { totalPendientes } from "@/lib/admin";
-import { contarAbiertos } from "@/lib/cumplimiento";
-import { totalReportesPendientes } from "@/lib/moderacion";
+import { contadoresMenu } from "@/lib/admin";
 import { exigirBackoffice } from "@/lib/verificacion";
 
 export const metadata = { title: "Backoffice", robots: { index: false, follow: false } };
@@ -9,13 +8,13 @@ export const dynamic = "force-dynamic";
 
 /** Marco del backoffice: exige sesión + rol + 2FA en cada página del panel y pinta el menú lateral. */
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const { user, rol, roles } = await exigirBackoffice();
-  const [pendientes, reportes, tramites] = await Promise.all([totalPendientes(), totalReportesPendientes().catch(() => 0), contarAbiertos().catch(() => 0)]);
+  // En paralelo: los contadores no muestran nada si el guardia redirige.
+  const [{ user, rol, roles }, { pendientes, reportes, tramites }] = await Promise.all([exigirBackoffice(), contadoresMenu()]);
 
   return (
     <div className="flex min-h-dvh flex-col bg-[#F3EFE7] lg:flex-row">
       <MenuAdmin nombre={user.name} rol={rol} pendientes={pendientes} reportes={reportes} tramites={tramites} esAdmin={roles.includes("admin")} />
-      <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+      <ContenidoPanel>{children}</ContenidoPanel>
     </div>
   );
 }

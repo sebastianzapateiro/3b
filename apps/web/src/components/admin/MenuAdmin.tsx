@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 type Item = { href: string; texto: string; icono: React.ReactNode; marca?: number; pronto?: boolean };
@@ -12,12 +13,24 @@ function Icono({ children }: { children: React.ReactNode }) {
   return <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" {...trazo}>{children}</svg>;
 }
 
+/** Rueda junto al ítem del menú mientras abre su sección (va dentro del Link: useLinkStatus lo exige). */
+function Abriendo() {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" className="animate-spin text-[#C9D1CF]" aria-label="Abriendo" role="img" {...trazo}>
+      <path d="M21 12a9 9 0 1 1-6.2-8.6" />
+    </svg>
+  );
+}
+
 const ETIQUETA_ROL: Record<string, string> = { admin: "Admin", moderador: "Moderador", verificador: "Verificador" };
 
 /** Menú lateral del backoffice (mockups BO_*). Moderación, Reclamos y datos y Auditoría se construyen aparte. */
 export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin }: { nombre: string; rol: string; pendientes: number; reportes: number; tramites: number; esAdmin: boolean }) {
   const ruta = usePathname();
   const router = useRouter();
+  const [saliendo, setSaliendo] = useState(false);
 
   const grupos: { titulo?: string; items: Item[] }[] = [
     { items: [{ href: "/admin", texto: "Tablero", icono: <Icono><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 8h6V4h-6z" /></Icono> }] },
@@ -74,9 +87,12 @@ export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin
                   className={`flex h-11 items-center gap-2.5 rounded-[10px] px-3 ${activo(it.href) ? "bg-white/12 font-semibold text-white" : "text-[#DDE3E1] hover:bg-white/6"}`}
                 >
                   {it.icono}{it.texto}
-                  {it.marca !== undefined && it.marca > 0 && (
-                    <span className="ml-auto flex h-[22px] items-center rounded-full bg-amarillo px-2 text-xs font-bold text-tinta">{it.marca}</span>
-                  )}
+                  <span className="ml-auto flex items-center gap-2">
+                    <Abriendo />
+                    {it.marca !== undefined && it.marca > 0 && (
+                      <span className="flex h-[22px] items-center rounded-full bg-amarillo px-2 text-xs font-bold text-tinta">{it.marca}</span>
+                    )}
+                  </span>
                 </Link>
               ),
             )}
@@ -91,14 +107,16 @@ export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin
         </span>
         <button
           type="button"
+          disabled={saliendo}
           onClick={async () => {
+            setSaliendo(true);
             await authClient.signOut();
             router.replace("/admin/ingresar");
             router.refresh();
           }}
-          className="self-start py-1 font-semibold text-crema"
+          className="self-start py-1 font-semibold text-crema disabled:text-[#A9B4B1]"
         >
-          Cerrar sesión
+          {saliendo ? "Cerrando sesión…" : "Cerrar sesión"}
         </button>
       </div>
     </aside>

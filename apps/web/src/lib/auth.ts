@@ -84,6 +84,9 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 30, // 30 días (PWA); el equipo del backoffice, 8 h: ver lib/verificacion.ts
     updateAge: 60 * 60 * 24,
+    // La base está lejos (~170 ms por consulta): la sesión se guarda firmada en una cookie y getSession no consulta
+    // la base durante 5 min. Costo: cerrar sesiones o suspender una cuenta tarda hasta 5 min en surtir efecto.
+    cookieCache: { enabled: true, maxAge: 5 * 60 },
   },
   user: {
     additionalFields: {

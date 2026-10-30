@@ -3,9 +3,10 @@
  * Solo se usa desde páginas protegidas por `exigirBackoffice`.
  * Los datos privados (documento, dirección, fecha de nacimiento) se devuelven enmascarados.
  */
+import { cache } from "react";
 import { documentosExigidos } from "@/lib/documentos";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, proveedorInsignias, categorias, localidades, documentos, insignias, user, usuarioRoles, auditoria, terminosBusqueda } = schema;
 
@@ -20,94 +21,109 @@ function desdeRango(rango: RangoTablero) {
   return sql`now() - make_interval(days => ${Number(rango)})`;
 }
 
+type FilaTablero = {
+  pendientes: number;
+  antiguo: Date | null;
+  reclamos: number;
+  reclamos_pronto: number;
+  contactos: number;
+  resenas: number;
+  menores: number;
+  rut: number;
+  masivo: number;
+  por_categoria: { nombre: string; n: number }[] | null;
+  por_localidad: { nombre: string; contactos: number; activos: number }[] | null;
+  estados: Record<string, number> | null;
+  demanda: { oficio: string; localidad: string | null; n: number; conWhatsapp: number }[] | null;
+};
+
+/** Todo el tablero en una sola consulta: la base está lejos (~170 ms por viaje) y antes eran 11 en serie. */
 export async function datosTablero(rango: RangoTablero) {
   const desde = desdeRango(rango);
 
-  const [pend] = filas<{ n: number; antiguo: Date | null }>(
-    await db.execute(sql`SELECT count(*)::int AS n, min(created_at) AS antiguo FROM proveedores WHERE estado = 'pendiente'`),
-  );
-  const [recl] = filas<{ n: number; pronto: number }>(
-    await db.execute(sql`
+  const [t] = await consultar<FilaTablero>(sql`
+    SELECT
+      (SELECT count(*)::int FROM proveedores WHERE estado = 'pendiente') AS pendientes,
+      (SELECT min(created_at) FROM proveedores WHERE estado = 'pendiente') AS antiguo,
+      r.n AS reclamos, r.pronto AS reclamos_pronto,
+      (SELECT count(*)::int FROM contactos WHERE created_at >= ${desde}) AS contactos,
+      (SELECT count(*)::int FROM resenas WHERE created_at >= ${desde}) AS resenas,
+      (SELECT count(*)::int FROM proveedor_insignias pi JOIN insignias i ON i.id = pi.insignia_id
+        WHERE i.clave = 'apto_menores' AND pi.vence BETWEEN current_date AND current_date + 15) AS menores,
+      (SELECT count(*)::int FROM proveedores
+        WHERE segmento = 'independiente_sin_rut' AND estado IN ('aprobado','en_revision')
+          AND rut_fecha_limite BETWEEN current_date AND current_date + 5) AS rut,
+      (SELECT coalesce(max(c), 0)::int FROM (
+        SELECT count(*) AS c FROM auditoria WHERE accion = 'documento_abierto' AND created_at >= now() - interval '1 hour' GROUP BY actor_id
+      ) m) AS masivo,
+      (SELECT json_agg(x) FROM (
+        SELECT coalesce(p.nombre, c.nombre) AS nombre, count(*)::int AS n
+        FROM contactos k JOIN categorias c ON c.id = k.categoria_id LEFT JOIN categorias p ON p.id = c.padre_id
+        WHERE k.created_at >= ${desde}
+        GROUP BY 1 ORDER BY 2 DESC
+      ) x) AS por_categoria,
+      (SELECT json_agg(x) FROM (
+        SELECT l.nombre,
+               count(k.id)::int AS contactos,
+               (SELECT count(*)::int FROM proveedor_localidades pl JOIN proveedores pr ON pr.id = pl.proveedor_id
+                 WHERE pl.localidad_id = l.id AND pr.estado IN ('aprobado','en_revision')) AS activos
+        FROM localidades l JOIN contactos k ON k.localidad_id = l.id AND k.created_at >= ${desde}
+        GROUP BY l.id, l.nombre ORDER BY 2 DESC LIMIT 6
+      ) x) AS por_localidad,
+      (SELECT json_object_agg(estado, n) FROM (SELECT estado::text AS estado, count(*)::int AS n FROM proveedores GROUP BY 1) x) AS estados,
+      (SELECT json_agg(x) FROM (
+        SELECT coalesce(c.nombre, nullif(trim(s.texto_libre), ''), 'Sin especificar') AS oficio, l.nombre AS localidad,
+               count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp"
+        FROM solicitudes_servicio s
+        LEFT JOIN categorias c ON c.slug = s.oficio_slug
+        LEFT JOIN localidades l ON l.id = s.localidad_id
+        WHERE s.cuenta_como_demanda AND s.created_at >= ${desde}
+        GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 10
+      ) x) AS demanda
+    FROM (
       SELECT count(*)::int AS n, count(*) FILTER (WHERE fecha_limite <= current_date + 2)::int AS pronto
       FROM (
         SELECT fecha_limite FROM reclamos WHERE estado IN ('abierto','en_proceso')
         UNION ALL
         SELECT fecha_limite FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')
-      ) t`),
-  );
-  const [cont] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM contactos WHERE created_at >= ${desde}`));
-  const [res] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM resenas WHERE created_at >= ${desde}`));
+      ) u
+    ) r`);
 
-  const porCategoria = filas<{ nombre: string; n: number }>(
-    await db.execute(sql`
-      SELECT coalesce(p.nombre, c.nombre) AS nombre, count(*)::int AS n
-      FROM contactos k JOIN categorias c ON c.id = k.categoria_id LEFT JOIN categorias p ON p.id = c.padre_id
-      WHERE k.created_at >= ${desde}
-      GROUP BY 1 ORDER BY 2 DESC`),
-  );
-  const porLocalidad = filas<{ nombre: string; contactos: number; activos: number }>(
-    await db.execute(sql`
-      SELECT l.nombre,
-             count(k.id)::int AS contactos,
-             (SELECT count(*)::int FROM proveedor_localidades pl JOIN proveedores pr ON pr.id = pl.proveedor_id
-               WHERE pl.localidad_id = l.id AND pr.estado IN ('aprobado','en_revision')) AS activos
-      FROM localidades l JOIN contactos k ON k.localidad_id = l.id AND k.created_at >= ${desde}
-      GROUP BY l.id, l.nombre ORDER BY 2 DESC LIMIT 6`),
-  );
-  const estados = filas<{ estado: string; n: number }>(
-    await db.execute(sql`SELECT estado::text AS estado, count(*)::int AS n FROM proveedores GROUP BY 1`),
-  );
-
-  const [menores] = filas<{ n: number }>(
-    await db.execute(sql`
-      SELECT count(*)::int AS n FROM proveedor_insignias pi JOIN insignias i ON i.id = pi.insignia_id
-      WHERE i.clave = 'apto_menores' AND pi.vence BETWEEN current_date AND current_date + 15`),
-  );
-  const [rut] = filas<{ n: number }>(
-    await db.execute(sql`
-      SELECT count(*)::int AS n FROM proveedores
-      WHERE segmento = 'independiente_sin_rut' AND estado IN ('aprobado','en_revision')
-        AND rut_fecha_limite BETWEEN current_date AND current_date + 5`),
-  );
-  const [masivo] = filas<{ n: number }>(
-    await db.execute(sql`
-      SELECT coalesce(max(c), 0)::int AS n FROM (
-        SELECT count(*) AS c FROM auditoria WHERE accion = 'documento_abierto' AND created_at >= now() - interval '1 hour' GROUP BY actor_id
-      ) t`),
-  );
-
-  const demanda = filas<{ oficio: string; localidad: string | null; n: number; conWhatsapp: number }>(
-    await db.execute(sql`
-      SELECT coalesce(c.nombre, nullif(trim(s.texto_libre), ''), 'Sin especificar') AS oficio, l.nombre AS localidad,
-             count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp"
-      FROM solicitudes_servicio s
-      LEFT JOIN categorias c ON c.slug = s.oficio_slug
-      LEFT JOIN localidades l ON l.id = s.localidad_id
-      WHERE s.cuenta_como_demanda AND s.created_at >= ${desde}
-      GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 10`),
-  );
-
-  const dias = pend?.antiguo ? Math.floor((Date.now() - new Date(pend.antiguo).getTime()) / 86_400_000) : 0;
+  const dias = t?.antiguo ? Math.floor((Date.now() - new Date(t.antiguo).getTime()) / 86_400_000) : 0;
+  const contactos = t?.contactos ?? 0;
   return {
-    pendientes: pend?.n ?? 0,
+    pendientes: t?.pendientes ?? 0,
     diasMasAntiguo: dias,
-    reclamosAbiertos: recl?.n ?? 0,
-    reclamosPronto: recl?.pronto ?? 0,
-    contactos: cont?.n ?? 0,
-    porcentajeResena: cont?.n ? Math.round(((res?.n ?? 0) / cont.n) * 100) : 0,
-    porCategoria,
-    porLocalidad,
-    demanda,
-    estados: Object.fromEntries(estados.map((e) => [e.estado, e.n])) as Record<string, number>,
-    alertas: { reclamosPronto: recl?.pronto ?? 0, menoresPorVencer: menores?.n ?? 0, rutPorVencer: rut?.n ?? 0, documentosEnUnaHora: masivo?.n ?? 0 },
+    reclamosAbiertos: t?.reclamos ?? 0,
+    reclamosPronto: t?.reclamos_pronto ?? 0,
+    contactos,
+    porcentajeResena: contactos ? Math.round(((t?.resenas ?? 0) / contactos) * 100) : 0,
+    porCategoria: t?.por_categoria ?? [],
+    porLocalidad: t?.por_localidad ?? [],
+    demanda: t?.demanda ?? [],
+    estados: t?.estados ?? {},
+    alertas: { reclamosPronto: t?.reclamos_pronto ?? 0, menoresPorVencer: t?.menores ?? 0, rutPorVencer: t?.rut ?? 0, documentosEnUnaHora: t?.masivo ?? 0 },
   };
 }
 
-/** Número que va en la insignia amarilla de «Aprobaciones» en el menú. */
-export async function totalPendientes() {
-  const [r] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM proveedores WHERE estado = 'pendiente'`));
-  return r?.n ?? 0;
-}
+/**
+ * Insignias del menú (aprobaciones, reportes, reclamos y datos) en una sola consulta.
+ * Con cache de React: el tablero reutiliza el número de reportes sin volver a consultar.
+ */
+export const contadoresMenu = cache(async () => {
+  try {
+    const [r] = await consultar<{ pendientes: number; reportes: number; tramites: number }>(sql`
+      SELECT
+        (SELECT count(*)::int FROM proveedores WHERE estado = 'pendiente') AS pendientes,
+        (SELECT count(DISTINCT (tipo_objeto, objeto_id))::int FROM reportes WHERE NOT resuelto) AS reportes,
+        (SELECT count(*)::int FROM reclamos WHERE estado IN ('abierto','en_proceso'))
+          + (SELECT count(*)::int FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso'))
+          + (SELECT count(*)::int FROM mensajes_contacto WHERE estado = 'nuevo') AS tramites`);
+    return { pendientes: r?.pendientes ?? 0, reportes: r?.reportes ?? 0, tramites: r?.tramites ?? 0 };
+  } catch {
+    return { pendientes: 0, reportes: 0, tramites: 0 };
+  }
+});
 
 /* ───────────── Cola de aprobación (BO_Aprobaciones) ───────────── */
 
@@ -139,7 +155,7 @@ function espera(desde: Date) {
 
 export async function contarColas(): Promise<Record<Cola, number>> {
   const [r] = filas<Record<Cola, number>>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT
         (SELECT count(*)::int FROM proveedores WHERE estado = 'pendiente') AS pendientes,
         (SELECT count(*)::int FROM proveedores WHERE estado = 'en_revision') AS reputacion,
@@ -252,6 +268,7 @@ export async function obtenerRevision(id: string) {
 
   return {
     id: p.id,
+    usuarioId: p.usuarioId,
     estado: p.estado,
     nombre: p.nombrePublico,
     slug: p.slug,
@@ -267,6 +284,8 @@ export async function obtenerRevision(id: string) {
     mayorDeEdad: edad !== null ? edad >= 18 : null,
     direccion: p.direccionNotificaciones,
     whatsappMascara: tel ? `+${tel.slice(0, 2)} ${tel.slice(2, 5)} ••• ••${tel.slice(-2)}` : "—",
+    // Solo para armar el enlace de invitación por WhatsApp; en pantalla se muestra la máscara.
+    whatsapp: p.whatsapp,
     correo: u?.correo ?? null,
     correoVerificado: Boolean(u?.correoVerificado),
     categorias: cats,
@@ -295,7 +314,7 @@ export async function listarUsuarios(q?: string) {
     .select({ id: usuarioRoles.usuarioId, rol: usuarioRoles.rol })
     .from(usuarioRoles)
     .where(inArray(usuarioRoles.usuarioId, lista.map((l) => l.id)));
-  const ultimo = await db.execute(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
+  const ultimo = await consultar(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
   const mapaUltimo = new Map(filas<{ id: string; ultimo: Date }>(ultimo).map((u) => [u.id, u.ultimo]));
   return lista.map((l) => ({
     ...l,
@@ -309,7 +328,7 @@ export async function listarUsuarios(q?: string) {
 export async function listarCatalogo() {
   const todas = await db.select().from(categorias).orderBy(asc(categorias.orden), asc(categorias.nombre));
   const conteo = filas<{ id: number; n: number }>(
-    await db.execute(sql`SELECT categoria_id AS id, count(*)::int AS n FROM proveedor_categorias GROUP BY 1`),
+    await consultar(sql`SELECT categoria_id AS id, count(*)::int AS n FROM proveedor_categorias GROUP BY 1`),
   );
   const mapa = new Map(conteo.map((c) => [c.id, c.n]));
   const padres = todas.filter((c) => c.padreId === null);
@@ -323,13 +342,13 @@ export async function obtenerSubcategoria(id: number) {
   const [c] = await db.select().from(categorias).where(eq(categorias.id, id)).limit(1);
   if (!c) return null;
   const terminos = await db.select({ id: terminosBusqueda.id, termino: terminosBusqueda.termino }).from(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, id)).orderBy(asc(terminosBusqueda.termino));
-  const [conteo] = filas<{ n: number }>(await db.execute(sql`SELECT count(*)::int AS n FROM proveedor_categorias WHERE categoria_id = ${id}`));
+  const [conteo] = filas<{ n: number }>(await consultar(sql`SELECT count(*)::int AS n FROM proveedor_categorias WHERE categoria_id = ${id}`));
   return { ...c, terminos, proveedores: conteo?.n ?? 0 };
 }
 
 export async function listarLocalidades() {
   const locs = await db.select().from(localidades).orderBy(asc(localidades.numero));
-  const barrios = filas<{ id: number; n: number }>(await db.execute(sql`SELECT localidad_id AS id, count(*)::int AS n FROM barrios GROUP BY 1`));
+  const barrios = filas<{ id: number; n: number }>(await consultar(sql`SELECT localidad_id AS id, count(*)::int AS n FROM barrios GROUP BY 1`));
   const mapa = new Map(barrios.map((b) => [b.id, b.n]));
   return locs.map((l) => ({ ...l, barrios: mapa.get(l.id) ?? 0 }));
 }

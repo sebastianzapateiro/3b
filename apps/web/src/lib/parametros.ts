@@ -5,8 +5,13 @@ import { db, schema } from "@las3b/db";
 
 export async function parametro(clave: string): Promise<number> {
   const [c] = await db.select({ valor: schema.configuracion.valor }).from(schema.configuracion).where(eq(schema.configuracion.clave, clave)).limit(1);
-  const n = Number(c?.valor);
-  return Number.isFinite(n) && c?.valor !== null && c?.valor !== undefined ? n : (defectoDe(clave) ?? 0);
+  return valorParametro(clave, c?.valor);
+}
+
+/** Valor guardado como número, o el de `PARAMETROS` si no hay uno válido. */
+export function valorParametro(clave: string, valor: unknown): number {
+  const n = Number(valor);
+  return Number.isFinite(n) && valor !== null && valor !== undefined ? n : (defectoDe(clave) ?? 0);
 }
 
 /** Todos los parámetros con su valor actual (null = sin definir). */

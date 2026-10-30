@@ -47,7 +47,9 @@ function FormNuevaClave() {
       setCargando(false);
       return setError(mensajeDeError(error));
     }
-    router.replace("/ingreso?clave=nueva");
+    // Las invitaciones traen a dónde seguir (p. ej. /panel/confirmar para un proveedor registrado por el equipo).
+    const destino = params.get("destino");
+    router.replace(`/ingreso?${new URLSearchParams({ clave: "nueva", ...(destino?.startsWith("/") && !destino.startsWith("//") ? { destino } : {}) })}`);
   }
 
   return (

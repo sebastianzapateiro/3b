@@ -106,3 +106,21 @@ export async function verificacionDelProveedor(proveedorId: string) {
   ]);
   return { documentos: docs.map((d) => d.tipo as string), insignias: ins };
 }
+
+/**
+ * P3 / CU-51 · Un proveedor creado por el equipo (alta asistida) revisa sus datos y lo envía a revisión.
+ * Él mismo acepta términos y autorizaciones (Ley 1581): el equipo nunca puede hacerlo por él.
+ * Exige los documentos obligatorios de su segmento y categorías (lib/documentos).
+ */
+export async function datosParaConfirmar(proveedorId: string) {
+  const [cats, locs, [serv]] = await Promise.all([
+    db
+      .select({ nombre: categorias.nombre, menores: categorias.exigeInsigniaMenores })
+      .from(proveedorCategorias)
+      .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
+      .where(eq(proveedorCategorias.proveedorId, proveedorId)),
+    db.select({ nombre: localidades.nombre }).from(proveedorLocalidades).innerJoin(localidades, eq(localidades.id, proveedorLocalidades.localidadId)).where(eq(proveedorLocalidades.proveedorId, proveedorId)),
+    db.select({ n: sql<number>`count(*)::int` }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, proveedorId)),
+  ]);
+  return { categorias: cats.map((c) => c.nombre), localidades: locs.map((l) => l.nombre), servicios: serv?.n ?? 0, exigeLey1918: cats.some((c) => c.menores) };
+}

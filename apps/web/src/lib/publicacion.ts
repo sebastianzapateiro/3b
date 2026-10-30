@@ -4,7 +4,7 @@
  * aprobados que cumplan su condición. El mínimo es un parámetro de `configuracion` (clave `min_proveedores_seo`, CU-79).
  */
 import { eq, sql } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 
 export const MIN_PROVEEDORES_SEO_POR_DEFECTO = 3;
 
@@ -28,7 +28,7 @@ const TIENE_PRECIO = sql`EXISTS (SELECT 1 FROM servicios_proveedor s WHERE s.pro
 /** Conteos por oficio de proveedores aprobados (visibles): total, con urgencias/24 h y con precio publicado. */
 export async function conteosPorOficio(): Promise<ConteoOficio[]> {
   return filas<ConteoOficio>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT c.slug AS oficio,
              count(DISTINCT p.id)::int AS total,
              count(DISTINCT p.id) FILTER (WHERE p.atiende_urgencias OR p.disponible_24h)::int AS urgentes,
@@ -45,7 +45,7 @@ export async function conteosPorOficio(): Promise<ConteoOficio[]> {
 /** Conteos por oficio y localidad. */
 export async function conteosPorOficioYLocalidad(): Promise<ConteoLocal[]> {
   return filas<ConteoLocal>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT c.slug AS oficio, l.slug AS localidad, count(DISTINCT p.id)::int AS total, max(p.updated_at) AS modificado
       FROM proveedores p
       JOIN proveedor_categorias pc ON pc.proveedor_id = p.id
@@ -70,7 +70,7 @@ export async function localidadesConProveedores(oficio: string, minimo: number, 
 /** «Precio desde» más bajo de cada proveedor visible del oficio (para el rango de las preguntas frecuentes). */
 export async function preciosDesde(oficio: string, localidad?: string): Promise<number[]> {
   const r = filas<{ precio: string }>(
-    await db.execute(sql`
+    await consultar(sql`
       SELECT min(s.precio_desde)::text AS precio
       FROM proveedores p
       JOIN proveedor_categorias pc ON pc.proveedor_id = p.id

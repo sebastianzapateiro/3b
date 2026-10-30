@@ -1,10 +1,11 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@las3b/db";
+import { auth } from "@/lib/auth";
 import { exigirUsuario, plazoSolicitud, sumarDiasHabiles } from "@/lib/cuenta";
 
 const perfil = z.object({
@@ -13,11 +14,12 @@ const perfil = z.object({
 });
 
 export async function guardarPerfil(formData: FormData) {
-  const u = await exigirUsuario("/cuenta");
+  await exigirUsuario("/cuenta");
   const r = perfil.safeParse(Object.fromEntries(formData));
   if (!r.success) redirect(`/cuenta?${new URLSearchParams({ error: r.error.issues[0]?.message ?? "Revisa los datos." })}`);
 
-  await db.update(schema.user).set({ name: r.data.nombre, telefono: r.data.telefono || null, updatedAt: new Date() }).where(eq(schema.user.id, u.id));
+  // Por Better Auth y no por SQL: así también renueva la cookie de sesión (cookieCache) con el nombre nuevo.
+  await auth.api.updateUser({ headers: await headers(), body: { name: r.data.nombre, telefono: r.data.telefono || null } });
   revalidatePath("/cuenta");
   redirect(`/cuenta?${new URLSearchParams({ ok: "Datos guardados." })}`);
 }

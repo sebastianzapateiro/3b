@@ -3,7 +3,7 @@
  * Los plazos se cuentan en días hábiles con los festivos de Colombia.
  */
 import { desc, eq, inArray, sql } from "drizzle-orm";
-import { db, schema } from "@las3b/db";
+import { db, schema, consultar } from "@las3b/db";
 import { diasHabilesEntre } from "@las3b/shared";
 
 const { mensajesContacto, reclamos, solicitudesDatos, proveedores, user, politicas, festivos, contactos, resenas, servicios } = schema;
@@ -59,11 +59,6 @@ export async function bandejaCumplimiento(bandeja: Bandeja): Promise<FilaTramite
     for (const s of lista) filas.push({ clase: "datos", id: s.id, titulo: ETIQUETA_SOLICITUD[s.tipo], ley: "Ley 1581", solicitante: s.nombre, sobre: "Su propia cuenta", creado: s.creado, limite: String(s.limite), estado: s.estado, ...plazo(s.creado, String(s.limite), extra) });
   }
   return filas.sort((a, b) => a.restantes - b.restantes || a.creado.getTime() - b.creado.getTime());
-}
-
-export async function contarAbiertos() {
-  const [r] = (await db.execute(sql`SELECT (SELECT count(*)::int FROM reclamos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM solicitudes_datos WHERE estado IN ('abierto','en_proceso')) + (SELECT count(*)::int FROM mensajes_contacto WHERE estado = 'nuevo') AS n`)) as unknown as { n: number }[];
-  return r?.n ?? 0;
 }
 
 export async function detalleReclamo(id: string) {

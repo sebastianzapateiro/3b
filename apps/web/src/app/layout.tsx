@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { MARCA } from "@las3b/shared";
 import { Analitica } from "@/components/Analitica";
+import { BarraCarga } from "@/components/BarraCarga";
 import { Cabecera } from "@/components/Cabecera";
 import { MarcoSitio } from "@/components/MarcoSitio";
 import { Pie } from "@/components/Pie";
@@ -57,8 +59,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-CO" className={`${bricolage.variable} ${inter.variable}`}>
       <body className="min-h-dvh bg-crema font-sans text-tinta antialiased">
+        <BarraCarga />
         <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
         <Analitica />
+        {/* Vercel Web Analytics: sin cookies, solo envía datos en despliegues de Vercel (no en local). */}
+        <Analytics />
       </body>
     </html>
   );
