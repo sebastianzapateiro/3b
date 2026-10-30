@@ -4,7 +4,9 @@ import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, subcategoriaPorSlug, type Loca
 import { Faq } from "@/components/Faq";
 import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
+import { cookies } from "next/headers";
 import { buscarProveedores, filtrosDesdeParams } from "@/lib/busqueda";
+import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
 
@@ -21,6 +23,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 type Params = Record<string, string | string[] | undefined>;
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
 const varios = (v: string | string[] | undefined) => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
 
@@ -41,18 +44,26 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const { insignias, cal, visita, hoy, h24, tambien } = valoresDesdeParams(params);
   const pagina = Math.max(1, Number(uno(sp.pagina)) || 1);
 
-  const resultado = await buscarProveedores(filtrosDesdeParams(params));
+  // Ubicación exacta (viene del buscador del inicio): se ordena del más cercano al más lejano, sin filtrar por localidad.
+  const exacta = uno(sp.ubic) === "exacta";
+  const idSolicitud = exacta ? (await cookies()).get(COOKIE_SOLICITUD)?.value : undefined;
+  const solicitud = idSolicitud && UUID.test(idSolicitud) ? await obtenerSolicitud(idSolicitud) : null;
+  const punto = solicitud?.punto ?? undefined;
+  const enviada = uno(sp.solicitud) === "1";
+
+  const resultado = await buscarProveedores({ ...filtrosDesdeParams(params), punto });
 
   const nombreLocalidad = LOCALIDADES_BOGOTA.find((l) => l.slug === localidad)?.nombre;
+  const lugar = nombreLocalidad ? ` en ${nombreLocalidad}` : exacta ? " cerca de ti" : "";
   const tema = resultado.categoriaNombre ?? (q ? `«${q}»` : null);
-  const titulo = tema ? `${tema}${nombreLocalidad ? ` en ${nombreLocalidad}` : ""}` : nombreLocalidad ? `Servicios en ${nombreLocalidad}` : "Resultados de búsqueda";
+  const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `Servicios en ${nombreLocalidad}` : "Resultados de búsqueda";
   const totalPaginas = Math.max(1, Math.ceil(resultado.total / resultado.porPagina));
 
   /** URL de /buscar con los parámetros actuales y los cambios indicados (null = quitar). */
   const href = (cambios: Record<string, string | string[] | null>) => {
     const p = new URLSearchParams();
     const actual: Record<string, string | string[] | undefined> = {
-      q, localidad, categoria, orden, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
+      q, localidad, categoria, orden, ubic: exacta ? "exacta" : undefined, solicitud: enviada ? "1" : undefined, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
       hoy: hoy ? "1" : undefined, h24: h24 ? "1" : undefined,
       insignia: insignias, tambien, pagina: pagina > 1 ? String(pagina) : undefined,
     };
@@ -77,7 +88,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
 
   // Parámetros ajenos al panel y datos que este necesita.
   const base = new URLSearchParams();
-  for (const [k, x] of [["q", q], ["localidad", localidad], ["categoria", categoria], ["orden", orden]] as const) if (x) base.set(k, x);
+  for (const [k, x] of [["q", q], ["localidad", localidad], ["categoria", categoria], ["orden", orden], ["ubic", exacta ? "exacta" : undefined], ["solicitud", enviada ? "1" : undefined]] as const) if (x) base.set(k, x);
   const inicial = { insignias, cal, visita, hoy, h24, tambien };
   const vecinas = (localidad && localidad in LOCALIDADES_VECINAS ? LOCALIDADES_VECINAS[localidad as LocalidadSlug] : []).map((s) => ({
     slug: s,
@@ -166,6 +177,17 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
                 <Link href={href({ pagina: String(pagina + 1) })} className="flex h-11 items-center rounded-xl border border-borde-campo px-4 font-semibold text-tinta">Siguiente</Link>
               )}
             </nav>
+          )}
+
+          {exacta && resultado.items.length > 0 && !punto && (
+            <p className="rounded-xl bg-piedra px-3.5 py-3 text-sm text-tinta-2">No pudimos medir tu ubicación, así que los ordenamos por calificación. Igual compartimos tu dirección con el proveedor que contactes.</p>
+          )}
+
+          {enviada && resultado.items.length === 0 && (
+            <section className="rounded-[18px] bg-verde p-5 text-white">
+              <b className="font-display text-xl">Te estaremos enviando tus proveedores calificados a tu WhatsApp.</b>
+              <p className="mt-1.5 text-[15px] leading-normal">Guardamos lo que nos contaste y te escribimos apenas tengamos proveedores para tu solicitud.</p>
+            </section>
           )}
 
           <section className="rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">

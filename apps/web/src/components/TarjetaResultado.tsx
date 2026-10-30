@@ -82,7 +82,7 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
         <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro sm:flex-none">
           <IconoWhatsApp />
           <span className="sm:hidden">WhatsApp</span>
-          <span className="hidden sm:inline">Escribir por WhatsApp</span>
+          <span className="hidden sm:inline">Contactar por WA</span>
         </a>
       </div>
     </article>

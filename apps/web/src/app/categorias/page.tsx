@@ -5,7 +5,6 @@ import { BuscadorCategorias } from "@/components/categorias/Buscador";
 import { FONDO_NEUTRO, TarjetaCategoria, TarjetaProveedores } from "@/components/categorias/Piezas";
 import { ZonaMovil } from "@/components/categorias/ZonaMovil";
 import { Faq } from "@/components/Faq";
-import { FormDemanda } from "@/components/FormDemanda";
 import { JsonLd } from "@/components/JsonLd";
 import { FAQ_CATEGORIAS } from "@/lib/faqs";
 import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
@@ -17,7 +16,6 @@ export const metadata: Metadata = meta({
   ruta: "/categorias",
 });
 
-const POPULARES_DEMANDA = ["Electricidad", "Construcción y remodelación", "Cerrajería", "Todero"];
 
 export default function Categorias() {
   return (
@@ -41,10 +39,7 @@ export default function Categorias() {
           {CATEGORIAS.map((c) => <TarjetaCategoria key={c.slug} c={c} />)}
         </div>
 
-        <div className="grid items-stretch gap-4 lg:grid-cols-2">
-          <FormDemanda neutro retorno="/categorias" titulo="¿No encuentras lo que buscas? Cuéntanos" frase="Dinos qué servicio necesitas y te avisamos cuando haya proveedores" sugerencias={POPULARES_DEMANDA} />
-          <TarjetaProveedores />
-        </div>
+        <TarjetaProveedores />
       </main>
       <Faq preguntas={FAQ_CATEGORIAS} lateral />
     </div>

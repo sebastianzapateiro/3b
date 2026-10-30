@@ -1,6 +1,6 @@
 /**
  * P4 / CU-05 · Registra el clic a WhatsApp y redirige a wa.me.
- * GET /api/v1/contactos/ir?p=<slug>&origen=perfil|busqueda|qr|redes
+ * GET /api/v1/contactos/ir?p=<slug>&origen=perfil|busqueda|qr|redes[&s=<id de la solicitud>]
  * Cada clic queda en `contactos`: es la base para que el comprador pueda calificar (regla 4).
  * compradorId nulo = visitante anónimo (cookie anonimo_id).
  */
@@ -8,12 +8,15 @@ import { NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
-import { enlaceWhatsApp } from "@las3b/shared";
+import { enlaceConMensaje, enlaceWhatsApp, mensajeSolicitud } from "@las3b/shared";
 import { auth } from "@/lib/auth";
+import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const dynamic = "force-dynamic";
 
-const ORIGENES = ["perfil", "busqueda", "qr", "redes"];
+const ORIGENES = ["perfil", "busqueda", "qr", "redes", "banner"];
 const ES_ROBOT = /bot|crawl|spider|preview|facebookexternalhit|whatsapp/i;
 
 export async function GET(req: Request) {
@@ -22,7 +25,7 @@ export async function GET(req: Request) {
   const origen = ORIGENES.includes(url.searchParams.get("origen") ?? "") ? url.searchParams.get("origen")! : "perfil";
 
   const [p] = await db
-    .select({ id: schema.proveedores.id, whatsapp: schema.proveedores.whatsapp, estado: schema.proveedores.estado })
+    .select({ id: schema.proveedores.id, nombre: schema.proveedores.nombrePublico, whatsapp: schema.proveedores.whatsapp, estado: schema.proveedores.estado })
     .from(schema.proveedores)
     .where(eq(schema.proveedores.slug, slug))
     .limit(1);
@@ -41,7 +44,12 @@ export async function GET(req: Request) {
     .where(eq(schema.proveedorLocalidades.proveedorId, p.id))
     .limit(1);
 
-  const destino = enlaceWhatsApp(p.whatsapp, cat?.nombre ?? "un servicio", loc?.nombre ?? "Bogotá");
+  // Si el comprador llenó «¿Qué estás buscando?» (parámetro `s` o cookie), el chat empieza con su solicitud tal cual.
+  const jar0 = await cookies();
+  const solicitudId = url.searchParams.get("s") ?? jar0.get(COOKIE_SOLICITUD)?.value ?? null;
+  const solicitud = solicitudId && UUID.test(solicitudId) ? await obtenerSolicitud(solicitudId) : null;
+  const mensaje = solicitud ? mensajeSolicitud({ proveedor: p.nombre, cliente: solicitud.nombre ?? "un vecino", categoria: solicitud.categoria ?? cat?.nombre ?? null, lugar: solicitud.lugar, solicitud: solicitud.texto }) : null;
+  const destino = mensaje ? enlaceConMensaje(p.whatsapp, mensaje) : enlaceWhatsApp(p.whatsapp, cat?.nombre ?? "un servicio", loc?.nombre ?? "Bogotá");
   const respuesta = NextResponse.redirect(destino, 302);
 
   const h = await headers();
@@ -63,6 +71,8 @@ export async function GET(req: Request) {
     categoriaId: cat?.id ?? null,
     localidadId: loc?.id ?? null,
     origen,
+    solicitudId: solicitud?.id ?? null,
+    mensaje,
   });
 
   return respuesta;

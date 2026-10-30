@@ -5,7 +5,6 @@ import { CATEGORIAS, categoriaPorSlug } from "@las3b/shared";
 import { BuscadorCategorias } from "@/components/categorias/Buscador";
 import { FONDO_NEUTRO, Icono, OficiosAgrupados, TARJETA, TarjetaProveedores } from "@/components/categorias/Piezas";
 import { Faq } from "@/components/Faq";
-import { FormDemanda } from "@/components/FormDemanda";
 import { JsonLd } from "@/components/JsonLd";
 import { faqCategoria } from "@/lib/faqs";
 import { absoluta, jsonLdMigas, meta } from "@/lib/seo";
@@ -78,10 +77,7 @@ export default async function Categoria({ params }: Props) {
           </div>
         )}
 
-        <div className="grid items-stretch gap-4 lg:grid-cols-2">
-          <FormDemanda neutro retorno={ruta} titulo="¿No encuentras lo que buscas? Cuéntanos" frase="Dinos qué servicio necesitas y te avisamos cuando haya proveedores" sugerencias={categoria.subcategorias.filter((s) => s.popular).map((s) => s.nombre).slice(0, 4)} />
-          <TarjetaProveedores />
-        </div>
+        <TarjetaProveedores />
 
         <Link href="/categorias" className="flex h-12 items-center justify-center self-start rounded-lg border-2 border-tinta px-6 text-base font-semibold text-tinta max-sm:self-stretch">Volver a categorías</Link>
       </main>

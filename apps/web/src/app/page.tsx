@@ -9,6 +9,7 @@ import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/component
 import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
+import { BuscadorInicio } from "@/components/BuscadorInicio";
 import { Faq } from "@/components/Faq";
 import { FAQ_HOME } from "@/lib/faqs";
 
@@ -91,53 +92,11 @@ export default function Home() {
             <p className="max-w-[540px] text-base leading-normal text-tinta-2 sm:text-lg sm:leading-relaxed">
               <span className="sm:hidden">Plomeros, profesores, acarreos y oficios de confianza en tu localidad. Escríbeles directo por WhatsApp, sin comisiones.</span>
               <span className="hidden sm:inline">
-                Plomeros, profesores particulares, acarreos y oficios de confianza en tu localidad. Compara reseñas reales y escríbeles directo por WhatsApp.
+                Plomeros, profesores particulares, acarreos y oficios de confianza en tu localidad. Compara reseñas reales y escríbeles directo por WhatsApp. 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión.
               </span>
             </p>
 
-            <form action="/buscar" className="flex flex-col gap-2.5 rounded-[20px] bg-white p-3.5 shadow-[0_6px_24px_rgba(27,38,35,0.08)] sm:flex-row sm:flex-wrap sm:items-end sm:rounded-[22px] sm:p-4 sm:shadow-[0_8px_30px_rgba(27,38,35,0.08)]">
-              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-[2_1_220px]">
-                <label htmlFor="q" className="text-[13px] font-semibold text-gris">
-                  <span className="sm:hidden">¿Qué servicio o clase necesitas?</span>
-                  <span className="hidden sm:inline">Servicio o clase</span>
-                </label>
-                <div className="relative">
-                  <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 sm:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" />
-                  </svg>
-                  <input
-                    id="q"
-                    name="q"
-                    type="search"
-                    placeholder="Ej: plomero, clases de inglés"
-                    className="h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white pl-11 pr-3.5 text-base text-tinta sm:pl-3.5"
-                  />
-                </div>
-              </div>
-              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-[1_1_160px]">
-                <label htmlFor="localidad" className="text-[13px] font-semibold text-gris">Localidad</label>
-                <div className="relative">
-                  <svg className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 sm:hidden" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
-                    <circle cx="12" cy="9.5" r="2.5" />
-                  </svg>
-                  <select
-                    id="localidad"
-                    name="localidad"
-                    defaultValue={LOCALIDAD_INICIAL}
-                    className="h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white pl-11 pr-3 text-base text-tinta sm:pl-3"
-                  >
-                    {LOCALIDADES_BOGOTA.map((l) => (
-                      <option key={l.slug} value={l.slug}>{l.nombre}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <button type="submit" className="mt-1 h-13 rounded-campo bg-tinta px-7 text-[17px] font-semibold text-white sm:mt-0 sm:flex-none sm:text-base">
-                Buscar
-              </button>
-            </form>
+            <BuscadorInicio localidadInicial={LOCALIDAD_INICIAL} />
 
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[13px] text-gris sm:text-sm">Populares:</span>
@@ -245,8 +204,6 @@ export default function Home() {
           </div>
         </section>
 
-                
-
         <section className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 pb-7 pt-2 sm:px-6 sm:py-14">
           <h2 className={`${h2} sm:sr-only`}>Por qué confiar</h2>
           <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -281,7 +238,7 @@ export default function Home() {
                 ¿Ofreces un servicio? Crea gratis tu página web.
               </h2>
               <p className="max-w-[520px] text-[15px] leading-normal text-[#D5DCDA] sm:text-[17px] sm:leading-relaxed">
-                Tu portafolio con dirección propia, código QR para tus volantes y reseñas de tus clientes.
+                Tu portafolio con dirección propia, código QR para tus volantes y reseñas de tus clientes. Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp.
                 <span className="hidden sm:inline"> Compártelo por WhatsApp y redes, y mira cuántos te visitan.</span>
               </p>
               <span className="self-start rounded-lg bg-amarillo px-2.5 py-1.5 font-mono text-sm text-tinta sm:hidden">lastresb.com.co/tu-nombre</span>

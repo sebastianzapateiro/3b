@@ -2,7 +2,6 @@ import Link from "next/link";
 import { BARRIOS_PRINCIPALES, LOCALIDADES_BOGOTA, type CategoriaPadre, type LocalidadSlug, type Subcategoria } from "@las3b/shared";
 import { BotonCercanos } from "@/components/BotonCercanos";
 import { Faq } from "@/components/Faq";
-import { FormDemanda } from "@/components/FormDemanda";
 import { JsonLd } from "@/components/JsonLd";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
 import type { PaginaResultados } from "@/lib/busqueda";
@@ -98,7 +97,7 @@ export function PaginaServicio({
         ) : (
           <section aria-labelledby="sin-proveedores" className="flex flex-col gap-3">
             <h2 id="sin-proveedores" className="font-display text-2xl font-bold">Aún no tenemos proveedores para este servicio</h2>
-            <p className="text-[15px] leading-normal text-tinta-2">Déjanos tu WhatsApp y te avisamos cuando haya. ¿Ofreces este servicio? <Link href="/ingreso" className="font-semibold text-verde underline">Regístrate gratis</Link>.</p>
+            <p className="text-[15px] leading-normal text-tinta-2">Prueba con otra localidad o cuéntanos qué necesitas desde el <Link href="/" className="font-semibold text-verde underline">inicio</Link>. ¿Ofreces este servicio? <Link href="/ingreso" className="font-semibold text-verde underline">Regístrate gratis</Link>.</p>
           </section>
         )}
 
@@ -116,7 +115,6 @@ export function PaginaServicio({
           </section>
         )}
 
-        {!suficiente && <FormDemanda oficio={sub.slug} oficioNombre={sub.nombre} localidad={localidad?.slug} retorno={ruta} titulo="Avísame cuando haya proveedores" />}
 
         <section aria-labelledby="otras-paginas" className="flex flex-col gap-2">
           <h2 id="otras-paginas" className="font-display text-xl font-bold">Más opciones de {sub.nombre.toLowerCase()}</h2>

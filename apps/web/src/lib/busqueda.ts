@@ -5,6 +5,7 @@
  */
 import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { distanciaALocalidades, type Punto } from "@/lib/ubicacion";
 
 const {
   proveedores,
@@ -67,6 +68,8 @@ export type FiltrosBusqueda = {
   h24?: boolean;
   orden?: Orden;
   pagina?: number;
+  /** Ubicación exacta del comprador: ordena por cercanía y no filtra por localidad. */
+  punto?: Punto;
 };
 
 export type ResultadoBusqueda = {
@@ -194,6 +197,33 @@ export async function contarProveedores(f: FiltrosBusqueda): Promise<number> {
   return c?.total ?? 0;
 }
 
+/** Categoría que mejor corresponde a un texto libre («se me dañó la nevera») según los sinónimos; null si no hay. */
+export async function categoriaDeTexto(q: string): Promise<{ id: number; nombre: string; slug: string } | null> {
+  const ids = await categoriasPorTermino(q);
+  if (ids.length === 0) return null;
+  const [c] = await db.select({ id: categorias.id, nombre: categorias.nombre, slug: categorias.slug }).from(categorias).where(inArray(categorias.id, ids)).limit(1);
+  return c ?? null;
+}
+
+/** Ids de todos los proveedores que cumplen los filtros, del más cercano al más lejano al punto (los que no se pueden medir, al final). */
+async function idsPorCercania(donde: SQL | undefined, punto: Punto): Promise<string[]> {
+  const filas = await db
+    .select({ id: proveedores.id })
+    .from(proveedores)
+    .where(donde)
+    .orderBy(sql`${proveedores.promedio} DESC`, sql`${proveedores.totalResenas} DESC`)
+    .limit(300);
+  if (filas.length === 0) return [];
+  const zonas = await db
+    .select({ proveedorId: proveedorLocalidades.proveedorId, slug: localidades.slug })
+    .from(proveedorLocalidades)
+    .innerJoin(localidades, eq(localidades.id, proveedorLocalidades.localidadId))
+    .where(inArray(proveedorLocalidades.proveedorId, filas.map((r) => r.id)));
+  const km = (id: string) => distanciaALocalidades(punto, zonas.filter((z) => z.proveedorId === id).map((z) => z.slug)) ?? Infinity;
+  // sort es estable: a igual distancia queda primero el mejor calificado.
+  return filas.map((r) => r.id).sort((a, b) => km(a) - km(b));
+}
+
 export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResultados> {
   const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
   const { donde, categoria } = await condicionesDe(f);
@@ -206,24 +236,34 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
         ? [sql`${precioMinimo} ASC NULLS LAST`, sql`${proveedores.promedio} DESC`]
         : [sql`${proveedores.promedio} DESC`, sql`${proveedores.totalResenas} DESC`];
 
-  const filas = await db
-    .select({
-      id: proveedores.id,
-      slug: proveedores.slug,
-      nombre: proveedores.nombrePublico,
-      promedio: proveedores.promedio,
-      totalResenas: proveedores.totalResenas,
-      precio: precioMinimo,
-      precioVisita: precioVisitaSql,
-      convenir: proveedores.visitaAConvenir,
-      urgencias: proveedores.atiendeUrgencias,
-      h24: proveedores.disponible24h,
-    })
-    .from(proveedores)
-    .where(donde)
-    .orderBy(...orden, sql`${proveedores.createdAt} DESC`)
-    .limit(POR_PAGINA)
-    .offset((pagina - 1) * POR_PAGINA);
+  const columnas = {
+    id: proveedores.id,
+    slug: proveedores.slug,
+    nombre: proveedores.nombrePublico,
+    promedio: proveedores.promedio,
+    totalResenas: proveedores.totalResenas,
+    precio: precioMinimo,
+    precioVisita: precioVisitaSql,
+    convenir: proveedores.visitaAConvenir,
+    urgencias: proveedores.atiendeUrgencias,
+    h24: proveedores.disponible24h,
+  };
+  let filas;
+  if (f.punto) {
+    // Por ubicación exacta: todos los del servicio, del más cercano al más lejano (sin filtrar por localidad).
+    const ordenados = await idsPorCercania(donde, f.punto);
+    const pagina_ids = ordenados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+    const datos = pagina_ids.length ? await db.select(columnas).from(proveedores).where(inArray(proveedores.id, pagina_ids)) : [];
+    filas = pagina_ids.flatMap((id) => datos.filter((d) => d.id === id));
+  } else {
+    filas = await db
+      .select(columnas)
+      .from(proveedores)
+      .where(donde)
+      .orderBy(...orden, sql`${proveedores.createdAt} DESC`)
+      .limit(POR_PAGINA)
+      .offset((pagina - 1) * POR_PAGINA);
+  }
 
   if (filas.length === 0) {
     return { items: [], total, pagina, porPagina: POR_PAGINA, categoriaNombre: categoria?.nombre ?? null };

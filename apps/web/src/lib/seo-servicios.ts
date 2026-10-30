@@ -96,7 +96,7 @@ export function preguntas(sub: Subcategoria, o: { localidad?: string; precios: n
   if (sub.atiendeUrgencias) {
     lista.push({ pregunta: `¿Hay ${nombre} que atiendan urgencias?`, respuesta: "Algunos proveedores declaran atender urgencias el mismo día o las 24 horas, y lo muestran en una etiqueta. LasTresB no presta el servicio ni garantiza tiempos de llegada: confirma la disponibilidad por WhatsApp." });
   }
-  lista.push({ pregunta: "¿Cómo contacto al proveedor?", respuesta: "Pulsa «Escribir por WhatsApp» en su tarjeta o perfil y acuerdan precio y fecha directo. Es gratis y sin comisiones." });
+  lista.push({ pregunta: "¿Cómo contacto al proveedor?", respuesta: "Pulsa «Contactar por WA» en su tarjeta o perfil y acuerdan precio y fecha directo. Es gratis y sin comisiones." });
   return lista.slice(0, 5);
 }
 

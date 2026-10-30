@@ -74,7 +74,7 @@ function Pantalla({ icono }: { icono: IconoPaso }) {
             <span className="self-start rounded-xl rounded-tl-sm bg-white px-2.5 py-1.5">¡Hola! Claro, ¿para qué nivel?</span>
             <span className="self-end rounded-xl rounded-tr-sm bg-[#D9F2D0] px-2.5 py-1.5">Intermedio. ¿Cuánto vale y cuándo podemos empezar?</span>
           </div>
-          <div className="flex h-9 items-center justify-center gap-1.5 bg-verde text-[12px] font-semibold text-white">Escribir por WhatsApp</div>
+          <div className="flex h-9 items-center justify-center gap-1.5 bg-verde text-[12px] font-semibold text-white">Contactar por WA</div>
         </div>
       );
     case "estrella":
