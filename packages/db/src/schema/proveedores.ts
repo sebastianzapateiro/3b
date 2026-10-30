@@ -12,6 +12,8 @@ export const segmentoProveedorEnum = pgEnum("segmento_proveedor", [
   "independiente_sin_rut", "independiente_con_rut", "empresa",
 ]);
 export const tipoDocumentoEnum = pgEnum("tipo_documento", ["cc", "ce", "ppt", "nit"]);
+/** B1 · De dónde salió el proveedor (seguimiento interno del equipo; nunca en público). */
+export const fuenteOrigenEnum = pgEnum("fuente_origen", ["google_maps", "instagram", "ferreteria", "referido", "otro"]);
 
 export const proveedores = pgTable("proveedores", {
   id: uuid().primaryKey().defaultRandom(),
@@ -43,6 +45,14 @@ export const proveedores = pgTable("proveedores", {
   fechaNacimiento: date(),
   rutFechaLimite: date(),
   motivoRechazo: text(),
+  // Seguimiento interno del equipo (nunca en público)
+  fuenteOrigen: fuenteOrigenEnum(),
+  primerContacto: date(),
+  ultimoContacto: date(),
+  proximaAccion: text(),
+  notasInternas: text(),
+  /** 0–100, calculado en lib/completitud.ts: nombre, WhatsApp, oficio, zona, descripción y 3 fotos de trabajos. */
+  completitud: integer().notNull().default(0),
   // Caché de reputación
   promedio: real().notNull().default(0),
   totalResenas: integer().notNull().default(0),

@@ -66,5 +66,20 @@ export const solicitudesServicio = pgTable("solicitudes_servicio", {
   estado: estadoSolicitudServicioEnum().notNull().default("nueva"),
   /** false si el texto menciona un servicio que LasTresB no ofrece: se guarda pero no cuenta como demanda a cubrir. */
   cuentaComoDemanda: boolean().notNull().default(true),
+  // Banner «¿Qué estás buscando?»: quién pide, dónde está y qué se le mostró. Datos del negocio: nunca se borran por contacto.
+  nombre: text(),
+  categoriaId: integer().references(() => categorias.id),
+  /** Dirección que escribió el comprador (opcional); con ella o con su ubicación se ordenan los proveedores por cercanía. */
+  direccion: text(),
+  lat: real(),
+  lng: real(),
+  /** Banner desde el que llegó (home-hero, categorias, buscar-sin-resultados…). */
+  origenBanner: text(),
+  /** Cuántos proveedores se le mostraron; 0 = «te enviaremos tus proveedores por WhatsApp». */
+  resultados: integer(),
+  /** Versión de la política de tratamiento de datos que autorizó, con IP y navegador. */
+  consentimientoVersion: text(),
+  ip: text(),
+  userAgent: text(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
