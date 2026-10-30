@@ -148,8 +148,9 @@ export function meta(o: { titulo: string; descripcion: string; ruta: string; tip
     title: { absolute: titulo },
     description: o.descripcion,
     alternates: { canonical: o.ruta, languages: { "es-CO": o.ruta } },
-    openGraph: { type: o.tipo ?? "website", locale: "es_CO", siteName: MARCA.nombre, title: titulo, description: o.descripcion, url: o.ruta, ...(o.fecha ? { publishedTime: o.fecha } : {}) },
-    twitter: { card: "summary_large_image", title: titulo, description: o.descripcion },
+    // Al definir openGraph en una página, Next descarta la imagen automática de la raíz: se declara aquí para todas.
+    openGraph: { type: o.tipo ?? "website", locale: "es_CO", siteName: MARCA.nombre, title: titulo, description: o.descripcion, url: o.ruta, images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: `${MARCA.nombre}: servicios y oficios de confianza en Bogotá` }], ...(o.fecha ? { publishedTime: o.fecha } : {}) },
+    twitter: { card: "summary_large_image", title: titulo, description: o.descripcion, images: ["/opengraph-image"] },
     ...(o.noindex ? { robots: { index: false, follow: true } } : {}),
   };
 }

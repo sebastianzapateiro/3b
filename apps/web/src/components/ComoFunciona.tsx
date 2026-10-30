@@ -41,8 +41,9 @@ function Panel({ pestana }: { pestana: PestanaComo }) {
   const boton = pestana.boton;
   return (
     <>
+      <h2 className="sr-only">{pestana.id === "cliente" ? "Si buscas un servicio" : "Si ofreces un servicio"}</h2>
       <ol className="flex flex-col gap-5">
-        {pestana.pasos.map((paso, i) => <Paso key={paso.titulo} paso={paso} n={i + 1} id={pestana.id === "cliente" ? `paso-${i + 1}` : undefined} />)}
+        {pestana.pasos.map((paso, i) => <Paso key={paso.titulo} paso={paso} n={i + 1} id={`${pestana.id === "cliente" ? "paso" : "proveedor-paso"}-${i + 1}`} />)}
       </ol>
       <div className="flex justify-center pt-8">
         <Link
