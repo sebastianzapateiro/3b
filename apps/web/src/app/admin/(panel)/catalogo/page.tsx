@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { guardarCategoria } from "@/app/admin/actions";
+import { Modal } from "@/components/admin/Modal";
 import { Aviso, botonOscuro, campoAdmin, Encabezado, tarjeta } from "@/components/admin/Ui";
 import { listarCatalogo, listarLocalidades, obtenerSubcategoria } from "@/lib/admin";
 import { exigirBackoffice } from "@/lib/verificacion";
@@ -84,48 +85,63 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
             </section>
 
             <section className="min-w-0 flex-[2_1_340px]">
-              {editando ? (
+              {editando && !nueva ? (
                 // key: al elegir otra categoría el formulario se rehace; con defaultValue, React conservaba los valores anteriores.
-                <form key={editando.id ?? "nueva"} action={guardarCategoria} className="flex flex-col gap-3 rounded-[20px] border-2 border-tinta bg-white p-[22px]">
-                  <input type="hidden" name="id" value={editando.id ?? ""} />
-                  <h2 className="font-display text-xl font-bold">{nueva ? "Nueva categoría" : "Editar subcategoría"}</h2>
-                  <Aviso ok={sp.ok} error={sp.error} />
-                  <div className="flex gap-2.5">
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5"><label htmlFor="nombre" className="text-sm font-semibold">Nombre</label><input id="nombre" name="nombre" defaultValue={editando.nombre} required className={campoAdmin} /></div>
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <label htmlFor="padreId" className="text-sm font-semibold">Dentro de</label>
-                      <select id="padreId" name="padreId" defaultValue={editando.padreId ?? ""} className={campoAdmin}>
-                        {nueva && <option value="">Ninguna (categoría principal)</option>}
-                        {padres.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <label htmlFor="slug" className="text-sm font-semibold">Slug</label>
-                  <input id="slug" name="slug" defaultValue={editando.slug} required placeholder="ej. cerrajeria" className={`${campoAdmin} font-mono`} />
-                  <label htmlFor="terminos" className="text-sm font-semibold">Palabras clave y sinónimos (separados por coma)</label>
-                  <textarea id="terminos" name="terminos" rows={4} defaultValue={editando.terminos.map((t) => t.termino).join(", ")} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" />
-                  <fieldset className="flex flex-col gap-2.5 text-[15px]">
-                    <legend className="mb-2 text-sm font-semibold">Requisitos para aparecer en esta categoría</legend>
-                    <label className="flex items-center gap-2.5"><input type="checkbox" name="menores" defaultChecked={editando.exigeInsigniaMenores} className="size-5 accent-verde" />Exige insignia «Apto para menores» (Ley 1918)</label>
-                    <label className="flex items-center gap-2.5"><input type="checkbox" name="rut" defaultChecked={editando.exigeRutDesdeAlta} className="size-5 accent-verde" />Exige RUT desde el alta (riesgo alto)</label>
-                    <label className="flex items-center gap-2.5"><input type="checkbox" name="matricula" defaultChecked={editando.exigeMatricula} className="size-5 accent-verde" />Exige matrícula o certificación</label>
-                    <label className="flex items-center gap-2.5"><input type="checkbox" name="activa" defaultChecked={editando.activa} className="size-5 accent-verde" />Activa</label>
-                  </fieldset>
-                  {editando.proveedores > 0 && (
-                    <p className="rounded-xl bg-amarillo-suave px-3.5 py-3 text-sm leading-[1.45] text-amarillo-oscuro">Esta categoría tiene {editando.proveedores} proveedores: no se puede borrar, solo desactivar.</p>
-                  )}
-                  <div className="flex items-center justify-end gap-2.5">
-                    {nueva && <Link href="/admin/catalogo" className="px-3 text-sm font-semibold text-tinta-2">Cancelar</Link>}
-                    <button type="submit" className="h-11 rounded-xl bg-tinta px-5 text-[15px] font-bold text-white">{nueva ? "Crear categoría" : "Guardar cambios"}</button>
-                  </div>
-                </form>
+                <FormCategoria key={editando.id} categoria={editando} padres={padres} nueva={false} ok={sp.ok} error={sp.error} />
               ) : (
                 <p className={`${tarjeta} p-[22px] text-[15px] text-gris`}>Elige una subcategoría de la tabla para editar su nombre, sinónimos y requisitos, o crea una con «Nueva categoría».</p>
               )}
             </section>
+            {nueva && (
+              <Modal titulo="Nueva categoría" cerrarHref="/admin/catalogo">
+                <FormCategoria categoria={CATEGORIA_NUEVA} padres={padres} nueva ok={sp.ok} error={sp.error} />
+              </Modal>
+            )}
           </>
         )}
       </main>
     </>
+  );
+}
+
+type Padre = { id: number; nombre: string };
+type DatosCategoria = typeof CATEGORIA_NUEVA | NonNullable<Awaited<ReturnType<typeof obtenerSubcategoria>>>;
+
+/** Formulario de categoría: en el panel derecho para editar y en la ventana emergente para crear. */
+function FormCategoria({ categoria, padres, nueva, ok, error }: { categoria: DatosCategoria; padres: Padre[]; nueva: boolean; ok?: string; error?: string }) {
+  return (
+    <form action={guardarCategoria} className={nueva ? "flex flex-col gap-3" : "flex flex-col gap-3 rounded-[20px] border-2 border-tinta bg-white p-[22px]"}>
+      <input type="hidden" name="id" value={categoria.id ?? ""} />
+      {!nueva && <h2 className="font-display text-xl font-bold">Editar subcategoría</h2>}
+      <Aviso ok={ok} error={error} />
+      <div className="flex gap-2.5">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5"><label htmlFor="nombre" className="text-sm font-semibold">Nombre</label><input id="nombre" name="nombre" defaultValue={categoria.nombre} required className={campoAdmin} /></div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <label htmlFor="padreId" className="text-sm font-semibold">Dentro de</label>
+          <select id="padreId" name="padreId" defaultValue={categoria.padreId ?? ""} className={campoAdmin}>
+            {nueva && <option value="">Ninguna (categoría principal)</option>}
+            {padres.map((p) => <option key={p.id} value={p.id}>{p.nombre}</option>)}
+          </select>
+        </div>
+      </div>
+      <label htmlFor="slug" className="text-sm font-semibold">Slug</label>
+      <input id="slug" name="slug" defaultValue={categoria.slug} required placeholder="ej. cerrajeria" className={`${campoAdmin} font-mono`} />
+      <label htmlFor="terminos" className="text-sm font-semibold">Palabras clave y sinónimos (separados por coma)</label>
+      <textarea id="terminos" name="terminos" rows={4} defaultValue={categoria.terminos.map((t) => t.termino).join(", ")} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" />
+      <fieldset className="flex flex-col gap-2.5 text-[15px]">
+        <legend className="mb-2 text-sm font-semibold">Requisitos para aparecer en esta categoría</legend>
+        <label className="flex items-center gap-2.5"><input type="checkbox" name="menores" defaultChecked={categoria.exigeInsigniaMenores} className="size-5 accent-verde" />Exige insignia «Apto para menores» (Ley 1918)</label>
+        <label className="flex items-center gap-2.5"><input type="checkbox" name="rut" defaultChecked={categoria.exigeRutDesdeAlta} className="size-5 accent-verde" />Exige RUT desde el alta (riesgo alto)</label>
+        <label className="flex items-center gap-2.5"><input type="checkbox" name="matricula" defaultChecked={categoria.exigeMatricula} className="size-5 accent-verde" />Exige matrícula o certificación</label>
+        <label className="flex items-center gap-2.5"><input type="checkbox" name="activa" defaultChecked={categoria.activa} className="size-5 accent-verde" />Activa</label>
+      </fieldset>
+      {categoria.proveedores > 0 && (
+        <p className="rounded-xl bg-amarillo-suave px-3.5 py-3 text-sm leading-[1.45] text-amarillo-oscuro">Esta categoría tiene {categoria.proveedores} proveedores: no se puede borrar, solo desactivar.</p>
+      )}
+      <div className="flex items-center justify-end gap-2.5">
+        {nueva && <Link href="/admin/catalogo" className="px-3 text-sm font-semibold text-tinta-2">Cancelar</Link>}
+        <button type="submit" className="h-11 rounded-xl bg-tinta px-5 text-[15px] font-bold text-white">{nueva ? "Crear categoría" : "Guardar cambios"}</button>
+      </div>
+    </form>
   );
 }
