@@ -36,6 +36,7 @@ export const ETIQUETA_ACCION: Record<string, string> = {
   moderacion_eliminar: "Eliminar contenido",
   ocultar_provisional: "Ocultar provisionalmente",
   retiro_atendido: "Atender retiro",
+  categoria_creada: "Crear categoría",
   categoria_actualizada: "Editar categoría",
   parametros_actualizados: "Cambiar parámetros",
   auditoria_exportada: "Exportar auditoría",

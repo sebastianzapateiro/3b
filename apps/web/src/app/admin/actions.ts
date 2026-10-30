@@ -295,33 +295,46 @@ export async function restablecerDosFactor(formData: FormData) {
 
 /* ───────────── Catálogo ───────────── */
 
+/** Edita una categoría o, sin `id`, crea una nueva (sin padre queda como categoría principal). */
 export async function guardarCategoria(formData: FormData) {
   const actor = await exigirBackoffice(true);
-  const id = z.coerce.number().int().parse(texto(formData, "id"));
+  const idTexto = texto(formData, "id");
+  const nueva = idTexto === "";
+  const id = nueva ? null : z.coerce.number().int().parse(idTexto);
+  const vuelta = nueva ? "nueva" : String(id);
   const slug = slugSchema.safeParse(texto(formData, "slug"));
   const nombre = texto(formData, "nombre");
-  if (!slug.success || nombre.length < 2) volver("/admin/catalogo", { c: String(id), error: "Revisa el nombre y el slug." });
-  const [choque] = await db.select({ id: categorias.id }).from(categorias).where(and(eq(categorias.slug, slug.data), sql`${categorias.id} <> ${id}`)).limit(1);
-  if (choque) volver("/admin/catalogo", { c: String(id), error: "Ese slug ya lo usa otra categoría." });
+  if (!slug.success || nombre.length < 2) volver("/admin/catalogo", { c: vuelta, error: "Revisa el nombre y el slug." });
+  const [choque] = await db
+    .select({ id: categorias.id })
+    .from(categorias)
+    .where(id === null ? eq(categorias.slug, slug.data) : and(eq(categorias.slug, slug.data), sql`${categorias.id} <> ${id}`))
+    .limit(1);
+  if (choque) volver("/admin/catalogo", { c: vuelta, error: "Ese slug ya lo usa otra categoría." });
 
-  await db
-    .update(categorias)
-    .set({
-      nombre,
-      slug: slug.data,
-      padreId: Number(texto(formData, "padreId")) || null,
-      exigeInsigniaMenores: formData.has("menores"),
-      exigeRutDesdeAlta: formData.has("rut"),
-      exigeMatricula: formData.has("matricula"),
-      activa: formData.has("activa"),
-    })
-    .where(eq(categorias.id, id));
+  const datos = {
+    nombre,
+    slug: slug.data,
+    padreId: Number(texto(formData, "padreId")) || null,
+    exigeInsigniaMenores: formData.has("menores"),
+    exigeRutDesdeAlta: formData.has("rut"),
+    exigeMatricula: formData.has("matricula"),
+    activa: formData.has("activa"),
+  };
+  let categoriaId: number;
+  if (id === null) {
+    const [c] = await db.insert(categorias).values(datos).returning({ id: categorias.id });
+    categoriaId = c!.id;
+  } else {
+    await db.update(categorias).set(datos).where(eq(categorias.id, id));
+    categoriaId = id;
+  }
 
   const terminos = [...new Set(texto(formData, "terminos").split(",").map((t) => t.trim().toLowerCase()).filter(Boolean))];
-  await db.delete(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, id));
-  if (terminos.length) await db.insert(terminosBusqueda).values(terminos.map((termino) => ({ termino, categoriaId: id })));
+  await db.delete(terminosBusqueda).where(eq(terminosBusqueda.categoriaId, categoriaId));
+  if (terminos.length) await db.insert(terminosBusqueda).values(terminos.map((termino) => ({ termino, categoriaId })));
 
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "categoria_actualizada", objetoTipo: "categoria", objetoId: String(id) });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: nueva ? "categoria_creada" : "categoria_actualizada", objetoTipo: "categoria", objetoId: String(categoriaId) });
   revalidatePath("/categorias");
-  volver("/admin/catalogo", { c: String(id), ok: "Categoría guardada." });
+  volver("/admin/catalogo", { c: String(categoriaId), ok: nueva ? "Categoría creada." : "Categoría guardada." });
 }
