@@ -13,4 +13,5 @@ vercel.txt
 docs
 apps/mobile
 infra
+
 **/*.log
