@@ -8,9 +8,9 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 ---
 
-## [ ] 1. Extensiones y permisos en base (prerrequisito de P2)
+## [x] 1. Extensiones y permisos en base (prerrequisito de P2)
 
-> **Estado (29 oct 2026):** parcial. `auditoria` ya es de solo inserción por disparador (`0003_auditoria_solo_insercion`). `0002_busqueda.sql` **no está en `meta/_journal.json`**, así que nunca se aplica: registrarla o borrarla. Faltan `f_unaccent` e índices trigram (la búsqueda funciona sin ellos con `translate`).
+> **Hecha (1 nov 2026)** en `0010_extensiones_busqueda` (se borró la suelta `0002_busqueda.sql`). Extensiones en el esquema `extensions` y `revoke` condicionado a que existan los roles de Supabase, para que sirva también en un Postgres propio. `lib/busqueda.ts` usa `f_unaccent(lower(...))`, la misma expresión de los índices (verificado con `EXPLAIN`: Bitmap Index Scan). El `update auditoria` con el usuario de la app da «permission denied».
 
 
 - Migración SQL manual nueva en `packages/db/drizzle/` (registrarla en `meta/_journal.json` como hacen las existentes, o generarla con `pnpm --filter @las3b/db exec drizzle-kit generate --custom --name=extensiones`).

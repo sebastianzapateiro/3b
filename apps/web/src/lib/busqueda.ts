@@ -118,8 +118,8 @@ async function resolverLocalidadIds(slugs: string[]): Promise<number[]> {
   return filas.map((f) => f.id);
 }
 
-/** Minúsculas y sin tildes, sin depender de la extensión unaccent. */
-const sinTildes = (valor: SQL) => sql`translate(lower(${valor}), 'áéíóúüñ', 'aeiouun')`;
+/** Minúsculas y sin tildes. Misma expresión que los índices trigram de la migración 0010 (así los usa). */
+const sinTildes = (valor: SQL) => sql`f_unaccent(lower(${valor}))`;
 
 /** IDs de categorías cuyos sinónimos (terminos_busqueda) coinciden con el término. */
 async function categoriasPorTermino(termino: string): Promise<number[]> {

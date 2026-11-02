@@ -107,7 +107,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 ## Estado
 
 **Hecho (hasta 29 oct 2026)**
-- Esquema completo (~40 tablas). Migraciones aplicadas en Supabase: `0000_inicial`, `0001_two_factor_bloqueo`, `0002_bright_luke_cage`, `0003_auditoria_solo_insercion` (disparador), `0004_documento_huella`. `0002_busqueda.sql` está suelta, fuera del journal (no se aplica).
+- Esquema completo (~40 tablas). Migraciones `0000`–`0010` aplicadas en Supabase (1 nov 2026). `0003_auditoria_solo_insercion` (disparador) y `0010_extensiones_busqueda`: `unaccent` y `pg_trgm` en el esquema `extensions`, `f_unaccent()` inmutable, índices trigram sobre `f_unaccent(lower(...))` que usa `lib/busqueda.ts`, y sin UPDATE/DELETE/TRUNCATE sobre `auditoria` para ningún rol. Portable a un Postgres propio.
 - Semillas: 20 localidades, insignias, taxonomía por oficios con sinónimos, festivos de Colombia.
 - Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
 - Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
