@@ -51,7 +51,11 @@ ssh lastresb-root 'cd /opt/lastresb/src && V=$(cat .version) && docker build --n
 
 Volver a una versión anterior: `docker tag lastresb-web:<commit> lastresb-web:actual && docker compose up -d web`.
 
-Migraciones: `DATABASE_URL` apuntando al VPS por túnel (`ssh -L 5433:127.0.0.1:5432 lastresb-root`) y `pnpm db:migrate`.
+## Desarrollo local contra esta base
+
+`ssh -fN lastresb-db` abre el túnel `127.0.0.1:5433 → Postgres del VPS` (alias en `~/.ssh/config`). Con él, `pnpm dev`,
+`pnpm db:migrate` y `pnpm db:seed` usan **producción**. Cerrar: `pkill -f "ssh -fN lastresb-db"`.
+Los `.env` locales con la URL de Supabase quedaron en `.env.supabase.bak` y `apps/web/.env.local.supabase.bak` (ignorados por git).
 
 Antes de cambiar la imagen, verifica que tenga el dominio correcto:
 `docker run --rm --entrypoint sh lastresb-web:<tag> -c 'grep -rl www.lastresb apps/web/.next/server | wc -l'` (> 0).
@@ -61,5 +65,4 @@ Antes de cambiar la imagen, verifica que tenga el dominio correcto:
 - Respaldos fuera del VPS (hoy solo locales) y snapshots de Hostinger.
 - `RESEND_API_KEY`, `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION` si producción los usaba en Vercel.
 - Quitar el dominio del proyecto en Vercel; dejar de usar la base de Supabase (conservarla un tiempo como respaldo).
-- `pnpm dev` local sigue apuntando a la base de Supabase, que ya no es producción.
 - Usuario `desarrollo`: decidir sudo/grupo docker y cerrar la entrada de root.

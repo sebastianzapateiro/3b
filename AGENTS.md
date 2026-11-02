@@ -28,7 +28,7 @@ Fuente de verdad del negocio: Drive del proyecto (enlace en `docs/README.md`). E
 
 - Monorepo **pnpm 10 + Turborepo**, Node 22 (`.nvmrc`). Rama de trabajo: `develop`; producción: `main`.
 - `apps/web`: **Next.js 16** (App Router, TypeScript, Tailwind 4, alias `@/*` → `src/*`). Público + `/admin` + `/api/v1` + `/api/auth`.
-- `packages/db`: **Drizzle ORM** sobre Postgres en **Supabase**, `casing: "snake_case"`, driver **node-postgres (`pg`)**, no postgres.js: con el pooler de Supabase, postgres.js entrevera consultas («invalid frontend message type») y se cuelgan. SQL a mano con `consultar<T>(sql`…`)` de `@las3b/db` (devuelve filas con fechas como `Date`; `db.execute` las devuelve como texto). Migraciones en `packages/db/drizzle/`.
+- `packages/db`: **Drizzle ORM** sobre **Postgres 17 en el VPS** (antes Supabase), `casing: "snake_case"`, driver **node-postgres (`pg`)**, no postgres.js: con el pooler de Supabase, postgres.js entrevera consultas («invalid frontend message type») y se cuelgan. SQL a mano con `consultar<T>(sql`…`)` de `@las3b/db` (devuelve filas con fechas como `Date`; `db.execute` las devuelve como texto). Migraciones en `packages/db/drizzle/`.
 - Auth: **Better Auth** (correo + clave, Google, 2FA TOTP para backoffice). Config: `apps/web/src/lib/auth.ts`, cliente en `lib/auth-client.ts`.
 - `packages/shared`: marca, localidades, categorías, `slugSchema`, `enlaceWhatsApp`, `PARAMETROS`, días hábiles. Lo usarán web y Expo (sin dependencias de Node).
 - Storage: **Supabase Storage**, buckets `privado` (documentos, sin políticas: solo el servidor con service role) y `publico` (fotos). Probados el 29 oct 2026.
@@ -94,15 +94,15 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 
 - Variables en **`.env` (raíz)** y **`apps/web/.env.local`**, mismo contenido. Plantilla: `.env.example` (solo nombres, **nunca valores reales**). Nunca leas ni copies valores reales de `.env` o `vercel.txt` a otros archivos, commits o mensajes. Next solo lee `apps/web/.env.local`; los scripts de `packages/db` leen el `.env` de la raíz.
 - Variables nuevas: declararlas también en `globalEnv` de `turbo.json`.
-- `DATABASE_URL` debe ser el **Session pooler** de Supabase (`postgres.<id>@aws-X-<region>.pooler.supabase.com:5432`). La conexión directa `db.<id>.supabase.co` es solo IPv6 y falla con `EHOSTUNREACH`. En Vercel se usa el Transaction pooler (puerto 6543).
+- **La base es la de producción en el VPS** y no tiene puerto público. En local, `DATABASE_URL` va por túnel SSH: `postgresql://lastresb:…@127.0.0.1:5433/lastresb`. Abre el túnel con `ssh -fN lastresb-db` antes de `pnpm dev` o `pnpm db:*` (sin túnel: `ECONNREFUSED 127.0.0.1:5433`). **Todo lo que hagas en local escribe en producción**; `db:migrate` y `db:seed` también. Ver `infra/vps/README.md`.
 - Claves con símbolos deben ir codificadas en la URL.
 - `drizzle-kit migrate` no muestra errores de conexión; los avisos `NOTICE ... already exists, skipping` son normales.
 - `next/font/google` necesita internet en el build.
 - Sin `RESEND_API_KEY`: los enlaces de verificación, recuperación e invitación salen en la consola de `pnpm dev`.
 - **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver de Postgres no conecta («Failed to get session»).
 - Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».
-- La base está en **us-west-2 (Oregón)**: ~170 ms por consulta desde Bogotá. Las funciones de Vercel corren en `pdx1` (`apps/web/vercel.json`) para quedar al lado. Better Auth usa `cookieCache` (5 min): cambios al usuario hechos con SQL directo no se ven en `getSession` hasta que vence; para datos que el usuario edita usa `auth.api.updateUser`.
-- La instancia de Supabase es pequeña (~0,5 GB): pocas conexiones. En `next build` cada proceso usa 1 conexión; en Vercel `DATABASE_URL` va por el puerto **6543** (modo transacción). Si el modo sesión (5432) se llena (`EMAXCONNSESSION`), cerrar conexiones inactivas viejas desde el SQL Editor de Supabase.
+- En el VPS la web y la base están en el mismo servidor (latencia ~0). Better Auth usa `cookieCache` (5 min): cambios al usuario hechos con SQL directo no se ven en `getSession` hasta que vence; para datos que el usuario edita usa `auth.api.updateUser`.
+- Postgres del VPS admite 60 conexiones; la app usa un pool de 3 (`DB_POOL_MAX`) y el build 1.
 
 ## Estado
 
@@ -121,7 +121,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Fotos del portafolio al bucket `publico` (aún no hay carga).
 - OTP real por WhatsApp (hoy en consola).
 - `GET /api/v1/proveedores`; límites de clics repetidos en contacto; `POST /api/v1/contactos` antiguo por unificar.
-- Seguridad: una `DATABASE_URL` real quedó en el historial de git (commit `5a12a79`); rotar la clave de la base.
+- Seguridad: una `DATABASE_URL` de Supabase quedó en el historial de git (commit `5a12a79`); ya no es producción, pero rotar esa clave o apagar la base de Supabase.
 
 **Siguiente:** ver [`docs/06-plan.md`](docs/06-plan.md).
 
