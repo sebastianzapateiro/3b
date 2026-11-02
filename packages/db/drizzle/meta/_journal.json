@@ -71,6 +71,13 @@
       "when": 1793388203811,
       "tag": "0009_known_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793591130838,
+      "tag": "0010_extensiones_busqueda",
+      "breakpoints": true
     }
   ]
 }

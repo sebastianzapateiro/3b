@@ -1,0 +1,58 @@
+# LasTresB · servicios del VPS. Ninguna base ni almacenamiento publica puertos: solo Caddy (80/443).
+name: lastresb
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERCLAVE}
+      DB_CLAVE_APP: ${DB_CLAVE_APP}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - effective_cache_size=2GB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=128MB
+      - -c
+      - max_connections=60
+      - -c
+      - password_encryption=scram-sha-256
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    networks: [interna]
+    # Solo en el loopback del host: lo usa el build de la web. Desde afuera no hay acceso (y ufw no aplica a loopback).
+    ports: ["127.0.0.1:5432:5432"]
+    shm_size: 256mb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lastresb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: lastresb-web:actual
+    restart: unless-stopped
+    env_file: web.env
+    environment:
+      TZ: America/Bogota
+    # nginx (en el host) hace de proxy; la app no se expone directo.
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [interna]
+
+volumes:
+  pgdata:
+
+networks:
+  interna:

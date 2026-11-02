@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { fileURLToPath } from "node:url";
 
 /** Cabeceras que suman a SEO (confianza, seguridad, rendimiento) y protegen a las personas usuarias. */
 const SEGURIDAD = [
@@ -10,6 +11,9 @@ const SEGURIDAD = [
 ];
 
 const nextConfig: NextConfig = {
+  // VPS: servidor autónomo (.next/standalone) para la imagen de Docker. La raíz del monorepo incluye packages/*.
+  output: "standalone",
+  outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
   transpilePackages: ["@las3b/db", "@las3b/shared"],
   poweredByHeader: false,
   compress: true,

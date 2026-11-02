@@ -62,8 +62,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <BarraCarga />
         <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
         <Analitica />
-        {/* Vercel Web Analytics: sin cookies, solo envía datos en despliegues de Vercel (no en local). */}
-        <Analytics />
+        {/* Vercel Web Analytics: sin cookies. Solo en Vercel; en el VPS su script no existe y daría 404. */}
+        {process.env.VERCEL === "1" && <Analytics />}
       </body>
     </html>
   );

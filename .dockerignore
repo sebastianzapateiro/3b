@@ -1,0 +1,17 @@
+# Contexto de la imagen de la web (apps/web/Dockerfile). Nunca secretos ni artefactos locales.
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/coverage
+**/*.tsbuildinfo
+.git
+.env
+.env.*
+!.env.example
+vercel.txt
+docs
+apps/mobile
+infra
+
+**/*.log

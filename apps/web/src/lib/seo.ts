@@ -1,13 +1,14 @@
 /**
  * SEO (RNF-03): URL canónica, indexación por ambiente y datos estructurados (schema.org).
- * Solo producción se indexa; preview, staging y local llevan noindex y robots.txt cerrado.
+ * Solo producción se indexa (Vercel producción o `SITIO_INDEXABLE=true` en el VPS); preview, staging y local
+ * llevan noindex y robots.txt cerrado.
  */
 import type { Metadata } from "next";
 import { MARCA } from "@las3b/shared";
 
 export const SITIO_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? `https://${MARCA.dominio}`).replace(/\/$/, "");
 
-export const INDEXABLE = process.env.VERCEL_ENV === "production";
+export const INDEXABLE = process.env.VERCEL_ENV === "production" || process.env.SITIO_INDEXABLE === "true";
 
 export const DESCRIPCION =
   "Encuentra plomeros, electricistas, profesores particulares, acarreos y oficios de confianza en tu localidad de Bogotá. Mira reseñas reales y escríbeles directo por WhatsApp, sin comisiones.";
