@@ -117,6 +117,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
+- VPS (1 nov 2026): `RESEND_API_KEY` sin configurar en el servidor (los correos solo salen en `docker compose logs web`); quizá faltan `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION`; respaldos fuera del VPS; quitar el dominio en Vercel; permisos del usuario `desarrollo`. Ver `infra/vps/README.md` § Pendiente.
 - Autorización Ley 1918: el alta la firma con casilla, pero el backoffice la marca como «Falta» si no hay archivo; unificar criterio.
 - Fotos del portafolio al bucket `publico` (aún no hay carga).
 - OTP real por WhatsApp (hoy en consola).
