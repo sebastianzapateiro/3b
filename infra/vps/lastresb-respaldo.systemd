@@ -1,0 +1,19 @@
+[Unit]
+Description=LasTresB: respaldo de Postgres
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/lastresb/respaldo.sh
+# ---- lastresb-respaldo.timer
+[Unit]
+Description=LasTresB: respaldo diario de Postgres a las 3:00
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 America/Bogota
+Persistent=true
+RandomizedDelaySec=5min
+
+[Install]
+WantedBy=timers.target

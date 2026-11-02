@@ -1,5 +1,7 @@
 # LasTresB · imagen de la web para el VPS (Next.js standalone). Contexto: raíz del monorepo.
-#   docker build -f apps/web/Dockerfile --secret id=entorno,src=<archivo .env> --network host -t lastresb-web .
+#   docker build -f apps/web/Dockerfile --no-cache-filter build,app --secret id=entorno,src=<archivo .env> --network host -t lastresb-web .
+# --no-cache-filter build,app es obligatorio: cambiar el secreto NO invalida la caché de BuildKit, y sin él la imagen
+# sale con las variables del build anterior (NEXT_PUBLIC_*, robots, sitemap y páginas estáticas).
 # El build genera páginas que leen la base (sitemap, SEO por oficio y localidad), así que necesita las variables.
 # Van como secreto de BuildKit: se montan solo durante `next build` y no quedan en ninguna capa de la imagen.
 
