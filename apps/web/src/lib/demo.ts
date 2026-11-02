@@ -4,7 +4,11 @@
  */
 export type Insignia = "verificado" | "formalizado" | "apto_menores" | "certificado";
 
+/** Nivel del perfil: reemplaza las estrellas en los listados mientras no haya reseñas verificadas suficientes. */
+export type NivelPerfil = "verificado" | "completo" | "destacado";
+
 export type ProveedorResumen = {
+  nivel: NivelPerfil;
   slug: string;
   nombre: string;
   iniciales: string;
@@ -19,6 +23,7 @@ export type ProveedorResumen = {
 
 export const RECOMENDADOS_DEMO: ProveedorResumen[] = [
   {
+    nivel: "destacado",
     slug: "jairo-rodriguez-plomeria",
     nombre: "Jairo Rodríguez",
     iniciales: "JR",
@@ -31,6 +36,7 @@ export const RECOMENDADOS_DEMO: ProveedorResumen[] = [
     tono: "verde",
   },
   {
+    nivel: "completo",
     slug: "laura-mendoza-ingles",
     nombre: "Laura Mendoza",
     iniciales: "LM",
@@ -42,6 +48,7 @@ export const RECOMENDADOS_DEMO: ProveedorResumen[] = [
     tono: "amarillo",
   },
   {
+    nivel: "verificado",
     slug: "carlos-pinzon-acarreos",
     nombre: "Carlos Pinzón",
     iniciales: "CP",
@@ -96,6 +103,7 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
     localidadPrincipal: p.localidades[0] ?? null,
     servicios: SERVICIOS_DEMO[p.servicio] ?? [],
     fotos: [],
+    nivel: p.nivel,
     insignias: p.insignias.map((clave) => ({ clave, nombre: { verificado: "Verificado", formalizado: "Formalizado", apto_menores: "Apto para menores", certificado: "Certificado" }[clave] })),
     resenas: [
       { id: "demo-1", nombreCliente: "Marcela G.", estrellas: 5, comentario: "Llegó a la hora que dijo y cobró lo que acordamos.", creadoEn: new Date(ahora - 14 * dia), respuesta: null },

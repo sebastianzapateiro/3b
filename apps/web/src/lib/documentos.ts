@@ -25,7 +25,7 @@ export const NOMBRE_DOCUMENTO: Record<TipoDocumento, string> = {
   documento_reverso: "Documento · reverso",
   rut: "RUT",
   camara_comercio: "Cámara de comercio",
-  matricula: "Matrícula o certificación del oficio",
+  matricula: "Matrícula, tarjeta profesional o certificación del oficio",
   autorizacion_ley_1918: "Autorización Ley 1918 firmada",
 };
 

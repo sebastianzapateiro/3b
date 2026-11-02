@@ -55,6 +55,32 @@ export async function urlFirmada(bucket: Bucket, camino: string, segundos: numbe
   return `${base}${signedURL}`;
 }
 
+/** Descarga el objeto completo (para procesarlo en el servidor). */
+export async function descargar(bucket: Bucket, camino: string): Promise<Buffer> {
+  const { base, cabeceras } = config();
+  const r = await fetch(`${base}/object/${ruta(bucket, camino)}`, { headers: cabeceras, cache: "no-store" });
+  if (!r.ok) throw new Error(`Storage: no se pudo descargar el objeto (${r.status}).`);
+  return Buffer.from(await r.arrayBuffer());
+}
+
+/** Sube un objeto desde el servidor (con la service role). */
+export async function subirObjeto(bucket: Bucket, camino: string, datos: Buffer, mime: string) {
+  const { base, cabeceras } = config();
+  const r = await fetch(`${base}/object/${ruta(bucket, camino)}`, {
+    method: "POST",
+    headers: { ...cabeceras, "Content-Type": mime, "x-upsert": "true", "cache-control": "max-age=31536000" },
+    body: new Uint8Array(datos),
+  });
+  if (!r.ok) throw new Error(`Storage: no se pudo guardar el objeto (${r.status}).`);
+}
+
+/** URL pública de un objeto del bucket `publico` (solo fotos de trabajos, nunca datos privados). */
+export function urlPublica(camino: string): string {
+  const url = process.env.SUPABASE_URL?.replace(/\/$/, "");
+  if (!url) throw new Error("Falta SUPABASE_URL.");
+  return `${url}/storage/v1/object/public/publico/${camino.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 export async function borrarObjetos(bucket: Bucket, caminos: string[]) {
   if (caminos.length === 0) return;
   const { base, cabeceras } = config();

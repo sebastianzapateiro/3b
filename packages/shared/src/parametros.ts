@@ -9,6 +9,8 @@ export const PARAMETROS: Parametro[] = [
   { clave: "otp_intentos", etiqueta: "Intentos de OTP antes del bloqueo", grupo: "Verificación", defecto: 3 },
   { clave: "plazo_rut_dias", etiqueta: "Plazo para cargar RUT (días)", grupo: "Verificación", defecto: 30 },
   { clave: "documento_max_mb", etiqueta: "Tamaño máximo de documentos (MB, tope del bucket: 10)", grupo: "Verificación", defecto: 10 },
+  { clave: "foto_max_mb", etiqueta: "Tamaño máximo de cada foto de trabajo (MB)", grupo: "Portafolio", defecto: 8 },
+  { clave: "fotos_max", etiqueta: "Máximo de fotos de trabajos por proveedor", grupo: "Portafolio", defecto: 20 },
   { clave: "url_firmada_min", etiqueta: "Vigencia del enlace para abrir un documento (min)", grupo: "Verificación", defecto: 5 },
   { clave: "sesion_backoffice_h", etiqueta: "Duración máxima de la sesión del equipo (h)", grupo: "Verificación", defecto: 8 },
   { clave: "invitacion_vigencia_h", etiqueta: "Vigencia de la invitación a una cuenta nueva (h)", grupo: "Verificación", defecto: 72 },

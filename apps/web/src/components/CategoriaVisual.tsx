@@ -6,6 +6,8 @@ export const TONO_CATEGORIA: Record<CategoriaPadre["icono"], string> = {
   libro: "bg-amarillo-suave text-amarillo-oscuro",
   camion: "bg-ladrillo-suave text-ladrillo-oscuro",
   herramienta: "bg-piedra text-tinta",
+  huella: "bg-amarillo-suave text-amarillo-oscuro",
+  maletin: "bg-verde-claro text-verde-oscuro",
 };
 
 const TRAZOS: Record<CategoriaPadre["icono"], React.ReactNode> = {
@@ -31,11 +33,27 @@ const TRAZOS: Record<CategoriaPadre["icono"], React.ReactNode> = {
     </>
   ),
   herramienta: <path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" />,
+  huella: (
+    <>
+      <circle cx="6" cy="11" r="1.8" />
+      <circle cx="10" cy="6.5" r="1.8" />
+      <circle cx="15" cy="6.5" r="1.8" />
+      <circle cx="19" cy="11" r="1.8" />
+      <path d="M12 12c-3 0-5.5 3-5.5 5.2 0 1.6 1.4 2.3 2.9 2.3 1 0 1.6-.4 2.6-.4s1.6.4 2.6.4c1.5 0 2.9-.7 2.9-2.3C17.5 15 15 12 12 12z" />
+    </>
+  ),
+  maletin: (
+    <>
+      <path d="M3 8h18v11H3z" />
+      <path d="M9 8V5h6v3" />
+      <path d="M3 13h18" />
+    </>
+  ),
 };
 
-export function IconoCategoria({ icono, className }: { icono: CategoriaPadre["icono"]; className?: string }) {
+export function IconoCategoria({ icono, className, grosor = 2 }: { icono: CategoriaPadre["icono"]; className?: string; grosor?: number }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={grosor} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {TRAZOS[icono]}
     </svg>
   );

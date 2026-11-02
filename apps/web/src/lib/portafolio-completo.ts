@@ -4,6 +4,9 @@
  */
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { urlPublica } from "@/lib/almacenamiento";
+import type { NivelPerfil } from "@/lib/demo";
+import { nivelDePerfil } from "@/lib/nivel";
 
 const {
   proveedores,
@@ -58,6 +61,8 @@ export type PortafolioCompleto = {
   localidadPrincipal: string | null;
   servicios: ServicioPublico[];
   fotos: FotoTrabajo[];
+  /** Nivel del perfil: se muestra en lugar de las estrellas mientras no haya calificaciones. */
+  nivel: NivelPerfil;
   insignias: InsigniaPublica[];
   resenas: ResenaPublica[];
   promedio: number;
@@ -97,6 +102,7 @@ export async function obtenerPortafolioCompleto(
       whatsapp: proveedores.whatsapp,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
+      completitud: proveedores.completitud,
       desde: proveedores.createdAt,
     })
     .from(proveedores)
@@ -240,10 +246,11 @@ export async function obtenerPortafolioCompleto(
       })),
       fotos: fotos.map((f) => ({
         id: f.id,
-        ruta: f.ruta,
-        rutaMiniatura: f.rutaMiniatura ?? f.ruta,
+        ruta: urlPublica(f.ruta),
+        rutaMiniatura: urlPublica(f.rutaMiniatura ?? f.ruta),
         descripcion: f.descripcion,
       })),
+      nivel: nivelDePerfil(p.completitud),
       insignias: filasInsignias.map((i) => ({
         clave: i.clave,
         nombre: i.nombre,

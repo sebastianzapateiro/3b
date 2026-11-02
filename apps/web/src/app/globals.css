@@ -31,7 +31,7 @@
 }
 
 html {
-  background: var(--color-crema);
+  background: #fff;
   color: var(--color-tinta);
 }
 
@@ -53,3 +53,14 @@ html {
     cursor: not-allowed;
   }
 }
+
+/* Home: la cabecera se funde con el banner verde (solo cuando la página trae [data-inicio]; sin volver dinámico el sitio). */
+.logo-sobre-verde { display: none; }
+body:has([data-inicio]) .cabecera { background: var(--color-verde); border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+body:has([data-inicio]) .logo-normal { display: none; }
+body:has([data-inicio]) .logo-sobre-verde { display: inline-flex; }
+body:has([data-inicio]) .cabecera .enlace-cabecera,
+body:has([data-inicio]) .cabecera .icono-cabecera { color: #fff; }
+body:has([data-inicio]) .cabecera .enlace-cabecera:hover { color: var(--color-amarillo); }
+body:has([data-inicio]) .cabecera .boton-ingresar { background: var(--color-amarillo); color: var(--color-tinta); }
+body:has([data-inicio]) .cabecera .boton-ingresar:hover { background: #ffc933; }

@@ -1,5 +1,6 @@
 import { SubMenu } from "@/components/SubMenu";
 import { exigirProveedor } from "@/lib/panel";
+import { salirDeVerComo } from "../admin/(panel)/ver-como/actions";
 
 export const metadata = { title: "Panel de proveedor", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -17,10 +18,17 @@ const ESTADO: Record<string, { texto: string; clase: string }> = {
 
 /** P8 · Panel del proveedor. Mockup: docs/mockups/Panel_proveedor.md. */
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor, verComo } = await exigirProveedor();
   const estado = ESTADO[proveedor.estado] ?? ESTADO.borrador!;
 
   return (
+    <>
+    {verComo && (
+      <div className="sticky top-0 z-40 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-tinta px-5 py-2.5 text-sm text-white">
+        <span>Estás viendo el panel de <b>{proveedor.nombre}</b> como administrador · solo lectura</span>
+        <form action={salirDeVerComo}><button type="submit" className="font-semibold text-amarillo underline">Salir de esta vista</button></form>
+      </div>
+    )}
     <main className="mx-auto flex max-w-[1000px] flex-col gap-5 px-5 pb-14 pt-4 sm:px-6 sm:pt-10">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-col gap-1">
@@ -35,6 +43,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
           { href: "/panel", texto: "Resumen" },
           { href: "/panel/perfil", texto: "Perfil" },
           { href: "/panel/servicios", texto: "Servicios" },
+          { href: "/panel/fotos", texto: "Fotos" },
           { href: "/panel/contactos", texto: "Contactos" },
           { href: "/panel/resenas", texto: "Reseñas" },
           { href: "/panel/verificacion", texto: "Verificación" },
@@ -42,5 +51,6 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       />
       {children}
     </main>
+    </>
   );
 }

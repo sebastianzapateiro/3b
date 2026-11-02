@@ -2,7 +2,9 @@
  * P8 · Panel del proveedor: resumen, perfil, servicios, reseñas y verificación.
  * Solo datos del propio proveedor; nunca expone documento, dirección ni fecha de nacimiento (regla 1).
  */
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { z } from "zod";
+import { verificarSesionAdmin } from "@/lib/verificacion";
 import { redirect } from "next/navigation";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
@@ -10,10 +12,15 @@ import { auth } from "@/lib/auth";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, user, proveedorCategorias, proveedorLocalidades, categorias, localidades, documentos, proveedorInsignias, insignias, portafolioFotos } = schema;
 
-/** Sesión + registro de proveedor. Sin sesión va a ingresar; sin registro, al alta de proveedor. */
+/** Cookie con el proveedor que un administrador está viendo («Ver como»). Solo la pone el backoffice. */
+export const COOKIE_VER_COMO = "l3b_ver_como";
+
+/** Sesión + registro de proveedor. Sin sesión va a ingresar; sin registro, al alta de proveedor.
+ * Un administrador con 2FA puede ver el panel de otro proveedor (`verComo`, solo lectura). */
 export async function exigirProveedor() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) redirect(`/ingreso?${new URLSearchParams({ destino: "/panel" })}`);
+  const idVer = await proveedorQueVeElAdmin();
   const [p] = await db
     .select({
       id: proveedores.id,
@@ -34,10 +41,25 @@ export async function exigirProveedor() {
       totalResenas: proveedores.totalResenas,
     })
     .from(proveedores)
-    .where(eq(proveedores.usuarioId, session.user.id))
+    .where(idVer ? eq(proveedores.id, idVer) : eq(proveedores.usuarioId, session.user.id))
     .limit(1);
-  if (!p) redirect("/proveedores/registro");
-  return { proveedor: p, usuario: session.user };
+  if (!p) redirect(idVer ? `/admin/ver-como?${new URLSearchParams({ error: "No encontramos ese proveedor. Elige otro de la lista." })}` : "/proveedores/registro");
+  return { proveedor: p, usuario: session.user, verComo: !!idVer };
+}
+
+/** Id del proveedor que el administrador está viendo, o null. La cookie solo vale con rol admin y 2FA vigente. */
+async function proveedorQueVeElAdmin(): Promise<string | null> {
+  const id = (await cookies()).get(COOKIE_VER_COMO)?.value;
+  if (!id || !z.string().uuid().safeParse(id).success) return null;
+  const v = await verificarSesionAdmin();
+  return !v.error && v.roles.includes("admin") ? id : null;
+}
+
+/** Para las acciones que guardan: en la vista «Ver como» no se guarda nada. */
+export async function exigirProveedorEditable() {
+  const r = await exigirProveedor();
+  if (r.verComo) redirect(`/panel?${new URLSearchParams({ error: "Estás viendo este panel como administrador: es solo lectura, no se guardó nada." })}`);
+  return r;
 }
 
 export type ProveedorPanel = Awaited<ReturnType<typeof exigirProveedor>>["proveedor"];

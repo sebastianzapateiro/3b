@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Insignia, ProveedorResumen } from "@/lib/demo";
+import type { Insignia, NivelPerfil, ProveedorResumen } from "@/lib/demo";
 
 /** Tarjeta de proveedor para home y resultados (RF-03). Mockup: Home_web, "Recomendados en Suba". */
 const AVATAR: Record<ProveedorResumen["tono"], string> = {
@@ -34,10 +34,32 @@ export function Estrella() {
   );
 }
 
+const NIVEL: Record<NivelPerfil, { texto: string; marcas: number }> = {
+  verificado: { texto: "Perfil verificado", marcas: 1 },
+  completo: { texto: "Perfil completo", marcas: 2 },
+  destacado: { texto: "Perfil destacado", marcas: 3 },
+};
+
+/** Nivel del perfil: tres marcas, llenas según el nivel. Va donde antes iban las estrellas. */
+export function NivelPerfilMarca({ nivel }: { nivel: NivelPerfil }) {
+  const { texto, marcas } = NIVEL[nivel];
+  return (
+    <span className="flex items-center gap-1.5 text-sm font-semibold">
+      <span aria-hidden="true" className="flex gap-0.5">
+        {[1, 2, 3].map((n) => (
+          <i key={n} className={`h-2 w-4 rounded-full ${n <= marcas ? "bg-verde" : "bg-borde-suave"}`} />
+        ))}
+      </span>
+      {texto}
+    </span>
+  );
+}
+
 export function formatoPromedio(promedio: number) {
   return decimal.format(promedio);
 }
 
+/** Tarjeta de proveedor del Home: avatar, datos, nivel del perfil, insignias y contacto. */
 export function TarjetaProveedor({ proveedor }: { proveedor: ProveedorResumen }) {
   return (
     <article className="flex min-w-0 flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-3.5 sm:flex-[1_1_300px] sm:gap-3.5 sm:rounded-[22px] sm:p-[18px]">
@@ -48,11 +70,7 @@ export function TarjetaProveedor({ proveedor }: { proveedor: ProveedorResumen })
           <span className="text-sm text-gris">
             {proveedor.servicio} · {proveedor.localidades.join(", ")}
           </span>
-          <span className="flex items-center gap-1 text-sm font-semibold">
-            <Estrella />
-            {formatoPromedio(proveedor.promedio)}
-            <span className="font-normal text-gris">({proveedor.totalResenas} reseñas)</span>
-          </span>
+          <NivelPerfilMarca nivel={proveedor.nivel} />
         </span>
       </Link>
       <div className="flex flex-wrap gap-1.5">

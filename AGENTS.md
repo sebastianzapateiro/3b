@@ -98,6 +98,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Claves con símbolos deben ir codificadas en la URL.
 - `drizzle-kit migrate` no muestra errores de conexión; los avisos `NOTICE ... already exists, skipping` son normales.
 - `next/font/google` necesita internet en el build.
+- **No corras `pnpm build` con `pnpm dev` abierto:** comparten `apps/web/.next` y el servidor de desarrollo queda dañado (botones y acciones que «no hacen nada»). Si pasó: detén `pnpm dev`, borra `apps/web/.next` y vuelve a arrancarlo.
 - Sin `RESEND_API_KEY`: los enlaces de verificación, recuperación e invitación salen en la consola de `pnpm dev`.
 - **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver de Postgres no conecta («Failed to get session»).
 - Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».

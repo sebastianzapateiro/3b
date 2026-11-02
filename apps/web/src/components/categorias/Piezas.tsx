@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CategoriaPadre, Subcategoria } from "@las3b/shared";
+import { sugerirSlug, type CategoriaPadre, type Subcategoria } from "@las3b/shared";
 import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 
 /** Piezas visuales de /categorias y /categorias/[slug], con la paleta de LasTresB (crema, verde, tinta, amarillo, ladrillo). */
@@ -46,7 +46,7 @@ export function OficiosAgrupados({ c, claseUrgencias = false }: { c: CategoriaPa
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {grupos.map((g) => (
-        <div key={g} className="flex flex-col gap-2">
+        <div key={g} id={sugerirSlug(g)} className="flex scroll-mt-24 flex-col gap-2">
           <h3 className="text-xs font-bold uppercase tracking-[1px] text-gris">{g}</h3>
           <ul className="flex flex-wrap gap-2">{ordenar(c.subcategorias.filter((s) => s.subgrupo === g)).map((s) => <ChipOficio key={s.slug} s={s} claseUrgencias={claseUrgencias} />)}</ul>
         </div>
