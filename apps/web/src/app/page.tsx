@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { FOTO_CATEGORIA } from "@/components/categorias/Piezas";
 import { JsonLd } from "@/components/JsonLd";
 import { TarjetaProveedor } from "@/components/TarjetaProveedor";
-import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
+import { RECOMENDADOS_DEMO } from "@/lib/demo";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
@@ -79,7 +79,6 @@ function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
 }
 
 export default function Home() {
-  const resena = RESENA_DESTACADA_DEMO;
 
   return (
     <>
@@ -228,10 +227,6 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto flex max-w-[860px] flex-col items-center gap-3 px-5 pb-10 pt-2 text-center sm:px-6 sm:pb-16">
-          <blockquote className="text-balance font-display text-[24px] font-extrabold leading-[1.2] tracking-[-0.5px] sm:text-[34px]">«{resena.texto}»</blockquote>
-          <span className="text-sm text-gris">{resena.cliente} · {resena.localidad}</span>
-        </section>
         <section className="mx-auto hidden max-w-[1200px] flex-col gap-4 px-5 pb-14 sm:flex sm:px-6">
           <h2 className="font-display text-2xl font-bold">Busca por localidad</h2>
           <nav aria-label="Localidades" className="flex flex-wrap gap-x-5 gap-y-2 text-[15px]">
