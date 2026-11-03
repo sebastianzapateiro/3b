@@ -4,15 +4,15 @@
  * Los enlaces a esta ruta van con prefetch={false}: un GET aquí crea el borrador.
  */
 import { headers } from "next/headers";
-import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { crearBorrador } from "@/lib/alta-proveedor";
+import { redirigir } from "@/lib/redireccion";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const sesion = await auth.api.getSession({ headers: await headers() });
-  if (!sesion?.user) return NextResponse.redirect(new URL(`/ingreso?${new URLSearchParams({ destino: "/proveedores/registro" })}`, request.url));
+  if (!sesion?.user) return redirigir(request, `/ingreso?${new URLSearchParams({ destino: "/proveedores/registro" })}`);
   await crearBorrador(sesion.user);
-  return NextResponse.redirect(new URL("/panel?bienvenida=1", request.url));
+  return redirigir(request, "/panel?bienvenida=1");
 }

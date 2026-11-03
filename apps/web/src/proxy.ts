@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
+import { origenPublico } from "@/lib/redireccion";
 import { sql } from "drizzle-orm";
 import { consultar } from "@las3b/db";
 import { OFICIOS_ELIMINADOS, OFICIOS_RENOMBRADOS } from "@las3b/shared";
@@ -49,7 +50,9 @@ function redireccionPermanente(url: URL): URL | null {
 }
 
 export async function proxy(request: Request) {
-  const url = new URL(request.url);
+  // Origen público (no 0.0.0.0:3000 del contenedor): ver lib/redireccion.ts.
+  const crudo = new URL(request.url);
+  const url = new URL(crudo.pathname + crudo.search, origenPublico(request));
   const { pathname } = url;
   // Un solo ingreso: las rutas anteriores de ingreso y registro pasan a /ingreso (301).
   if (pathname === "/ingresar" || pathname === "/registro") {
@@ -70,7 +73,7 @@ export async function proxy(request: Request) {
   if (!session?.user) {
     // El backoffice tiene su propio ingreso (con 2FA) y no se mezcla con el de clientes y proveedores.
     const ingreso = pathname === "/admin" || pathname.startsWith("/admin/") ? "/admin/ingresar" : "/ingreso";
-    return NextResponse.redirect(new URL(ingreso, request.url));
+    return NextResponse.redirect(new URL(ingreso, url));
   }
 
   // Verificar que el usuario tenga consentimientos registrados (RF-19). Una sola consulta: la base está lejos.
@@ -78,7 +81,7 @@ export async function proxy(request: Request) {
     SELECT EXISTS (SELECT 1 FROM politicas WHERE esencial)
        AND NOT EXISTS (SELECT 1 FROM consentimientos WHERE usuario_id = ${session.user.id}) AS falta`);
   if (c?.falta) {
-    return NextResponse.redirect(new URL("/consentimiento", request.url));
+    return NextResponse.redirect(new URL("/consentimiento", url));
   }
 
   return NextResponse.next();

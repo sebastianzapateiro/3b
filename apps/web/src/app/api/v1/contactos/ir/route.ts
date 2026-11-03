@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { enlaceConMensaje, enlaceWhatsApp, mensajeSolicitud } from "@las3b/shared";
 import { auth } from "@/lib/auth";
+import { redirigir } from "@/lib/redireccion";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -29,7 +30,7 @@ export async function GET(req: Request) {
     .from(schema.proveedores)
     .where(eq(schema.proveedores.slug, slug))
     .limit(1);
-  if (!p || (p.estado !== "aprobado" && p.estado !== "en_revision")) return NextResponse.redirect(new URL("/", req.url));
+  if (!p || (p.estado !== "aprobado" && p.estado !== "en_revision")) return redirigir(req, "/");
 
   const [cat] = await db
     .select({ id: schema.categorias.id, nombre: schema.categorias.nombre })
@@ -58,7 +59,7 @@ export async function GET(req: Request) {
   // Nombre, WhatsApp y autorización de datos se piden aquí, al conectar con el proveedor, no al buscar.
   if (!solicitud?.autorizado) {
     const volver = `/api/v1/contactos/ir?${new URLSearchParams({ p: slug, origen })}`;
-    return NextResponse.redirect(new URL(`/contactar?${new URLSearchParams({ p: slug, volver })}`, req.url));
+    return redirigir(req, `/contactar?${new URLSearchParams({ p: slug, volver })}`);
   }
 
   const session = await auth.api.getSession({ headers: h });

@@ -103,6 +103,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - **Next 16:** el archivo es `src/proxy.ts` (no `middleware.ts`). `middleware.ts` corre en Edge, donde el driver de Postgres no conecta («Failed to get session»).
 - Sin `BETTER_AUTH_SECRET` Better Auth usa una clave pública por defecto: el build lo avisa con «default secret».
 - En el VPS la web y la base están en el mismo servidor (latencia ~0). Better Auth usa `cookieCache` (5 min): cambios al usuario hechos con SQL directo no se ven en `getSession` hasta que vence; para datos que el usuario edita usa `auth.api.updateUser`.
+- En el contenedor Next corre con `HOSTNAME=0.0.0.0`: en route handlers `request.url` sale como `https://0.0.0.0:3000/…`. Para redirigir usa `redirigir()` / `origenPublico()` de `lib/redireccion.ts`, nunca `new URL(ruta, request.url)`.
 - Postgres del VPS admite 60 conexiones; la app usa un pool de 3 (`DB_POOL_MAX`) y el build 1.
 
 ## Estado
