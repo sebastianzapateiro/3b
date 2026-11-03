@@ -182,7 +182,7 @@ export async function obtenerPortafolioCompleto(
           comentario: resenas.comentario,
           estrellas: sql<number>`round((${resenas.puntualidad} + ${resenas.calidad} + ${resenas.calidadPrecio} + ${resenas.cumplimiento}) / 4.0)`,
           creadoEn: resenas.createdAt,
-          nombreCliente: user.name,
+          nombreCliente: sql<string | null>`CASE WHEN ${user.eliminadoEn} IS NULL THEN ${user.name} END`, // CU-27: anónima
           respuesta: schema.respuestasResena.texto,
         })
         .from(resenas)

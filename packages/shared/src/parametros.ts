@@ -22,6 +22,7 @@ export const PARAMETROS: Parametro[] = [
   { clave: "plazo_consulta_dias_habiles", etiqueta: "Consultas de datos", grupo: "Plazos legales (días hábiles)", defecto: 10 },
   { clave: "plazo_reclamo_dias_habiles", etiqueta: "Reclamos de datos", grupo: "Plazos legales (días hábiles)", defecto: 15 },
   { clave: "plazo_reclamo_consumo_dias_habiles", etiqueta: "Reclamos de consumo", grupo: "Plazos legales (días hábiles)", defecto: 15 },
+  { clave: "conservacion_eliminados_anios", etiqueta: "Conservación bloqueada de cuentas eliminadas (años)", grupo: "Datos personales", defecto: 5 },
   { clave: "min_proveedores_seo", etiqueta: "Mínimo de proveedores para publicar páginas SEO", grupo: "SEO", defecto: 3 },
 ];
 

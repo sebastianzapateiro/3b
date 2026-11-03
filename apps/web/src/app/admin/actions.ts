@@ -15,6 +15,7 @@ import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
 import { avisarProveedorAprobado, avisarProveedorRechazado } from "@/lib/avisos-proveedor";
 import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
+import { eliminarCuenta } from "@/lib/eliminar-cuenta";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
 import { guardarCompletitud } from "@/lib/completitud";
@@ -424,6 +425,32 @@ export async function restablecerDosFactor(formData: FormData) {
   await db.delete(session).where(eq(session.userId, usuarioId));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "dos_factor_restablecido", objetoTipo: "usuario", objetoId: usuarioId });
   volver("/admin/usuarios", { u: usuarioId, ok: "2FA restablecido. Deberá configurarlo de nuevo." });
+}
+
+/** B4 · Eliminar cuenta (CU-27): sin historial se borra; con historial se bloquea y se conserva. Se confirma escribiendo el correo. */
+export async function eliminarUsuario(formData: FormData) {
+  const actor = await exigirBackoffice(true);
+  const usuarioId = z.string().min(1).parse(texto(formData, "usuarioId"));
+  if (usuarioId === actor.user.id) volver("/admin/usuarios", { u: usuarioId, error: "No puedes eliminar tu propia cuenta." });
+  const [persona] = await db.select({ correo: user.email }).from(user).where(eq(user.id, usuarioId)).limit(1);
+  if (!persona) volver("/admin/usuarios", { error: "No encontramos esa cuenta." });
+  if (texto(formData, "confirmacion").toLowerCase() !== persona.correo.toLowerCase()) {
+    volver("/admin/usuarios", { u: usuarioId, error: "Escribe el correo de la cuenta tal cual para confirmar." });
+  }
+  const equipo = await db.select({ rol: usuarioRoles.rol }).from(usuarioRoles).where(eq(usuarioRoles.usuarioId, usuarioId));
+  if (equipo.some((r) => r.rol === "admin" || r.rol === "verificador" || r.rol === "moderador")) {
+    volver("/admin/usuarios", { u: usuarioId, error: "Es del equipo: quítale los roles de admin, verificador y moderador antes de eliminarla." });
+  }
+
+  const r = await eliminarCuenta(usuarioId);
+  if (!r) volver("/admin/usuarios", { error: "No encontramos esa cuenta." });
+  await auditar({
+    actorId: actor.user.id, rol: actor.rol, accion: "usuario_eliminado", objetoTipo: "usuario", objetoId: usuarioId,
+    motivo: texto(formData, "motivo") || undefined, metadatos: { modo: r.modo, correo: r.correo },
+  });
+  revalidatePath("/admin", "layout");
+  if (r.modo === "borrada") volver("/admin/usuarios", { ok: `Cuenta ${r.correo} eliminada por completo: no tenía historial.` });
+  volver("/admin/usuarios", { u: usuarioId, ok: "La cuenta tenía historial: quedó bloqueada, sin acceso, con el perfil oculto y sus reseñas anónimas. Los datos se conservan según CU-27." });
 }
 
 /** B4 · El admin le asigna una clave nueva a una cuenta. La clave nunca va a la auditoría. */

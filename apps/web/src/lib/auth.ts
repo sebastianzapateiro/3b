@@ -107,6 +107,16 @@ export const auth = betterAuth({
     }),
   },
   databaseHooks: {
+    // Cuenta eliminada (CU-27) o suspendida: no se crea sesión, sea con clave, Google o enlace de invitación.
+    session: {
+      create: {
+        before: async (s) => {
+          const [u] = await db.select({ eliminadoEn: schema.user.eliminadoEn, suspendidoHasta: schema.user.suspendidoHasta }).from(schema.user).where(eq(schema.user.id, s.userId)).limit(1);
+          if (u?.eliminadoEn) throw new APIError("FORBIDDEN", { code: "CUENTA_ELIMINADA", message: "Esta cuenta fue eliminada." });
+          if (u?.suspendidoHasta && u.suspendidoHasta > new Date()) throw new APIError("FORBIDDEN", { code: "CUENTA_SUSPENDIDA", message: "Tu cuenta está suspendida. Escríbenos si crees que es un error." });
+        },
+      },
+    },
     user: {
       create: {
         after: async (user, ctx) => {

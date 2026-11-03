@@ -318,7 +318,7 @@ export async function listarUsuarios(q?: string) {
     ? or(ilike(user.email, `%${q.trim()}%`), ilike(user.name, `%${q.trim()}%`), ilike(user.telefono, `%${q.trim()}%`))
     : undefined;
   const lista = await db
-    .select({ id: user.id, nombre: user.name, correo: user.email, suspendidoHasta: user.suspendidoHasta, dosFactor: user.twoFactorEnabled, creado: user.createdAt })
+    .select({ id: user.id, nombre: user.name, correo: user.email, suspendidoHasta: user.suspendidoHasta, eliminadoEn: user.eliminadoEn, conservarHasta: user.conservarHasta, dosFactor: user.twoFactorEnabled, creado: user.createdAt })
     .from(user)
     .where(condicion)
     .orderBy(desc(user.createdAt))

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { cambiarClaveUsuario, cambiarExigencia2fa, crearUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { cambiarClaveUsuario, cambiarExigencia2fa, crearUsuario, eliminarUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
 import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
 import { CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { exigencia2fa, exigirBackoffice } from "@/lib/verificacion";
 import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
-/** B4 · Usuarios: crear, roles y suspensión (CU-70 a CU-72). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
+/** B4 · Usuarios: crear, roles, suspensión y eliminación (CU-70 a CU-72, CU-27). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
 const ROLES = [
   { v: "comprador", t: "Comprador" },
   { v: "proveedor", t: "Proveedor" },
@@ -54,7 +54,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                       </Link>
                     </td>
                     <td className="p-3.5"><span className="flex flex-wrap gap-1">{u.roles.length ? u.roles.map((r) => <Chip key={r} tono={TONO_ROL[r] ?? "gris"}>{ROLES.find((x) => x.v === r)?.t ?? r}</Chip>) : <Chip tono="gris">Sin rol</Chip>}</span></td>
-                    <td className="p-3.5">{suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
+                    <td className="p-3.5">{u.eliminadoEn ? <span className="font-semibold text-gris">Eliminada</span> : suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
                     <td className="p-3.5 text-gris">{fecha(u.ultimoIngreso)}</td>
                   </tr>
                 );
@@ -108,7 +108,20 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
           </section>
         )}
 
-        {elegido && (
+        {elegido?.eliminadoEn && (
+          <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
+            <Aviso ok={sp.ok} error={sp.error} />
+            <div className={`${tarjeta} flex flex-col gap-2 p-[22px]`}>
+              <h2 className="font-display text-xl font-bold">{elegido.nombre} · cuenta eliminada</h2>
+              <p className="text-sm leading-normal text-gris">
+                Eliminada el {fecha(elegido.eliminadoEn)}. No puede ingresar, su perfil de proveedor está oculto y sus reseñas salen anónimas.
+                Los datos se conservan bloqueados hasta el {fecha(elegido.conservarHasta)} (CU-27).
+              </p>
+            </div>
+          </section>
+        )}
+
+        {elegido && !elegido.eliminadoEn && (
           <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
             <Aviso ok={sp.ok} error={sp.error} />
             <form action={guardarRoles} className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
@@ -161,6 +174,20 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                 <button type="submit" className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-4 text-sm font-semibold">Restablecer 2FA</button>
               </form>
             </div>
+
+            <form action={eliminarUsuario} className="flex flex-col gap-3 rounded-[20px] border border-[#F0C9BE] bg-white p-[22px]">
+              <input type="hidden" name="usuarioId" value={elegido.id} />
+              <h2 className="font-display text-xl font-bold">Eliminar cuenta</h2>
+              <p className="text-[13px] leading-[1.45] text-gris">
+                Si no tiene historial (contactos, reseñas, reportes, perfil enviado a revisión), se borra del todo con sus archivos.
+                Si lo tiene, se bloquea: no puede ingresar, se oculta su perfil, sus reseñas quedan anónimas y los datos se conservan bloqueados (CU-27). No se puede deshacer.
+              </p>
+              <label htmlFor="motivo-eliminar" className="text-sm font-semibold">Motivo (opcional)</label>
+              <input id="motivo-eliminar" name="motivo" placeholder="Ej: la persona pidió borrar su cuenta" className={campoAdmin} />
+              <label htmlFor="confirmacion-eliminar" className="text-sm font-semibold">Para confirmar, escribe <b>{elegido.correo}</b></label>
+              <input id="confirmacion-eliminar" name="confirmacion" required autoComplete="off" className={campoAdmin} />
+              <button type="submit" className="h-11 self-start rounded-xl bg-ladrillo px-4 text-sm font-bold text-white">Eliminar cuenta</button>
+            </form>
           </section>
         )}
       </main>

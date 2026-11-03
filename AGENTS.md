@@ -117,6 +117,7 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Backoffice B1–B8 con rol + 2FA (QR al configurar; `/ingreso` también pide el código; códigos de respaldo utilizables; sesión del equipo de 8 h por `sesion_backoffice_h`; «confiar en este equipo» 8 h; 2FA obligatorio para admin y configurable para verificador y moderador en `/admin/usuarios`), creación de usuarios con invitación por correo, cambio de clave de una cuenta por un admin (`lib/claves.ts`: cierra sesiones, anula invitaciones y avisa por correo), auditoría de solo inserción, parámetros en `configuracion`.
 - **Despliegue continuo (2 nov 2026):** push a `main` → GitHub Actions → `/opt/lastresb/desplegar.sh` en el VPS (con vuelta atrás si no responde). Migraciones a mano antes del merge. Ver `infra/vps/README.md` § Despliegue continuo.
 - **Producción en VPS Hostinger desde el 1 nov 2026:** `https://www.lastresb.com.co` (Docker: Postgres 17 + web standalone; nginx + certbot en el host; respaldo diario). La base ya **no** es Supabase; Storage sí sigue en Supabase. Ver `infra/vps/README.md`. Vercel queda fuera.
+- **Eliminar cuenta (3 nov 2026, CU-27):** admin en `/admin/usuarios`, confirma con el correo (`lib/eliminar-cuenta.ts`). Sin historial se borra con sus archivos; con historial se bloquea (`eliminado_en`, `conservar_hasta` por `conservacion_eliminados_anios`), perfil oculto y reseñas anónimas. `auth.ts` no crea sesión para cuentas eliminadas ni suspendidas.
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
