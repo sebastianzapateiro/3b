@@ -12,7 +12,8 @@ PUB="${1:?Uso: bash infra/vps/instalar-despliegue.sh <llave-publica.pub>}"
 grep -q '^ssh-ed25519 ' "$PUB" || { echo "No parece una llave pública ed25519: $PUB" >&2; exit 1; }
 LLAVE=$(cat "$PUB")
 
-ssh lastresb-root 'install -m 700 -o root -g root /dev/stdin /opt/lastresb/desplegar.sh' < infra/vps/desplegar.sh
+# Primero a un archivo temporal: con la conexión compartida (ControlMaster), /dev/stdin no siempre se puede abrir.
+ssh lastresb-root 'umask 077 && cat > /opt/lastresb/desplegar.sh.nuevo && install -m 700 -o root -g root /opt/lastresb/desplegar.sh.nuevo /opt/lastresb/desplegar.sh && rm /opt/lastresb/desplegar.sh.nuevo' < infra/vps/desplegar.sh
 
 # ssh une los argumentos con espacios y el servidor los vuelve a separar: la llave va citada con %q.
 ssh lastresb-root bash -s -- "$(printf '%q' "$LLAVE")" <<'REMOTO'
