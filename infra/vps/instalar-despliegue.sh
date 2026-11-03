@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Prepara el VPS para el despliegue continuo (una sola vez). Se corre desde la raíz del repo, en tu PC:
+#   bash infra/vps/instalar-despliegue.sh <llave-publica.pub>
+#
+# - Copia infra/vps/desplegar.sh a /opt/lastresb/desplegar.sh (root, 700).
+# - Crea el usuario de sistema `despliegue`. Su llave SOLO ejecuta ese script (command=..., restrict: sin consola,
+#   sin túneles) y sudo solo le permite ese archivo. Si la llave se filtra, lo único posible es desplegar `main`.
+# Volver a correrlo actualiza el script y reemplaza la llave.
+set -euo pipefail
+
+PUB="${1:?Uso: bash infra/vps/instalar-despliegue.sh <llave-publica.pub>}"
+grep -q '^ssh-ed25519 ' "$PUB" || { echo "No parece una llave pública ed25519: $PUB" >&2; exit 1; }
+LLAVE=$(cat "$PUB")
+
+ssh lastresb-root 'install -m 700 -o root -g root /dev/stdin /opt/lastresb/desplegar.sh' < infra/vps/desplegar.sh
+
+ssh lastresb-root bash -s -- "$LLAVE" <<'REMOTO'
+set -euo pipefail
+LLAVE="$1"
+id despliegue >/dev/null 2>&1 || useradd --system --create-home --shell /bin/sh despliegue
+echo 'despliegue ALL=(root) NOPASSWD: /opt/lastresb/desplegar.sh *' > /etc/sudoers.d/lastresb-despliegue
+chmod 440 /etc/sudoers.d/lastresb-despliegue
+visudo -cf /etc/sudoers.d/lastresb-despliegue
+install -d -m 700 -o despliegue -g despliegue /home/despliegue/.ssh
+printf 'command="sudo /opt/lastresb/desplegar.sh \\"$SSH_ORIGINAL_COMMAND\\"",restrict %s\n' "$LLAVE" > /home/despliegue/.ssh/authorized_keys
+chown despliegue:despliegue /home/despliegue/.ssh/authorized_keys
+chmod 600 /home/despliegue/.ssh/authorized_keys
+echo "Listo: usuario despliegue con llave restringida."
+REMOTO
