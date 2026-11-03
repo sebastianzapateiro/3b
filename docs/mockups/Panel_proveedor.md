@@ -4,7 +4,9 @@ Pantalla nueva, diseñada con el mismo lenguaje de Perfil y Home (tarjetas blanc
 
 **Quién entra:** persona con sesión que ya tiene registro de proveedor. Sin sesión va a `/ingresar`; sin registro, a `/proveedores/registro`.
 
-**Navegación:** pestañas de segundo nivel (no engordan el menú principal): Resumen · Perfil · Servicios · Reseñas · Verificación. Encabezado con nombre público, dirección `lastresb.com.co/<slug>` y chip de estado (Borrador, En revisión del equipo, Publicado, En pausa, Necesita correcciones, Suspendido).
+**Navegación (2 nov 2026):** marco del backoffice. Menú lateral oscuro (barra superior desplazable en móvil) con el anillo de avance del perfil, nombre, dirección y chip de estado; secciones Resumen · Perfil y negocio · Servicios y precios · Verificación · Enviar a revisión (solo en borrador) · Contactos y Reseñas (después de enviar). Cada sección lleva ✓ o el número de pasos pendientes. Sin cabecera ni pie del sitio. Encabezado con nombre público, dirección `lastresb.com.co/<slug>`, chip de estado y «Ver mi página».
+
+**Alta dentro del panel (CU-30):** al elegir «proveedor» se crea el borrador y entra aquí. El Resumen muestra el porcentaje grande, el siguiente paso con «Continuar» y los pasos numerados (negocio, dónde trabajas, servicios, identidad, documentos, «Sobre mí» opcional, enviar). En las demás secciones, una franja amarilla dice el paso que sigue. Al guardar un paso, lleva al siguiente pendiente.
 
 | Pestaña | Contenido |
 |---|---|

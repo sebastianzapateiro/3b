@@ -3,11 +3,12 @@ import { redirect } from "next/navigation";
 import { enviarARevision } from "@/app/panel/actions";
 import { Aviso } from "@/components/cuenta";
 import { CargaDocumento } from "@/components/CargaDocumento";
+import { pendientesAlta, whatsappParaCampo } from "@/lib/alta-proveedor";
 import { estadoDocumentos } from "@/lib/documentos";
 import { datosParaConfirmar, exigirProveedor } from "@/lib/panel";
 
 /**
- * P3 / CU-51 · El proveedor registrado por el equipo (alta asistida) revisa sus datos, sube lo que falte,
+ * P3 / CU-30 / CU-51 · Último paso del alta, propia o asistida: el proveedor revisa sus datos, sube lo que falte,
  * acepta términos y autorizaciones él mismo (Ley 1581, regla 5) y envía su perfil a revisión.
  */
 const tarjeta = "flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6";
@@ -17,19 +18,29 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
   const { proveedor: p } = await exigirProveedor();
   if (p.estado !== "borrador") redirect("/panel");
   const sp = await searchParams;
-  const [datos, docs] = await Promise.all([datosParaConfirmar(p.id), estadoDocumentos(p.id)]);
+  const [datos, docs, alta] = await Promise.all([datosParaConfirmar(p.id), estadoDocumentos(p.id), pendientesAlta(p.id)]);
+  const faltan = alta.tareas.filter((t) => !t.ok && !t.opcional);
 
   return (
     <div className="flex flex-col gap-5">
       {sp.error && <Aviso tono="error">{sp.error}</Aviso>}
       <p className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">
-        El equipo de LasTresB llenó tu registro con los datos que nos diste. Revísalos, sube lo que falte y, si todo está bien, envíalo a revisión. Nada de esto se publica hasta que lo aprobemos.
+        Revisa tus datos, sube lo que falte y, si todo está bien, envíalo a revisión. Nada de esto se publica hasta que el equipo lo apruebe.
       </p>
+      {faltan.length > 0 && (
+        <section className="flex flex-col gap-2 rounded-[18px] bg-ladrillo-suave p-4 text-[15px] text-ladrillo-oscuro">
+          <b>Antes de enviar te falta:</b>
+          <ul className="flex flex-col gap-1">
+            {faltan.map((t) => <li key={t.clave}><Link href={t.href} className="font-semibold underline">{t.titulo}</Link></li>)}
+          </ul>
+        </section>
+      )}
 
       <section className={tarjeta}>
         <h2 className="font-display text-2xl font-bold">1. Revisa tus datos</h2>
         <dl className="grid gap-x-4 gap-y-2 text-[15px] sm:grid-cols-[180px_minmax(0,1fr)]">
           <dt className="text-gris">Nombre público</dt><dd>{p.nombre}</dd>
+          <dt className="text-gris">WhatsApp</dt><dd>{whatsappParaCampo(p.whatsapp) || "—"}</dd>
           <dt className="text-gris">Tu página</dt><dd className="font-mono text-sm">lastresb.com.co/{p.slug}</dd>
           <dt className="text-gris">Qué ofreces</dt><dd>{datos.categorias.join(", ") || "—"}</dd>
           <dt className="text-gris">Dónde trabajas</dt><dd>{datos.localidades.join(", ") || "—"}</dd>
@@ -37,8 +48,9 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
           <dt className="text-gris">Presentación</dt><dd>{p.presentacion || "—"}</dd>
         </dl>
         <p className="text-sm text-gris">
-          ¿Algo no está bien? Corrige tu <Link href="/panel/perfil" className="font-semibold text-verde underline">perfil</Link> o tus{" "}
-          <Link href="/panel/servicios" className="font-semibold text-verde underline">servicios</Link>. Si es el nombre, la página o tus documentos de identidad, escríbenos.
+          ¿Algo no está bien? Corrige tu <Link href="/panel/perfil" className="font-semibold text-verde underline">perfil</Link>, tus{" "}
+          <Link href="/panel/servicios" className="font-semibold text-verde underline">servicios</Link> o tus{" "}
+          <Link href="/panel/verificacion" className="font-semibold text-verde underline">datos de identidad</Link>.
         </p>
       </section>
 
@@ -62,7 +74,7 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
           )}
         </fieldset>
         {docs.faltan.length > 0 && <p className="text-sm font-semibold text-ladrillo-oscuro">Antes de enviar, carga: {docs.faltan.join(", ")}.</p>}
-        <button type="submit" className="h-[52px] rounded-campo bg-tinta text-base font-semibold text-white">Enviar a revisión</button>
+        <button type="submit" disabled={faltan.length > 0} className="h-[52px] rounded-campo bg-tinta text-base font-semibold text-white disabled:opacity-40">Enviar a revisión</button>
       </form>
     </div>
   );

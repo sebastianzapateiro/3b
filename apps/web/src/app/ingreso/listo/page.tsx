@@ -84,7 +84,7 @@ export default async function Listo({ searchParams }: Props) {
             Tu cuenta de <b>{email}</b> es de cliente. Puedes usar la misma cuenta para ofrecer tus servicios: te pedimos tus datos y el equipo los revisa antes de publicar tu perfil.
           </p>
           <div className="flex flex-col gap-2.5">
-            <Link href="/proveedores/registro" className={botonPrincipal}>Sí, activar mi perfil de proveedor</Link>
+            <Link href="/proveedores/registro" prefetch={false} className={botonPrincipal}>Sí, activar mi perfil de proveedor</Link>
             <Link href={destino} className={botonSecundario}>No, seguir como cliente</Link>
           </div>
         </div>

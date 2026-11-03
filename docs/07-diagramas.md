@@ -242,8 +242,8 @@ Solo `aprobado` y `en_revision` aparecen en la búsqueda (regla 6). `pausado` mu
 
 ```mermaid
 stateDiagram-v2
-  [*] --> borrador: alta paso 1
-  borrador --> pendiente: envía a revisión<br/>con documentos obligatorios
+  [*] --> borrador: elige «proveedor»<br/>(o alta asistida)
+  borrador --> pendiente: completa las tareas del panel<br/>y envía a revisión
   pendiente --> aprobado: verificador aprueba
   pendiente --> rechazado: con motivo
   aprobado --> pausado: el proveedor pausa
