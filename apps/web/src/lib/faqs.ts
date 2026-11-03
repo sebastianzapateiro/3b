@@ -40,7 +40,7 @@ export const FAQ_HOME: Pregunta[] = [
 ];
 
 export const FAQ_CATEGORIAS: Pregunta[] = [
-  { pregunta: "¿Qué categorías de servicios hay?", respuesta: "Hogar, Clases y refuerzo, Acarreos y Servicios varios. Dentro de cada una encuentras subcategorías como plomería, electricidad, idiomas o trasteos." },
+  { pregunta: "¿Qué categorías de servicios hay?", respuesta: "Hogar, Clases y refuerzo, Acarreos y transporte, Servicios varios, Mascotas y veterinaria, y Servicios profesionales. Dentro de cada una encuentras subcategorías como plomería, electricidad, idiomas, trasteos, veterinarios o contadores." },
   { pregunta: "¿Cómo elijo la categoría correcta?", respuesta: "Entra a la categoría general y escoge la subcategoría más cercana a tu necesidad. Si dudas, usa el buscador del inicio con palabras como «plomero» o «clases de inglés»." },
   { pregunta: "¿Por qué algunos servicios exigen más requisitos?", respuesta: "En servicios de mayor riesgo, como gas o electricidad, solo aparecen proveedores con RUT verificado. En los que trabajan con menores se pide verificación de antecedentes." },
   GENERALES.costo,

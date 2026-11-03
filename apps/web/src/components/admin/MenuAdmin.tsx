@@ -99,6 +99,18 @@ export function MenuAdmin({ nombre, rol, pendientes, reportes, tramites, esAdmin
             )}
           </div>
         ))}
+        {esAdmin && (
+          <details open={ruta.startsWith("/admin/ver-como")} className="group flex flex-col gap-0.5">
+            <summary className="flex h-11 cursor-pointer list-none items-center gap-2.5 rounded-[10px] px-3 text-[#DDE3E1] hover:bg-white/6 [&::-webkit-details-marker]:hidden">
+              <Icono><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Icono>
+              Ver como
+              <svg className="ml-auto transition-transform group-open:rotate-180" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" {...trazo}><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <Link href="/admin" className="flex h-10 items-center rounded-[10px] pl-10 pr-3 text-sm text-[#DDE3E1] hover:bg-white/6">Administrador (esta vista)</Link>
+            <Link href="/admin/ver-como" aria-current={activo("/admin/ver-como") ? "page" : undefined} className={`flex h-10 items-center rounded-[10px] pl-10 pr-3 text-sm hover:bg-white/6 ${activo("/admin/ver-como") ? "bg-white/12 font-semibold text-white" : "text-[#DDE3E1]"}`}>Proveedor</Link>
+            <a href="/cuenta" target="_blank" rel="noopener noreferrer" className="flex h-10 items-center rounded-[10px] pl-10 pr-3 text-sm text-[#DDE3E1] hover:bg-white/6">Cliente con sesión</a>
+          </details>
+        )}
       </nav>
       <div className="mt-auto flex flex-col gap-1.5 rounded-xl bg-white/6 px-3 py-3.5 text-[13px]">
         <b className="text-sm">{nombre}</b>

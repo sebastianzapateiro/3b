@@ -40,8 +40,8 @@ export type PropsMenuProveedor = {
   slug: string;
   estado: { texto: string; clase: string };
   avance: { porcentaje: number; texto: string };
-  marcas: { perfil?: MarcaSeccion; servicios?: MarcaSeccion; verificacion?: MarcaSeccion; confirmar?: MarcaSeccion };
-  pendientes: { perfil?: number; servicios?: number; verificacion?: number };
+  marcas: { perfil?: MarcaSeccion; servicios?: MarcaSeccion; fotos?: MarcaSeccion; verificacion?: MarcaSeccion; confirmar?: MarcaSeccion };
+  pendientes: { perfil?: number; servicios?: number; fotos?: number; verificacion?: number };
   borrador: boolean;
   publicado: boolean;
   resenasSinResponder: number;
@@ -59,6 +59,7 @@ export function MenuProveedor(p: PropsMenuProveedor) {
       items: [
         { href: "/panel/perfil", texto: "Perfil y negocio", marca: p.marcas.perfil, numero: p.pendientes.perfil, icono: <Icono><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6" /></Icono> },
         { href: "/panel/servicios", texto: "Servicios y precios", marca: p.marcas.servicios, numero: p.pendientes.servicios, icono: <Icono><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" /></Icono> },
+        { href: "/panel/fotos", texto: "Fotos de trabajos", marca: p.marcas.fotos, numero: p.pendientes.fotos, icono: <Icono><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 8" /></Icono> },
         { href: "/panel/verificacion", texto: "Verificación", marca: p.marcas.verificacion, numero: p.pendientes.verificacion, icono: <Icono><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" /><path d="m9 12 2 2 4-4" /></Icono> },
         ...(p.borrador ? [{ href: "/panel/confirmar", texto: "Enviar a revisión", marca: p.marcas.confirmar, icono: <Icono><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></Icono> }] : []),
       ],

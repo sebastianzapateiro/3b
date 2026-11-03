@@ -63,6 +63,7 @@ async function main() {
         orden: i,
         exigeInsigniaMenores: sub.exigeInsigniaMenores,
         exigeRutDesdeAlta: sub.exigeRutDesdeAlta,
+        exigeMatricula: sub.exigeMatricula,
         popular: sub.popular,
         atiendeUrgencias: sub.atiendeUrgencias,
         subgrupo: sub.subgrupo ?? null,

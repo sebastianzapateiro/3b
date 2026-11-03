@@ -58,7 +58,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es-CO" className={`${bricolage.variable} ${inter.variable}`}>
-      <body className="min-h-dvh bg-crema font-sans text-tinta antialiased">
+      <body className="min-h-dvh bg-white font-sans text-tinta antialiased">
         <BarraCarga />
         <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
         <Analitica />

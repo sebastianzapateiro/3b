@@ -3,6 +3,7 @@ import { GuiaAlta } from "@/components/panel/GuiaAlta";
 import { MenuProveedor, type MarcaSeccion } from "@/components/panel/MenuProveedor";
 import { pendientesAlta, type SeccionPanel } from "@/lib/alta-proveedor";
 import { exigirProveedor, resumenPanel } from "@/lib/panel";
+import { salirDeVerComo } from "../admin/(panel)/ver-como/actions";
 
 export const metadata = { title: "Panel de proveedor", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -23,7 +24,7 @@ const ESTADO: Record<string, { texto: string; clase: string }> = {
  * y, mientras es borrador, la guía del siguiente paso del alta (CU-30). Mockup: docs/mockups/Panel_proveedor.md.
  */
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
-  const { proveedor: p } = await exigirProveedor();
+  const { proveedor: p, verComo } = await exigirProveedor();
   const [alta, r] = await Promise.all([pendientesAlta(p.id), resumenPanel(p.id)]);
   const estado = ESTADO[p.estado] ?? ESTADO.borrador!;
   const borrador = p.estado === "borrador";
@@ -42,13 +43,19 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         slug={p.slug}
         estado={estado}
         avance={{ porcentaje: alta.porcentaje, texto: alta.porcentaje === 100 ? "Tu perfil está completo" : `${alta.hechas} de ${alta.tareas.length} pasos listos` }}
-        marcas={{ perfil: marca("perfil"), servicios: marca("servicios"), verificacion: marca("verificacion"), confirmar: alta.listo ? "pendiente" : "bloqueado" }}
-        pendientes={{ perfil: faltan("perfil"), servicios: faltan("servicios"), verificacion: faltan("verificacion") }}
+        marcas={{ perfil: marca("perfil"), servicios: marca("servicios"), fotos: marca("fotos"), verificacion: marca("verificacion"), confirmar: alta.listo ? "pendiente" : "bloqueado" }}
+        pendientes={{ perfil: faltan("perfil"), servicios: faltan("servicios"), fotos: faltan("fotos"), verificacion: faltan("verificacion") }}
         borrador={borrador}
         publicado={publicado}
         resenasSinResponder={r.resenasSinResponder}
       />
       <div className="flex min-w-0 flex-1 flex-col">
+        {verComo && (
+          <div className="sticky top-0 z-40 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 bg-ladrillo-oscuro px-5 py-2.5 text-sm text-white">
+            <span>Estás viendo el panel de <b>{p.nombre}</b> como administrador · solo lectura</span>
+            <form action={salirDeVerComo}><button type="submit" className="font-semibold text-amarillo underline">Salir de esta vista</button></form>
+          </div>
+        )}
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-borde bg-crema px-5 py-5 lg:px-8">
           <div className="flex min-w-0 flex-col gap-0.5">
             <h1 className="truncate font-display text-[26px] font-extrabold tracking-[-0.8px] lg:text-[30px]">{p.nombre}</h1>

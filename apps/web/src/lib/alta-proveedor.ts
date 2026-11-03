@@ -9,9 +9,9 @@ import { z } from "zod";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { normalizarWhatsapp, slugSchema, sugerirSlug, SLUGS_RESERVADOS } from "@las3b/shared";
 import { estadoDocumentos } from "@/lib/documentos";
-import { guardarCompletitud } from "@/lib/completitud";
+import { FOTOS_MINIMAS, guardarCompletitud } from "@/lib/completitud";
 
-const { proveedores, proveedorCategorias, proveedorLocalidades, serviciosProveedor, categorias } = schema;
+const { proveedores, proveedorCategorias, proveedorLocalidades, serviciosProveedor, categorias, portafolioFotos } = schema;
 
 type Resultado = { ok: true } | { error: string };
 
@@ -46,7 +46,7 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
   return otro!.id;
 }
 
-export type SeccionPanel = "perfil" | "servicios" | "verificacion";
+export type SeccionPanel = "perfil" | "servicios" | "fotos" | "verificacion";
 export type TareaAlta = { clave: string; titulo: string; texto: string; ok: boolean; href: string; seccion: SeccionPanel; opcional?: boolean };
 
 /**
@@ -54,7 +54,7 @@ export type TareaAlta = { clave: string; titulo: string; texto: string; ok: bool
  * Con cache(): el layout y la página del panel lo piden en la misma petición y se consulta una sola vez.
  */
 export const pendientesAlta = cache(async (proveedorId: string) => {
-  const [[p], [cats], [locs], [servs], docs] = await Promise.all([
+  const [[p], [cats], [locs], [servs], docs, [fotos]] = await Promise.all([
     db
       .select({
         nombre: proveedores.nombrePublico,
@@ -73,6 +73,7 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     db.select({ n: count() }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedorId)),
     db.select({ n: count() }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, proveedorId)),
     estadoDocumentos(proveedorId),
+    db.select({ n: count() }).from(portafolioFotos).where(and(eq(portafolioFotos.proveedorId, proveedorId), eq(portafolioFotos.estado, "visible"))),
   ]);
   const tareas: TareaAlta[] = [
     { clave: "negocio", titulo: "Datos de tu negocio", texto: "Nombre, WhatsApp, oficio y la dirección de tu página.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim() && p.segmento && (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
@@ -80,6 +81,7 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     { clave: "servicios", titulo: "Tus servicios", texto: "Al menos un servicio, con su precio desde.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
     { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
     { clave: "documentos", titulo: "Fotos de tus documentos", texto: docs.faltan.length ? `Falta: ${docs.faltan.join(", ")}.` : "Las que pide tu tipo de negocio y tu oficio.", ok: docs.faltan.length === 0, href: "/panel/verificacion#documentos", seccion: "verificacion" },
+    { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, href: "/panel/fotos", seccion: "fotos", opcional: true },
     { clave: "sobre", titulo: "Sobre mí", texto: "Cuéntales a los clientes cómo trabajas. Ayuda a que te escriban.", ok: Boolean(p?.presentacion?.trim()), href: "/panel/perfil#sobre", seccion: "perfil", opcional: true },
   ];
   const obligatorias = tareas.filter((t) => !t.opcional);

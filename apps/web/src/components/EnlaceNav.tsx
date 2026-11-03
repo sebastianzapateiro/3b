@@ -11,7 +11,7 @@ export function EnlaceNav({ href, children, prefijos = [] }: { href: string; chi
     <Link
       href={href}
       aria-current={activo ? "page" : undefined}
-      className={`flex h-11 items-center px-3.5 text-[15px] font-medium underline-offset-[10px] ${activo ? "font-semibold text-verde-oscuro underline decoration-2" : "text-tinta hover:text-verde-oscuro"}`}
+      className={`enlace-cabecera flex h-11 items-center px-3.5 text-[15px] font-medium underline-offset-[10px] ${activo ? "font-semibold text-verde-oscuro underline decoration-2" : "text-tinta hover:text-verde-oscuro"}`}
     >
       {children}
     </Link>

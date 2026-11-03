@@ -3,6 +3,7 @@ import { AccionesPerfil } from "@/components/AccionesPerfil";
 import { FotoTrabajo } from "@/components/FotoTrabajo";
 import { Insignia } from "@/components/Insignia";
 import { Resena } from "@/components/Resena";
+import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
 import type { PortafolioCompleto } from "@/lib/portafolio-completo";
 import { absoluta } from "@/lib/seo";
 
@@ -78,7 +79,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
   const promedio = p.promedio.toFixed(1).replace(".", ",");
 
   return (
-    <div className="bg-crema">
+    <div className="bg-white">
       {/* Franja verde: volver, dirección propia y compartir */}
       <section className="bg-verde text-white">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-3 px-2 py-2.5 lg:px-6 lg:pb-24 lg:pt-4">
@@ -114,11 +115,13 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
               <h1 className="text-balance font-display text-[30px] font-extrabold leading-[1.1] tracking-[-0.8px] lg:text-[38px] lg:leading-[1.05] lg:tracking-[-1px]">{p.nombre}</h1>
               {subtitulo && <span className="text-[15px] text-tinta-2 lg:text-base">{subtitulo}</span>}
               <div className="flex flex-wrap items-center gap-2">
-                {p.totalResenas > 0 && (
+                {p.totalResenas > 0 ? (
                   <span className="mr-1 flex items-center gap-1.5 text-[15px] font-bold">
                     <IconoEstrella />{promedio}{" "}
                     <a href="#resenas" className="font-medium text-verde hover:text-verde-oscuro">{p.totalResenas} reseñas</a>
                   </span>
+                ) : (
+                  <span className="mr-1 text-[15px]"><NivelPerfilMarca nivel={p.nivel} /></span>
                 )}
                 {p.insignias.map((i) => <Insignia key={i.clave} insignia={i} />)}
               </div>

@@ -1,5 +1,6 @@
 /** Piezas para imágenes generadas con next/og (Open Graph, íconos PNG). */
 import { COLORES } from "@las3b/shared";
+import { RUTA_B, RUTA_TRES } from "@/components/Logo";
 
 const TRES =
   "M646 -24C994 -24 1235 164 1235 420C1235 598 1114 751 898 776V779C1066 807 1189 924 1189 1099C1189 1342 963 1514 646 1514C302 1514 90 1310 90 1038H427C427 1164 517 1248 646 1248C770 1248 857 1171 857 1059C857 950 766 884 618 884H480V632H618C776 632 879 558 879 444C879 328 783 250 643 250C492 250 401 344 401 501H61C61 220 248 -24 646 -24Z";
@@ -18,25 +19,18 @@ export function MonogramaOg({ ancho, oscuro = false }: { ancho: number; oscuro?:
   );
 }
 
-/** Ícono cuadrado (fondo tinta) para PWA y Apple. */
+/** Ícono cuadrado para PWA y Apple, igual al favicon: «3B» grande, blanco y amarillo, sobre verde. */
 export function IconoCuadrado({ tam, redondeado = true }: { tam: number; redondeado?: boolean }) {
   return (
-    <div
-      style={{
-        width: tam,
-        height: tam,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: COLORES.tinta,
-        borderRadius: redondeado ? tam * 0.22 : 0,
-      }}
-    >
-      <MonogramaOg ancho={tam * 0.74} oscuro />
-    </div>
+    <svg width={tam} height={tam} viewBox="0 0 512 512">
+      <rect width="512" height="512" rx={redondeado ? 112 : 0} fill={COLORES.verde} />
+      <g transform="translate(29.3 387.6) scale(0.1767 -0.1767)">
+        <path d={RUTA_TRES} fill="#FFFFFF" />
+        <path transform="translate(1225.6 0)" d={RUTA_B} fill={COLORES.amarillo} />
+      </g>
+    </svg>
   );
 }
-
 /**
  * Descarga Bricolage Grotesque / Inter de Google Fonts solo con los caracteres usados.
  * Si no hay red (build sin internet) devuelve undefined y next/og usa su fuente por defecto.

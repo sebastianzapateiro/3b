@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
+import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA, subcategoriaPorSlug } from "@las3b/shared";
 import type { Metadata } from "next";
 import { FOTO_CATEGORIA } from "@/components/categorias/Piezas";
-import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
-import { Avatar, Estrella, formatoPromedio, TarjetaProveedor } from "@/components/TarjetaProveedor";
-import { RECOMENDADOS_DEMO, RESENA_DESTACADA_DEMO } from "@/lib/demo";
+import { TarjetaProveedor } from "@/components/TarjetaProveedor";
+import { RECOMENDADOS_DEMO } from "@/lib/demo";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
@@ -18,7 +17,17 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const LOCALIDAD_INICIAL = "suba";
 
-const POPULARES = ["Plomería", "Inglés", "Mudanzas", "Cerrajería"];
+/** Fila «Explora por categoría»: solo lo que tiene foto en public/fotos. El cuarto es un oficio de Hogar con la foto de obra. */
+const maestro = subcategoriaPorSlug("maestro-de-obra")!;
+const TARJETAS_INICIO = [
+  ...["hogar", "clases-y-refuerzo", "servicios-varios"].flatMap((slug) => {
+    const c = CATEGORIAS.find((x) => x.slug === slug);
+    return c ? [{ href: `/categorias/${c.slug}`, nombre: c.nombre, corto: c.corto, descripcion: c.descripcion, foto: FOTO_CATEGORIA[c.slug] }] : [];
+  }),
+  { href: `/servicios/${maestro.sub.slug}`, nombre: maestro.sub.nombre, corto: "Obras y arreglos", descripcion: "Remodelación de cocinas, baños y espacios", foto: "/fotos/nosotros.jpg" },
+];
+
+const POPULARES =["Plomería", "Inglés", "Mudanzas", "Cerrajería"];
 
 
 const CONFIANZA = [
@@ -70,118 +79,67 @@ function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
 }
 
 export default function Home() {
-  const resena = RESENA_DESTACADA_DEMO;
-  const enlaceNav = "flex h-11 items-center px-3.5 text-[15px] font-medium text-tinta";
 
   return (
     <>
       <JsonLd datos={jsonLdSitio()} />
       <JsonLd datos={jsonLdLista("Categorías de servicios en Bogotá", CATEGORIAS.map((c) => ({ nombre: c.nombre, ruta: `/categorias/${c.slug}` })))} />
 
-      <main>
-        <section className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-12 px-5 pb-7 pt-2.5 sm:px-6 sm:pb-16 sm:pt-14">
-          <div className="flex min-w-0 flex-[1_1_520px] flex-col gap-[18px] sm:gap-[22px]">
-            <span className="inline-flex h-[30px] items-center gap-2 self-start rounded-2xl border border-borde bg-white px-3 text-[13px] font-semibold text-tinta-2 sm:h-8 sm:px-3.5 sm:text-sm">
-              <TresPuntos />
+      <main data-inicio>
+        {/* Banner verde: la cabecera verde se funde con él y el buscador queda a caballo entre el verde y el blanco. */}
+        <section className="bg-verde px-5 pb-28 pt-6 text-center text-white sm:px-6 sm:pb-36 sm:pt-12">
+          <div className="mx-auto flex max-w-[860px] flex-col items-center gap-[18px] sm:gap-[22px]">
+            <span className="inline-flex h-[30px] items-center rounded-full bg-white/12 px-3.5 text-[13px] font-semibold text-[#DDEBE7] sm:h-8 sm:text-sm">
               <span className="sm:hidden">{MARCA.lema}</span>
               <span className="hidden sm:inline">Gratis · Sin comisiones · Hecho en Bogotá</span>
             </span>
-            <h1 className="text-balance font-display text-[38px] font-extrabold leading-[1.05] sm:leading-[1.03] tracking-[-1.2px] sm:text-[3.6rem] sm:tracking-[-2px]">
-              Encuentra quién te ayude, <span className="text-verde">cerca de ti.</span>
+            <h1 className="text-balance font-display text-[38px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[4.2rem] sm:leading-[1.02] sm:tracking-[-2.2px]">
+              Encuentra quién te ayude, <span className="text-amarillo">cerca de ti.</span>
             </h1>
-            <p className="max-w-[540px] text-base leading-normal text-tinta-2 sm:text-lg sm:leading-relaxed">
+            <p className="max-w-[700px] text-base leading-normal text-[#DDEBE7] sm:text-lg sm:leading-relaxed">
               <span className="sm:hidden">Plomeros, profesores, acarreos y oficios de confianza en tu localidad. Escríbeles directo por WhatsApp, sin comisiones.</span>
               <span className="hidden sm:inline">
                 Plomeros, profesores particulares, acarreos y oficios de confianza en tu localidad. Compara reseñas reales y escríbeles directo por WhatsApp. 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión.
               </span>
             </p>
-
-            <BuscadorInicio localidadInicial={LOCALIDAD_INICIAL} />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[13px] text-gris sm:text-sm">Populares:</span>
-              {POPULARES.map((p, i) => (
-                <Link
-                  key={p}
-                  href={buscar({ q: p, localidad: LOCALIDAD_INICIAL })}
-                  className={`h-9 items-center rounded-[18px] border border-borde bg-white px-3.5 text-sm font-medium text-tinta sm:font-normal ${i < 3 ? "flex" : "hidden sm:flex"}`}
-                >
-                  {p}
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden min-w-0 flex-[1_1_380px] flex-col gap-3.5 sm:flex">
-            <div className="flex flex-col gap-[18px] rounded-[28px] bg-tinta p-7 text-white">
-              <div className="flex gap-2.5" aria-hidden="true">
-                <span className="h-2.5 flex-1 rounded-full bg-verde-vivo" />
-                <span className="h-2.5 flex-1 rounded-full bg-ladrillo-claro" />
-                <span className="h-2.5 flex-1 rounded-full bg-amarillo" />
-              </div>
-              <div className="grid grid-cols-3 gap-2.5 text-sm">
-                {[
-                  { b: "Bueno", t: "Identidad verificada", c: "text-verde-vivo" },
-                  { b: "Bonito", t: "Fotos de trabajos reales", c: "text-ladrillo-claro" },
-                  { b: "Barato", t: "Precios a la vista", c: "text-amarillo" },
-                ].map((x) => (
-                  <div key={x.b} className="flex flex-col gap-1">
-                    <b className={`font-display text-[22px] ${x.c}`}>{x.b}</b>
-                    <span className="leading-snug text-[#C9D1CF]">{x.t}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <article className="flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-[18px] shadow-[0_8px_30px_rgba(27,38,35,0.06)]">
-              <Link href={`/${resena.proveedor.slug}`} className="flex items-center gap-3 text-tinta">
-                <Avatar proveedor={resena.proveedor} />
-                <span className="flex min-w-0 flex-col gap-0.5">
-                  <b className="text-base">{resena.proveedor.nombre}</b>
-                  <span className="text-sm text-gris">
-                    {resena.proveedor.servicio} · {resena.proveedor.localidades.join(", ")}
-                  </span>
-                </span>
-                <span className="ml-auto flex items-center gap-1 text-sm font-bold">
-                  <Estrella />
-                  {formatoPromedio(resena.proveedor.promedio)}
-                </span>
-              </Link>
-              <p className="text-[15px] leading-normal text-tinta-2">«{resena.texto}»</p>
-              <span className="text-[13px] text-gris">
-                {resena.cliente} · {resena.localidad}
-              </span>
-            </article>
           </div>
         </section>
 
+        <section className="relative z-10 mx-auto -mt-[88px] flex max-w-[940px] flex-col items-center gap-5 px-5 sm:-mt-[108px] sm:px-6">
+          <div className="w-full">
+            <BuscadorInicio localidadInicial={LOCALIDAD_INICIAL} />
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="text-[13px] text-gris sm:text-sm">Populares:</span>
+            {POPULARES.map((p, i) => (
+              <Link
+                key={p}
+                href={buscar({ q: p, localidad: LOCALIDAD_INICIAL })}
+                className={`h-9 items-center rounded-[18px] border border-borde bg-white px-3.5 text-sm font-medium text-tinta sm:font-normal ${i < 3 ? "flex" : "hidden sm:flex"}`}
+              >
+                {p}
+              </Link>
+            ))}
+          </div>
+        </section>
         <section id="categorias" className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className={h2}>Categorías</h2>
-            <Link href="/categorias" className="text-sm font-semibold text-verde hover:text-verde-oscuro sm:text-[15px]">
-              Ver todas las categorías
+            <h2 className={h2}>Explora por categoría</h2>
+            <Link href="/categorias" className="text-sm font-semibold text-ladrillo hover:text-ladrillo-oscuro sm:text-[15px]">
+              Ver todas →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:gap-4">
-            {CATEGORIAS.map((c) => {
-              const foto = FOTO_CATEGORIA[c.slug];
+          <div className="grid grid-cols-2 gap-x-3 gap-y-6 pt-2 sm:grid-cols-4 sm:gap-4">
+            {TARJETAS_INICIO.map((c) => {
               return (
-                <Link
-                  key={c.slug}
-                  href={`/categorias/${c.slug}`}
-                  className={`relative isolate flex h-[124px] min-w-0 flex-col justify-between overflow-hidden rounded-[18px] p-3.5 sm:h-auto sm:min-h-52 sm:flex-[1_1_240px] sm:gap-4 sm:rounded-[22px] sm:p-5 ${foto ? "bg-tinta text-white" : TONO_CATEGORIA[c.icono]}`}
-                >
-                  {foto && (
-                    <>
-                      <Image src={foto} alt="" fill sizes="(max-width: 640px) 50vw, 300px" className="-z-20 object-cover" />
-                      <span aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-tinta/95 via-tinta/50 to-tinta/10" />
-                    </>
-                  )}
-                  <IconoCategoria icono={c.icono} className="size-7 sm:size-8" />
-                  <span className="flex flex-col gap-0.5 sm:gap-1">
+                <Link key={c.href} href={c.href} className="flex flex-col items-center gap-3 text-center text-tinta">
+                  <span className="relative isolate flex size-[116px] items-center justify-center overflow-hidden rounded-full bg-tinta sm:size-[150px]">
+                    {c.foto && <Image src={c.foto} alt="" fill sizes="150px" className="object-cover" />}
+                  </span>
+                  <span className="flex flex-col gap-1">
                     <b className="text-base sm:text-lg">{c.nombre}</b>
-                    <span className="text-xs sm:hidden">{c.corto}</span>
-                    <span className="hidden text-sm leading-snug sm:inline">{c.descripcion}</span>
+                    <span className="text-xs text-tinta-2 sm:hidden">{c.corto}</span>
+                    <span className="hidden text-sm leading-snug text-tinta-2 sm:inline">{c.descripcion}</span>
                   </span>
                 </Link>
               );

@@ -32,6 +32,8 @@ export type Subcategoria = {
   atiendeUrgencias: boolean;
   exigeInsigniaMenores: boolean;
   exigeRutDesdeAlta: boolean;
+  /** Pide matrícula, tarjeta profesional o certificación del oficio antes de aprobar. */
+  exigeMatricula: boolean;
   seo: Seo;
   /** Palabras clave y sinónimos para la búsqueda (terminos_busqueda). */
   claves: string;
@@ -40,7 +42,7 @@ export type Subcategoria = {
 export type CategoriaPadre = {
   nombre: string;
   slug: string;
-  icono: "casa" | "libro" | "camion" | "herramienta";
+  icono: "casa" | "libro" | "camion" | "herramienta" | "huella" | "maletin";
   corto: string;
   descripcion: string;
   subcategorias: Subcategoria[];
@@ -55,6 +57,7 @@ type Fuente = {
   urgencias?: boolean;
   menores?: boolean;
   rut?: boolean;
+  matricula?: boolean;
   principal: string;
   relacionadas: string[];
   problemas?: string[];
@@ -73,6 +76,7 @@ function oficio(f: Fuente): Subcategoria {
     atiendeUrgencias: f.urgencias ?? false,
     exigeInsigniaMenores: f.menores ?? false,
     exigeRutDesdeAlta: f.rut ?? false,
+    exigeMatricula: f.matricula ?? false,
     seo,
     claves: [f.nombre, base, ...f.relacionadas].join(", "),
   };
@@ -161,7 +165,6 @@ export const CATEGORIAS: CategoriaPadre[] = [
     oficios: [
       { nombre: "Tecnología", slug: "tecnico-de-computadores", detalle: "Computadores, wifi, celulares", principal: "técnico de computadores en Bogotá", relacionadas: ["arreglo de computadores", "formatear", "wifi", "celulares"], problemas: ["Formatear", "Wifi lento", "Computador lento", "Celular dañado"], intro: "Técnicos para arreglar computadores, redes wifi y celulares en tu casa u oficina." },
       { nombre: "Belleza a domicilio", slug: "belleza-a-domicilio", principal: "manicurista a domicilio en Bogotá", relacionadas: ["uñas", "peluquero a domicilio", "barbero a domicilio", "maquillaje"], problemas: ["Manicure y pedicure", "Peluquería", "Barbero", "Maquillaje"], intro: "Manicure, peluquería, barbería y maquillaje a domicilio, sin salir de casa." },
-      { nombre: "Mascotas", slug: "mascotas", principal: "paseador de perros en Bogotá", relacionadas: ["peluquería canina", "adiestrador", "guardería de perros"], problemas: ["Paseo de perros", "Peluquería canina", "Adiestramiento"], intro: "Paseadores, peluquería canina, adiestramiento y guardería para tu mascota." },
       { nombre: "Costura", slug: "costurera", principal: "arreglos de ropa en Bogotá", relacionadas: ["costurera", "modista", "sastre", "ruedos", "cremalleras"], problemas: ["Ruedos", "Cremalleras", "Ajustes de talla"], intro: "Arreglos de ropa: ruedos, cremalleras y ajustes de talla con costureras y modistas." },
       { nombre: "Fotografía", slug: "fotografo", principal: "fotógrafo a domicilio en Bogotá", relacionadas: ["sesión de fotos", "retratos", "fotografía de eventos"], problemas: ["Sesión de fotos", "Retratos", "Eventos"], intro: "Fotógrafos para sesiones, retratos y eventos. Revisa los portafolios antes de escribirles." },
       { nombre: "Planchado", slug: "planchado", principal: "planchado de ropa a domicilio en Bogotá", relacionadas: ["planchadora", "ropa por docenas"], problemas: ["Ropa por docenas", "Camisas"], intro: "Planchado de ropa por docenas, con recogida y entrega según el proveedor." },
@@ -173,7 +176,31 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Recreacionistas", slug: "recreacionistas", menores: true, principal: "recreacionistas para fiestas infantiles en Bogotá", relacionadas: ["show infantil", "payasos", "magos", "juegos"], problemas: ["Show infantil", "Payasos", "Juegos y dinámicas"], intro: "Recreacionistas para fiestas infantiles: shows, juegos y dinámicas. Quienes trabajan con menores tienen verificación de antecedentes." },
     ],
   }),
-];
+  padre({
+    nombre: "Mascotas y veterinaria",
+    icono: "huella",
+    corto: "Veterinarios, paseos, peluquería",
+    descripcion: "Veterinarios, paseadores, peluquería canina y guardería",
+    oficios: [
+      { nombre: "Veterinarios", slug: "veterinario", popular: true, urgencias: true, matricula: true, detalle: "Consulta, vacunas, urgencias 24 horas", principal: "veterinario en Bogotá", relacionadas: ["veterinario a domicilio", "veterinario 24 horas", "urgencias veterinarias", "clínica veterinaria", "vacunas para perros", "vacunas para gatos", "desparasitación", "esterilización", "consulta veterinaria", "médico veterinario"], problemas: ["Vacunas", "Consulta a domicilio", "Urgencia veterinaria", "Desparasitación", "Esterilización"], intro: "Médicos veterinarios para consulta, vacunas y urgencias de perros, gatos y otras mascotas. Algunos declaran atender urgencias o las 24 horas: míralo en sus etiquetas y confirma la disponibilidad por WhatsApp. Pedimos la tarjeta profesional o matrícula antes de aprobar el perfil. LasTresB no presta el servicio ni garantiza tiempos de llegada." },
+      { nombre: "Paseo de perros", slug: "paseador-de-perros", popular: true, principal: "paseador de perros en Bogotá", relacionadas: ["paseo de perros", "paseador", "caminata para perros"], problemas: ["Paseo diario", "Paseo ocasional", "Perros grandes"], intro: "Paseadores de perros para el día a día o para cuando no estás. Antes de empezar, conoce a la persona y acuerda horarios, rutas y qué hacer ante cualquier imprevisto." },
+      { nombre: "Peluquería canina", slug: "peluqueria-canina", principal: "peluquería canina en Bogotá", relacionadas: ["baño de perros", "corte de pelo para perros", "estética canina", "peluquería de mascotas a domicilio", "grooming"], problemas: ["Baño y corte", "Estética canina", "A domicilio"], intro: "Baño, corte y estética para perros y gatos, en el local o en tu casa. Cuéntale al peluquero la raza, el tamaño y si tu mascota es nerviosa." },
+      { nombre: "Adiestramiento canino", slug: "adiestrador-canino", principal: "adiestrador de perros en Bogotá", relacionadas: ["entrenador de perros", "educación canina", "cachorros", "obediencia", "corrección de conducta"], problemas: ["Cachorros", "Obediencia", "Conducta"], intro: "Adiestradores para enseñar obediencia a cachorros y perros adultos. Pregunta por el método que usan y pide ver su trabajo con otros perros." },
+      { nombre: "Guardería y hotel para mascotas", slug: "guarderia-de-mascotas", principal: "guardería de perros en Bogotá", relacionadas: ["hotel para perros", "hospedaje de mascotas", "pensión para mascotas", "cuidado de mascotas en vacaciones"], problemas: ["Vacaciones", "Fines de semana", "Guardería por días"], intro: "Guardería y hospedaje para tu mascota cuando viajas o trabajas todo el día. Visita el lugar, pregunta por las vacunas que exigen y cómo te avisan cómo va tu mascota." },
+    ],
+  }),
+  padre({
+    nombre: "Servicios profesionales",
+    icono: "maletin",
+    corto: "Contadores, arquitectos, diseño",
+    descripcion: "Contadores, arquitectos, diseño gráfico y traducciones",
+    oficios: [
+      { nombre: "Contadores y administradores de empresas", slug: "contador", detalle: "Contabilidad, impuestos, trámites", matricula: true, principal: "contador en Bogotá", relacionadas: ["contador público", "contabilidad", "declaración de renta", "RUT", "facturación electrónica", "impuestos", "administrador de empresas", "asesoría contable", "balances", "contador para independientes"], problemas: ["Declaración de renta", "Contabilidad de mi negocio", "RUT y facturación electrónica", "Asesoría para independientes"], intro: "Contadores y administradores de empresas para trabajos puntuales: declaración de renta, contabilidad de tu negocio, RUT y facturación electrónica. Es un oficio de recomendación de voz a voz: revisa las reseñas, pide la cotización por escrito y acuerda el alcance del trabajo antes de empezar. Pedimos la tarjeta profesional o matrícula del oficio antes de aprobar el perfil." },
+      { nombre: "Arquitectos y diseño de interiores", slug: "arquitecto", matricula: true, detalle: "Planos, diseño, licencias", principal: "arquitecto en Bogotá", relacionadas: ["diseño de interiores", "planos", "remodelación de apartamento", "licencia de construcción", "decoración", "renders"], problemas: ["Planos", "Diseño de interiores", "Remodelación", "Licencias de construcción"], intro: "Arquitectos y diseñadores de interiores para planos, remodelaciones y decoración. Pedimos la matrícula profesional antes de aprobar el perfil. Pide una propuesta por escrito con el alcance, los entregables y los tiempos." },
+      { nombre: "Diseño gráfico y marketing", slug: "diseno-grafico", principal: "diseñador gráfico en Bogotá", relacionadas: ["logos", "diseño de logo", "redes sociales", "community manager", "flyers", "páginas web", "marketing digital", "branding"], problemas: ["Logo", "Redes sociales", "Página web", "Piezas para tu negocio"], intro: "Diseñadores y creadores de contenido para tu logo, tus redes sociales, tu página web y las piezas de tu negocio. Revisa sus portafolios y acuerda por escrito qué entrega y cuántos ajustes incluye." },
+      { nombre: "Traducciones", slug: "traductor", principal: "traductor en Bogotá", relacionadas: ["traducción de documentos", "traductor de inglés", "traducción oficial", "intérprete", "subtítulos"], problemas: ["Documentos", "Inglés", "Traducción oficial", "Subtítulos"], intro: "Traductores de documentos, textos y subtítulos. Si necesitas una traducción oficial para un trámite, confirma con el traductor y con la entidad que la pide qué requisitos debe cumplir." },
+    ],
+  }),];
 
 export const categoriaPorSlug = (slug: string) => CATEGORIAS.find((c) => c.slug === slug);
 
@@ -217,6 +244,7 @@ export const OFICIOS_RENOMBRADOS: Record<string, string> = {
   "trasteos-y-mudanzas": "trasteos",
   tecnologia: "tecnico-de-computadores",
   costura: "costurera",
+  mascotas: "paseador-de-perros",
 };
 
 /** Oficios eliminados por la regla de negocio: sus URLs se redirigen a /categorias. */

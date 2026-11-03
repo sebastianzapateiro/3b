@@ -6,6 +6,8 @@
 import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { distanciaALocalidades, type Punto } from "@/lib/ubicacion";
+import { nivelDePerfil } from "@/lib/nivel";
+import type { NivelPerfil } from "@/lib/demo";
 
 const {
   proveedores,
@@ -79,6 +81,7 @@ export type ResultadoBusqueda = {
   localidades: string[];
   promedio: number;
   totalResenas: number;
+  nivel: NivelPerfil;
   insignias: { clave: string; nombre: string }[];
   precioDesde: number | null;
   atiendeUrgencias: boolean;
@@ -242,6 +245,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
     nombre: proveedores.nombrePublico,
     promedio: proveedores.promedio,
     totalResenas: proveedores.totalResenas,
+    completitud: proveedores.completitud,
     precio: precioMinimo,
     precioVisita: precioVisitaSql,
     convenir: proveedores.visitaAConvenir,
@@ -310,6 +314,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       localidades: zonasMapa.get(r.id) ?? [],
       promedio: Number(r.promedio ?? 0),
       totalResenas: r.totalResenas,
+      nivel: nivelDePerfil(r.completitud),
       insignias: insigniasMapa.get(r.id) ?? [],
       precioDesde: r.precio != null ? Number(r.precio) : null,
       atiendeUrgencias: r.urgencias,

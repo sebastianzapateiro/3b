@@ -82,23 +82,26 @@ export function BuscadorInicio({ localidadInicial }: { localidadInicial: string 
   );
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-3 rounded-[20px] bg-white p-3.5 shadow-[0_6px_24px_rgba(27,38,35,0.08)] sm:rounded-[22px] sm:p-4 sm:shadow-[0_8px_30px_rgba(27,38,35,0.08)]" noValidate>
-      <div className="flex min-w-0 flex-col gap-1.5">
-        <label htmlFor={`${id}-q`} className={etiqueta}>¿Qué estás buscando?</label>
-        <input id={`${id}-q`} name="q" type="search" required maxLength={500} placeholder="Ej: plomero, clases de química para mi hijo" className={campo} />
+    <form onSubmit={enviar} className="flex flex-col gap-3.5 rounded-[22px] bg-white p-4 text-left shadow-[0_16px_48px_rgba(27,38,35,0.16)] sm:rounded-[28px] sm:p-6" noValidate>
+      <div className={`grid gap-3.5 ${modo === "localidad" ? "sm:grid-cols-[minmax(0,1fr)_260px]" : ""}`}>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <label htmlFor={`${id}-q`} className={etiqueta}>¿Qué estás buscando?</label>
+          <input id={`${id}-q`} name="q" type="search" required maxLength={500} placeholder="Ej: plomero, clases de química para mi hijo" className={campo} />
+        </div>
+        {modo === "localidad" && (
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <label htmlFor={`${id}-loc`} className={etiqueta}>Localidad</label>
+            <select id={`${id}-loc`} name="localidad" defaultValue={localidadInicial} className={campo}>
+              {LOCALIDADES_BOGOTA.map((l) => <option key={l.slug} value={l.slug}>{l.nombre}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
       <fieldset className="flex flex-col gap-2">
         <legend className={`${etiqueta} mb-1.5`}>Ubicación para el servicio</legend>
-        <div className="flex flex-col gap-2 sm:flex-row">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por ubicación exacta")}</div>
-        {modo === "localidad" ? (
-          <>
-            <label htmlFor={`${id}-loc`} className="sr-only">Localidad</label>
-            <select id={`${id}-loc`} name="localidad" defaultValue={localidadInicial} className={campo}>
-              {LOCALIDADES_BOGOTA.map((l) => <option key={l.slug} value={l.slug}>{l.nombre}</option>)}
-            </select>
-          </>
-        ) : (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por ubicación exacta")}</div>
+        {modo === "exacta" && (
           <div className="flex flex-col gap-1.5">
             <label htmlFor={`${id}-dir`} className="text-sm text-tinta-2">Escribe la dirección o el lugar donde necesitas el servicio. La compartimos con el proveedor para que te cotice.</label>
             <input id={`${id}-dir`} name="direccion" maxLength={200} autoComplete="street-address" placeholder="Ej: Calle 80 # 20-30, Barrios Unidos" className={campo} />
@@ -108,19 +111,22 @@ export function BuscadorInicio({ localidadInicial }: { localidadInicial: string 
         )}
       </fieldset>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5"><label htmlFor={`${id}-nombre`} className={etiqueta}>Tu nombre</label><input id={`${id}-nombre`} name="nombre" required maxLength={80} autoComplete="given-name" className={campo} /></div>
-        <div className="flex flex-col gap-1.5"><label htmlFor={`${id}-wa`} className={etiqueta}>Tu WhatsApp</label><input id={`${id}-wa`} name="whatsapp" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} /></div>
+      <div className="grid gap-3.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_190px] sm:items-end">
+        <div className="flex min-w-0 flex-col gap-1.5"><label htmlFor={`${id}-nombre`} className={etiqueta}>Tu nombre</label><input id={`${id}-nombre`} name="nombre" required maxLength={80} autoComplete="given-name" className={campo} /></div>
+        <div className="flex min-w-0 flex-col gap-1.5"><label htmlFor={`${id}-wa`} className={etiqueta}>Tu WhatsApp</label><input id={`${id}-wa`} name="whatsapp" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} /></div>
+        <button type="submit" disabled={enviando} className="flex h-13 items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          {enviando ? "Buscando…" : "Buscar"}
+        </button>
       </div>
 
-      <label className="flex items-start gap-2.5 text-sm leading-snug text-tinta-2">
+      <label className="flex items-start gap-2.5 text-[13px] leading-snug text-tinta-2">
         <input type="checkbox" name="autoriza" required className="mt-0.5 size-[18px] flex-none accent-verde" />
-        <span>Acepto los <Link href="/terminos" target="_blank" className="font-semibold text-verde underline">términos de uso</Link> y autorizo el tratamiento de mis datos (nombre, WhatsApp y ubicación) para mostrarme proveedores y escribirme por WhatsApp, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.</span>
+        <span>Acepto los <Link href="/terminos" target="_blank" className="underline">términos de uso</Link> y autorizo el tratamiento de mis datos (nombre, WhatsApp y ubicación) para mostrarme proveedores y escribirme por WhatsApp, según la <Link href="/privacidad" target="_blank" className="underline">política de tratamiento de datos</Link>.</span>
       </label>
       <div aria-hidden="true" className="absolute -left-[9999px]"><label htmlFor={`${id}-web`}>No llenar</label><input id={`${id}-web`} name="web" tabIndex={-1} autoComplete="off" /></div>
 
       {error && <p role="alert" className="rounded-xl bg-[#FDF3F0] px-3.5 py-3 text-sm text-ladrillo-oscuro">{error}</p>}
-      <button type="submit" disabled={enviando} className="h-13 rounded-campo bg-tinta px-7 text-[17px] font-semibold text-white disabled:opacity-60 sm:self-start sm:text-base">{enviando ? "Buscando…" : "Buscar"}</button>
     </form>
   );
 }

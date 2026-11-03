@@ -9,8 +9,9 @@ import { db, schema } from "@las3b/db";
 import { headers } from "next/headers";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } from "@/lib/alta-proveedor";
-import { datosParaConfirmar, exigirProveedor } from "@/lib/panel";
+import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
+import { quitarFoto } from "@/lib/fotos";
 import { oficioDelServicio } from "@/lib/precios";
 import { marcarServicioPrestado } from "@/lib/servicios-prestados";
 
@@ -22,6 +23,17 @@ const pagina = (ruta: string) => {
   revalidatePath("/panel", "layout"); // el menú lateral muestra el avance del perfil
 };
 
+/* Fotos de trabajos (la carga va por /api/v1/yo/fotos) */
+
+export async function quitarFotoTrabajo(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const id = z.string().uuid().parse(formData.get("id"));
+  await quitarFoto(proveedor.id, id);
+  pagina("/panel/fotos");
+  revalidatePath(`/${proveedor.slug}`);
+  return volver("/panel/fotos", { ok: "Foto quitada." });
+}
+
 /* Perfil */
 
 const esquemaPerfil = z.object({
@@ -30,7 +42,7 @@ const esquemaPerfil = z.object({
 });
 
 export async function guardarPerfil(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const r = esquemaPerfil.safeParse(Object.fromEntries(formData));
   if (!r.success) return volver("/panel/perfil", { error: r.error.issues[0]?.message ?? "Revisa los datos." });
 
@@ -63,7 +75,7 @@ export async function guardarPerfil(formData: FormData) {
 
 /** Pausar muestra «no disponible» en el perfil; reactivar lo vuelve a publicar. Solo si ya fue aprobado. */
 export async function cambiarPausa(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const pausar = formData.get("accion") === "pausar";
   if (pausar && proveedor.estado !== "aprobado") return volver("/panel", { error: "Solo puedes pausar un perfil aprobado." });
   if (!pausar && proveedor.estado !== "pausado") return volver("/panel", { error: "Tu perfil no está pausado." });
@@ -93,7 +105,7 @@ async function datosServicio(formData: FormData, proveedorId: string) {
 }
 
 export async function agregarServicio(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const d = await datosServicio(formData, proveedor.id);
   await db.insert(serviciosProveedor).values({ proveedorId: proveedor.id, ...d });
   pagina("/panel/servicios");
@@ -102,7 +114,7 @@ export async function agregarServicio(formData: FormData) {
 }
 
 export async function actualizarServicio(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const id = z.coerce.number().int().parse(formData.get("id"));
   const d = await datosServicio(formData, proveedor.id);
   await db.update(serviciosProveedor).set(d).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
@@ -112,7 +124,7 @@ export async function actualizarServicio(formData: FormData) {
 }
 
 export async function quitarServicio(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const id = z.coerce.number().int().parse(formData.get("id"));
   await db.update(serviciosProveedor).set({ visible: false }).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
   pagina("/panel/servicios");
@@ -123,7 +135,7 @@ export async function quitarServicio(formData: FormData) {
 /* Reseñas (CU-45: una sola respuesta por reseña, no editable) */
 
 export async function responderResena(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const id = z.string().uuid().parse(formData.get("id"));
   const texto = z.string().trim().min(2, "Escribe tu respuesta.").max(500, "La respuesta admite hasta 500 caracteres.").safeParse(formData.get("texto"));
   if (!texto.success) return volver("/panel/resenas", { error: texto.error.issues[0]?.message ?? "Revisa tu respuesta." });
@@ -140,7 +152,7 @@ export async function responderResena(formData: FormData) {
 /* Servicio prestado (CU-38): pide al cliente que califique */
 
 export async function marcarPrestado(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const contactoId = z.string().uuid().parse(formData.get("contactoId"));
   const r = await marcarServicioPrestado(proveedor.id, contactoId);
   if ("error" in r) return volver("/panel/contactos", { error: r.error });
@@ -151,7 +163,7 @@ export async function marcarPrestado(formData: FormData) {
 /* Alta dentro del panel (CU-30): datos del negocio e identidad, solo en borrador */
 
 export async function guardarNegocioPanel(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const r = await guardarNegocio(proveedor, formData);
   if ("error" in r) return volver("/panel/perfil", { error: r.error });
   revalidatePath("/panel", "layout");
@@ -159,7 +171,7 @@ export async function guardarNegocioPanel(formData: FormData) {
 }
 
 export async function guardarIdentidadPanel(formData: FormData) {
-  const { proveedor } = await exigirProveedor();
+  const { proveedor } = await exigirProveedorEditable();
   const r = await guardarIdentidad(proveedor, formData);
   if ("error" in r) return volver("/panel/verificacion", { error: r.error });
   revalidatePath("/panel", "layout");
@@ -169,7 +181,7 @@ export async function guardarIdentidadPanel(formData: FormData) {
 /* Envío a revisión: alta propia o asistida (CU-30 / CU-51, Ley 1581) */
 
 export async function enviarARevision(formData: FormData) {
-  const { proveedor, usuario } = await exigirProveedor();
+  const { proveedor, usuario } = await exigirProveedorEditable();
   if (proveedor.estado !== "borrador") return volver("/panel", { error: "Tu perfil ya fue enviado a revisión." });
 
   const pendientes = await pendientesAlta(proveedor.id);

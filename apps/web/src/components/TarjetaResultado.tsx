@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Estrella, formatoPromedio } from "@/components/TarjetaProveedor";
+import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
 import type { ResultadoBusqueda } from "@/lib/busqueda";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -43,15 +43,7 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
           <b className="text-base sm:text-lg">{r.nombre}</b>
           {detalle && <span className="text-sm text-gris">{detalle}</span>}
           <span className="flex flex-wrap items-center gap-x-1 text-sm font-semibold">
-            {r.totalResenas > 0 ? (
-              <>
-                <Estrella />
-                {formatoPromedio(r.promedio)}
-                <span className="font-normal text-gris">({r.totalResenas})</span>
-              </>
-            ) : (
-              <span className="text-tinta-2">Nuevo en LasTresB</span>
-            )}
+            <NivelPerfilMarca nivel={r.nivel} />
             {textoVisita && <span className="font-normal text-gris sm:hidden">· {textoVisita}</span>}
           </span>
         </span>
