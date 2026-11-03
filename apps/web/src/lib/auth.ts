@@ -8,7 +8,8 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
 import { db, schema } from "@las3b/db";
-import { ipDeLaPeticion, POLITICAS_REGISTRO_COMPRADOR, registrarConsentimientos } from "./consentimientos";
+import { ipDeLaPeticion, registrarConsentimientos } from "./consentimientos";
+import { POLITICAS_POR_TIPO, tipoDeCabeceras } from "./ingreso";
 import { eq } from "drizzle-orm";
 import { enviarCorreo } from "./correo";
 import { bienvenidaCliente, bienvenidaProveedor, confirmarCorreo, recuperarClave } from "./plantillas";
@@ -110,10 +111,18 @@ export const auth = betterAuth({
       create: {
         after: async (user, ctx) => {
           if (ctx?.path !== "/sign-up/email") return;
-          await registrarConsentimientos(user.id, POLITICAS_REGISTRO_COMPRADOR, {
+          // El tipo elegido en /ingreso (cookie): el proveedor acepta sus términos y queda con el borrador del alta
+          // (CU-30), así al confirmar el correo e ingresar entra directo a /panel.
+          const tipo = tipoDeCabeceras(ctx.headers);
+          await registrarConsentimientos(user.id, [...POLITICAS_POR_TIPO[tipo]], {
             ip: ipDeLaPeticion(ctx.headers),
             userAgent: ctx.headers?.get("user-agent") ?? null,
           });
+          if (tipo === "proveedor") {
+            // Import dinámico: alta-proveedor → documentos → auth formaría un ciclo.
+            const { crearBorrador } = await import("./alta-proveedor");
+            await crearBorrador(user);
+          }
         },
       },
     },

@@ -74,8 +74,10 @@ export default async function Listo({ searchParams }: Props) {
   }
 
   const esProveedor = await tieneProveedor(id);
+  // Quien ya tiene perfil de proveedor entra a su panel si eligió «proveedor» o si no venía de otra página
+  // (la cookie del tipo dura 1 h y puede vencer antes de confirmar el correo).
+  if (esProveedor && (tipo === "proveedor" || destino === "/")) redirect("/panel");
   if (tipo === "proveedor") {
-    if (esProveedor) redirect("/panel");
     return (
       <main className="flex min-h-[calc(100dvh-4.5rem)] items-center px-4 py-10">
         <div className={tarjeta}>

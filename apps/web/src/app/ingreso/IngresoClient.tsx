@@ -181,7 +181,7 @@ export function IngresoClient({ destino, google, apple, aviso }: { destino: stri
                 <button type="button" role="tab" aria-selected={modo === "ingresar"} onClick={() => setModo("ingresar")} className={pestana(modo === "ingresar")}>Ya tengo cuenta</button>
                 <button type="button" role="tab" aria-selected={modo === "crear"} onClick={() => setModo("crear")} className={pestana(modo === "crear")}>Crear cuenta</button>
               </div>
-              {modo === "ingresar" ? <FormIngresar destino={destino} /> : <FormRegistro alIngresar={() => setModo("ingresar")} />}
+              {modo === "ingresar" ? <FormIngresar destino={destino} /> : <FormRegistro proveedor={tipo === "proveedor"} alIngresar={() => setModo("ingresar")} />}
               <p className="text-center text-sm leading-snug text-gris">
                 Con Google o Apple solo usamos tu nombre, correo y foto para crear la cuenta, y antes te pedimos confirmación.{" "}
                 <Link href="/privacidad" className="font-semibold text-verde underline">Datos personales</Link>
