@@ -65,8 +65,10 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - Textos reales de políticas desde Drive (carpeta "Textos legales") en `politicas`; hoy la versión es `0.1-borrador`.
 - **Aceptación:** registro envía correo real; un usuario Google nuevo no puede navegar sin aceptar.
 
-## [ ] 6. P3 Alta de proveedor `/proveedores/registro` (3 pasos)
+## [ ] 6. P3 Alta de proveedor `/proveedores/registro` (dentro del panel)
 
+> **Cambio (2 nov 2026):** ya no hay asistente de pasos. `/proveedores/registro` crea el borrador (nombre de la cuenta, dirección automática; `lib/alta-proveedor.ts`) y lleva a `/panel`, donde el Resumen muestra las tareas pendientes con avance: datos del negocio (nombre, WhatsApp, segmento, oficios y dirección, editables solo en borrador, en `/panel/perfil`), localidades, servicios, identidad (en `/panel/verificacion`, documento cifrado), documentos y «Sobre mí» (opcional). `/panel/confirmar` (términos y autorizaciones) sirve para el alta propia y la asistida, y `enviarARevision` exige las tareas obligatorias. Decisión del dueño: entrar «de una» al panel. El OTP falso se quitó del flujo.
+>
 > **Estado (29 oct 2026):** pasos y borrador hechos. Documento cifrado con AES-256-GCM + huella HMAC (`packages/db/src/cifrado.ts`, clave `DOCUMENTOS_CLAVE`, migración `0004_documento_huella`). Carga de documentos hecha (29 oct): URL firmada de un solo uso → subida directa al bucket `privado` → confirmación con tipo real por firma de bytes (`lib/documentos.ts`, `/api/v1/yo/documentos`); paso 3 exige los obligatorios; el panel permite cargar el RUT diferido. Falta OTP real por WhatsApp (hoy en consola) y antivirus.
 
 

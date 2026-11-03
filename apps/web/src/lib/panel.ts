@@ -2,6 +2,7 @@
  * P8 · Panel del proveedor: resumen, perfil, servicios, reseñas y verificación.
  * Solo datos del propio proveedor; nunca expone documento, dirección ni fecha de nacimiento (regla 1).
  */
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
 import { z } from "zod";
 import { verificarSesionAdmin } from "@/lib/verificacion";
@@ -15,7 +16,7 @@ const { proveedores, serviciosProveedor, resenas, respuestasResena, user, provee
 /** Cookie con el proveedor que un administrador está viendo («Ver como»). Solo la pone el backoffice. */
 export const COOKIE_VER_COMO = "l3b_ver_como";
 
-/** Sesión + registro de proveedor. Sin sesión va a ingresar; sin registro, al alta de proveedor.
+/** Sesión + registro de proveedor. Sin sesión va a ingresar; sin registro, a /proveedores/registro (crea el borrador).
  * Un administrador con 2FA puede ver el panel de otro proveedor (`verComo`, solo lectura). */
 export async function exigirProveedor() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -28,6 +29,7 @@ export async function exigirProveedor() {
       nombre: proveedores.nombrePublico,
       estado: proveedores.estado,
       segmento: proveedores.segmento,
+      whatsapp: proveedores.whatsapp,
       presentacion: proveedores.presentacion,
       aniosExperiencia: proveedores.aniosExperiencia,
       emiteFactura: proveedores.emiteFactura,
@@ -64,7 +66,8 @@ export async function exigirProveedorEditable() {
 
 export type ProveedorPanel = Awaited<ReturnType<typeof exigirProveedor>>["proveedor"];
 
-export async function resumenPanel(proveedorId: string) {
+/** Cifras del Resumen. Con cache(): el layout (reseñas sin responder) y la página lo piden en la misma petición. */
+export const resumenPanel = cache(async (proveedorId: string) => {
   const [[c], [r], servicios, [f], cats, locs, [d]] = await Promise.all([
     db.select({ siete: sql<number>`count(*) FILTER (WHERE created_at >= now() - interval '7 days')::int`, treinta: sql<number>`count(*) FILTER (WHERE created_at >= now() - interval '30 days')::int`, total: sql<number>`count(*)::int` }).from(schema.contactos).where(eq(schema.contactos.proveedorId, proveedorId)),
     db.select({ sinResponder: sql<number>`count(*) FILTER (WHERE rr.resena_id IS NULL)::int` }).from(resenas).leftJoin(sql`respuestas_resena rr`, sql`rr.resena_id = ${resenas.id}`).where(and(eq(resenas.proveedorId, proveedorId), eq(resenas.estado, "visible"))),
@@ -85,7 +88,7 @@ export async function resumenPanel(proveedorId: string) {
     localidades: locs[0]?.n ?? 0,
     documentos: d?.n ?? 0,
   };
-}
+});
 
 export async function serviciosDelProveedor(proveedorId: string) {
   return db.select().from(serviciosProveedor).where(and(eq(serviciosProveedor.proveedorId, proveedorId), eq(serviciosProveedor.visible, true))).orderBy(asc(serviciosProveedor.orden), asc(serviciosProveedor.id));

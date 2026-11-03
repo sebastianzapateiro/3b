@@ -49,8 +49,8 @@ apps/web/src/
     buscar/                P2 resultados
     [slug]/                P7 portafolio, calificar (P5), OG por proveedor
     servicios/, categorias/, localidades/, guias/   Páginas SEO por oficio y localidad
-    proveedores/registro/  P3 alta en 3 pasos (borrador → pendiente)
-    panel/                 Panel del proveedor: perfil, servicios, reseñas, verificación; confirmar (borrador → revisa, acepta términos y envía)
+    proveedores/registro/  P3 crea el borrador y redirige a /panel (route.ts; enlaces con prefetch={false})
+    panel/                 Panel del proveedor: tareas del alta en el Resumen, perfil (+ datos del negocio en borrador), servicios, reseñas, verificación (+ identidad en borrador); confirmar (acepta términos y envía a revisión)
     reclamos/, reportar/   Formularios públicos (CU-10/11, reportes)
     terminos/, terminos-proveedores/, privacidad/, cookies/, resenas/, retiro-de-contenido/   Legales
     admin/ingresar/        Ingreso del equipo: clave + 2FA (QR la primera vez)
@@ -59,7 +59,7 @@ apps/web/src/
     api/auth/[...all]      Better Auth
     admin/documentos/[id]  Abre un documento privado: auditoría + redirección a URL firmada
     api/v1/                health, yo, yo/documentos (+ /subida), admin/proveedores/[id]/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
-  lib/                     Lógica de negocio (regla 7): documentos (requisitos, subida, apertura), almacenamiento (Storage REST), invitaciones (enlace de clave, estado, WhatsApp), busqueda, portafolio(-completo), resenas, panel, admin,
+  lib/                     Lógica de negocio (regla 7): alta-proveedor (borrador y tareas del alta), documentos (requisitos, subida, apertura), almacenamiento (Storage REST), invitaciones (enlace de clave, estado, WhatsApp), busqueda, portafolio(-completo), resenas, panel, admin,
                            moderacion, cumplimiento, auditoria(-consulta), parametros, verificacion (guardia backoffice),
                            consentimientos, correo (Resend o consola), seo, seo-servicios, publicacion, guias, faqs
   components/              UI pública; components/admin/ para el backoffice
@@ -112,13 +112,14 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - Semillas: 20 localidades, insignias, taxonomía por oficios con sinónimos, festivos de Colombia.
 - Público: home, `/buscar`, `/[slug]` con diseño completo y OG, contacto `/api/v1/contactos/ir`, reseñas (`/[slug]/calificar`), SEO por oficio y localidad, guías, legales, `/reclamos`, `/reportar`.
 - Cuenta: registro, ingreso, recuperación, Google, consentimiento obligatorio, Mi cuenta. Correo con Resend (o consola).
-- Proveedor: alta en 3 pasos con borrador y panel (`/panel`). Documento cifrado con AES-256-GCM + huella. Carga de documentos al bucket `privado` (URL firmada + validación de tipo real) en el alta y en el panel; el equipo los abre por `/admin/documentos/[id]` con auditoría.
+- Proveedor: alta dentro del panel (2 nov 2026): al elegir «proveedor» se crea el borrador y entra a `/panel`, que lista las tareas pendientes hasta enviar a revisión (`lib/alta-proveedor.ts`). Documento cifrado con AES-256-GCM + huella. Carga de documentos al bucket `privado` (URL firmada + validación de tipo real) en el alta y en el panel; el equipo los abre por `/admin/documentos/[id]` con auditoría.
 - Backoffice B1–B8 con rol + 2FA (QR al configurar; `/ingreso` también pide el código; códigos de respaldo utilizables; sesión del equipo de 8 h por `sesion_backoffice_h`; «confiar en este equipo» 8 h; 2FA obligatorio para admin y configurable para verificador y moderador en `/admin/usuarios`), creación de usuarios con invitación por correo, cambio de clave de una cuenta por un admin (`lib/claves.ts`: cierra sesiones, anula invitaciones y avisa por correo), auditoría de solo inserción, parámetros en `configuracion`.
+- **Despliegue continuo (2 nov 2026):** push a `main` → GitHub Actions → `/opt/lastresb/desplegar.sh` en el VPS (con vuelta atrás si no responde). Migraciones a mano antes del merge. Ver `infra/vps/README.md` § Despliegue continuo.
 - **Producción en VPS Hostinger desde el 1 nov 2026:** `https://www.lastresb.com.co` (Docker: Postgres 17 + web standalone; nginx + certbot en el host; respaldo diario). La base ya **no** es Supabase; Storage sí sigue en Supabase. Ver `infra/vps/README.md`. Vercel queda fuera.
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 
 **Deuda abierta (ver plan):**
-- VPS (1 nov 2026): `RESEND_API_KEY` sin configurar en el servidor (los correos solo salen en `docker compose logs web`); quizá faltan `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION`; respaldos fuera del VPS; quitar el dominio en Vercel; permisos del usuario `desarrollo`. Ver `infra/vps/README.md` § Pendiente.
+- VPS (2 nov 2026): Resend y Google OAuth configurados en local y en el servidor; falta DMARC (`_dmarc`, `p=none`) en Cloudflare. Quizá faltan `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION`; respaldos fuera del VPS; quitar el dominio en Vercel; permisos del usuario `desarrollo`. Ver `infra/vps/README.md` § Pendiente.
 - Autorización Ley 1918: el alta la firma con casilla, pero el backoffice la marca como «Falta» si no hay archivo; unificar criterio.
 - Fotos del portafolio al bucket `publico` (aún no hay carga).
 - OTP real por WhatsApp (hoy en consola).

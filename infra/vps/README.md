@@ -38,7 +38,21 @@ nuevas al puerto 22 en 30 s.
 `ssh lastresb-root 'touch /var/www/mantenimiento/activo'` pone «Estamos de trasteo» (503) en www; `rm` del mismo archivo lo quita.
 Debe estar en `/var/www`: nginx corre como `www-data` y no ve `/opt/lastresb` (750).
 
-## Desplegar una versión
+## Despliegue continuo (desde el 2 nov 2026)
+
+Cada push a **`main`** despliega producción con GitHub Actions (`.github/workflows/desplegar.yml`): typecheck y pruebas,
+luego `git archive` por SSH al usuario `despliegue`, cuya llave solo ejecuta `/opt/lastresb/desplegar.sh`. El script
+construye la imagen en el servidor, verifica el dominio, activa, revisa `/api/v1/health` y `/`, y vuelve a la versión
+anterior si no responde. Conserva las 5 últimas imágenes. `develop` no despliega nada.
+
+- Publicar: merge de `develop` a `main` y push. Se ve en GitHub → Actions → «Desplegar producción».
+- **Migraciones a mano, antes del merge** (`pnpm db:migrate` con el túnel). El despliegue no las aplica.
+- Instalar o actualizar el script y la llave: `bash infra/vps/instalar-despliegue.sh <llave.pub>` (desde tu PC).
+- Secretos del repo (Settings → Secrets and variables → Actions): `VPS_SSH_KEY` (llave privada), `VPS_KNOWN_HOSTS`
+  (`ssh-keyscan -t ed25519 2.24.110.171`), `VPS_HOST` (`2.24.110.171`).
+- Desplegar a mano el commit actual: `git archive HEAD | ssh lastresb-root /opt/lastresb/desplegar.sh $(git rev-parse HEAD)`.
+
+## Desplegar una versión (a mano, como antes)
 
 ```bash
 # Desde la raíz del repo, con el commit ya hecho:

@@ -8,7 +8,8 @@ import { z } from "zod";
 import { db, schema } from "@las3b/db";
 import { headers } from "next/headers";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
-import { estadoDocumentos } from "@/lib/documentos";
+import { avisarRegistroRecibido } from "@/lib/avisos-proveedor";
+import { guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } from "@/lib/alta-proveedor";
 import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
 import { quitarFoto } from "@/lib/fotos";
@@ -20,7 +21,7 @@ const { proveedores, serviciosProveedor, resenas, respuestasResena, proveedorLoc
 const volver = (ruta: string, params: Record<string, string>): never => redirect(`${ruta}?${new URLSearchParams(params)}`);
 const pagina = (ruta: string) => {
   revalidatePath(ruta);
-  revalidatePath("/panel");
+  revalidatePath("/panel", "layout"); // el menú lateral muestra el avance del perfil
 };
 
 /* Fotos de trabajos (la carga va por /api/v1/yo/fotos) */
@@ -67,8 +68,9 @@ export async function guardarPerfil(formData: FormData) {
   await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: proveedor.id, localidadId })));
 
   await guardarCompletitud(proveedor.id);
-  pagina("/panel/perfil");
+  revalidatePath("/panel", "layout");
   revalidatePath(`/${proveedor.slug}`);
+  if (proveedor.estado === "borrador") redirect(await rutaSiguientePaso(proveedor.id, "Perfil guardado."));
   return volver("/panel/perfil", { ok: "Perfil guardado." });
 }
 
@@ -159,14 +161,33 @@ export async function marcarPrestado(formData: FormData) {
   return volver("/panel/contactos", { ok: r.enviado === "correo" ? "Listo: le enviamos al cliente la invitación a calificar." : "Listo: el equipo de LasTresB le enviará al cliente la invitación a calificar por WhatsApp." });
 }
 
-/* Alta asistida: el proveedor confirma y envía a revisión (CU-51, Ley 1581) */
+/* Alta dentro del panel (CU-30): datos del negocio e identidad, solo en borrador */
+
+export async function guardarNegocioPanel(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const r = await guardarNegocio(proveedor, formData);
+  if ("error" in r) return volver("/panel/perfil", { error: r.error });
+  revalidatePath("/panel", "layout");
+  redirect(await rutaSiguientePaso(proveedor.id, "Datos de tu negocio guardados."));
+}
+
+export async function guardarIdentidadPanel(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const r = await guardarIdentidad(proveedor, formData);
+  if ("error" in r) return volver("/panel/verificacion", { error: r.error });
+  revalidatePath("/panel", "layout");
+  redirect(await rutaSiguientePaso(proveedor.id, "Datos de identidad guardados."));
+}
+
+/* Envío a revisión: alta propia o asistida (CU-30 / CU-51, Ley 1581) */
 
 export async function enviarARevision(formData: FormData) {
   const { proveedor, usuario } = await exigirProveedorEditable();
   if (proveedor.estado !== "borrador") return volver("/panel", { error: "Tu perfil ya fue enviado a revisión." });
 
-  const docs = await estadoDocumentos(proveedor.id);
-  if (docs.faltan.length) return volver("/panel/confirmar", { error: `Falta cargar: ${docs.faltan.join(", ")}.` });
+  const pendientes = await pendientesAlta(proveedor.id);
+  const falta = pendientes.tareas.find((t) => !t.ok && !t.opcional);
+  if (falta) return volver("/panel/confirmar", { error: `Antes de enviar, completa: ${falta.titulo.toLowerCase()}.` });
   const { exigeLey1918 } = await datosParaConfirmar(proveedor.id);
   // Casillas no premarcadas (regla 5): las marca el proveedor, nunca el equipo.
   if (formData.get("aceptaTerminosProveedor") !== "on") return volver("/panel/confirmar", { error: "Debes aceptar los términos para proveedores." });
@@ -181,6 +202,7 @@ export async function enviarARevision(formData: FormData) {
     { ip: ipDeLaPeticion(h), userAgent: h.get("user-agent") },
   );
   await db.update(proveedores).set({ estado: "pendiente", updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  await avisarRegistroRecibido(proveedor.id);
   revalidatePath("/panel", "layout");
   revalidatePath("/admin", "layout");
   return volver("/panel", { ok: "Listo: enviaste tu perfil a revisión. Te avisamos cuando quede publicado." });

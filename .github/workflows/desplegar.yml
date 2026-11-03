@@ -1,0 +1,61 @@
+# Despliegue continuo: cada push a `main` verifica el código y lo despliega en el VPS (www.lastresb.com.co).
+# La imagen se construye en el servidor (el build consulta la base, que no tiene puerto público).
+# La llave VPS_SSH_KEY solo puede ejecutar /opt/lastresb/desplegar.sh. Ver infra/vps/README.md § Despliegue continuo.
+# Las migraciones NO se aplican aquí: van a mano antes de hacer merge a main.
+name: Desplegar producción
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Un despliegue a la vez; si llega otro push, espera a que termine el anterior.
+concurrency:
+  group: produccion
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  desplegar:
+    needs: verificar
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Llave SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/despliegue && chmod 600 ~/.ssh/despliegue
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Construir y activar en el VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          git archive --format=tar HEAD | ssh -i ~/.ssh/despliegue -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o ServerAliveInterval=30 "despliegue@$VPS_HOST" "$GITHUB_SHA"
+      - name: Comprobar www
+        run: |
+          for i in $(seq 1 10); do
+            curl -fsS -o /dev/null --max-time 10 https://www.lastresb.com.co/api/v1/health && exit 0
+            sleep 3
+          done
+          echo "www.lastresb.com.co no responde" && exit 1

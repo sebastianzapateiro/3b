@@ -2,9 +2,9 @@
 
 import { usePathname } from "next/navigation";
 
-/** Rutas sin menú flotante (ninguna por ahora; el admin se excluye en SIN_PIE). */
+/** Rutas sin menú flotante (ninguna por ahora; el backoffice y el panel del proveedor tienen su menú lateral y se excluyen en SIN_PIE). */
 const SIN_CABECERA: string[] = [];
-const SIN_PIE = ["/admin"];
+const SIN_PIE = ["/admin", "/panel"];
 
 const coincide = (ruta: string, prefijos: string[]) => prefijos.some((p) => ruta === p || ruta.startsWith(`${p}/`));
 
