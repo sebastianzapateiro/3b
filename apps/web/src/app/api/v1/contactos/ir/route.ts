@@ -48,12 +48,18 @@ export async function GET(req: Request) {
   const jar0 = await cookies();
   const solicitudId = url.searchParams.get("s") ?? jar0.get(COOKIE_SOLICITUD)?.value ?? null;
   const solicitud = solicitudId && UUID.test(solicitudId) ? await obtenerSolicitud(solicitudId) : null;
-  const mensaje = solicitud ? mensajeSolicitud({ proveedor: p.nombre, cliente: solicitud.nombre ?? "un vecino", categoria: solicitud.categoria ?? cat?.nombre ?? null, lugar: solicitud.lugar, solicitud: solicitud.texto }) : null;
+  const mensaje = solicitud ? mensajeSolicitud({ proveedor: p.nombre, cliente: solicitud.nombre ?? "un vecino", categoria: solicitud.categoria ?? cat?.nombre ?? null, lugar: solicitud.lugar, solicitud: solicitud.textoOriginal }) : null;
   const destino = mensaje ? enlaceConMensaje(p.whatsapp, mensaje) : enlaceWhatsApp(p.whatsapp, cat?.nombre ?? "un servicio", loc?.nombre ?? "Bogotá");
   const respuesta = NextResponse.redirect(destino, 302);
 
   const h = await headers();
   if (ES_ROBOT.test(h.get("user-agent") ?? "")) return respuesta;
+
+  // Nombre, WhatsApp y autorización de datos se piden aquí, al conectar con el proveedor, no al buscar.
+  if (!solicitud?.autorizado) {
+    const volver = `/api/v1/contactos/ir?${new URLSearchParams({ p: slug, origen })}`;
+    return NextResponse.redirect(new URL(`/contactar?${new URLSearchParams({ p: slug, volver })}`, req.url));
+  }
 
   const session = await auth.api.getSession({ headers: h });
   const jar = await cookies();

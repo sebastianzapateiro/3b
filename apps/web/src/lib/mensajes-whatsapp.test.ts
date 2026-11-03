@@ -13,6 +13,12 @@ describe("mensaje del cliente al proveedor", () => {
     expect(mensajeSolicitud({ ...base, lugar: "la ubicación Calle 80 # 20-30" })).toContain("para la ubicación Calle 80 # 20-30.");
   });
 
+  it("sin solicitud escrita (llegó directo al perfil) no lleva la parte de «Solicitud»", () => {
+    const m = mensajeSolicitud({ ...base, solicitud: null, lugar: null });
+    expect(m).not.toContain("Solicitud:");
+    expect(m.endsWith("pude ver tu perfil.")).toBe(true);
+  });
+
   it("omite el lugar y la categoría si no se conocen", () => {
     expect(mensajeSolicitud({ ...base, categoria: null, lugar: null })).toContain("cotizar un servicio. Te encontré");
   });

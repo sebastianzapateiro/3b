@@ -2,10 +2,13 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, subcategoriaPorSlug, type LocalidadSlug } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
+import { AvisoWhatsApp } from "@/components/AvisoWhatsApp";
 import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
+import { SelectorOrden } from "@/components/SelectorOrden";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { cookies } from "next/headers";
-import { buscarProveedores, filtrosDesdeParams } from "@/lib/busqueda";
+import { contieneServicioProhibido } from "@las3b/shared";
+import { buscarProveedores, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams } from "@/lib/busqueda";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
@@ -28,6 +31,7 @@ const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 const varios = (v: string | string[] | undefined) => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
 
 const ETIQUETA_ORDEN: Record<Orden, string> = {
+  relevancia: "Relevancia",
   calificacion: "Mejor calificados",
   resenas: "Más reseñas",
   precio: "Menor precio",
@@ -51,7 +55,12 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const punto = solicitud?.punto ?? undefined;
   const enviada = uno(sp.solicitud) === "1";
 
-  const resultado = await buscarProveedores({ ...filtrosDesdeParams(params), punto });
+  const [resultado, conteos] = await Promise.all([
+    buscarProveedores({ ...filtrosDesdeParams(params), punto }),
+    conteosDeFiltros(filtrosDesdeParams(params)),
+  ]);
+  // «Calificación» y «Mejor calificados» solo existen cuando hay proveedores con reseñas suficientes.
+  const hayCalificados = conteos.conResenas > 0;
 
   const nombreLocalidad = LOCALIDADES_BOGOTA.find((l) => l.slug === localidad)?.nombre;
   const lugar = nombreLocalidad ? ` en ${nombreLocalidad}` : exacta ? " cerca de ti" : "";
@@ -78,7 +87,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   // Filtros activos como chips con «x» para quitarlos de uno en uno.
   const activos: { texto: string; quitar: string }[] = [
     ...insignias.map((i) => ({ texto: ETIQUETA_INSIGNIA[i], quitar: href({ insignia: insignias.filter((x) => x !== i), pagina: null }) })),
-    ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")} o más`, quitar: href({ cal: null, pagina: null }) }] : []),
+    ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")}+`, quitar: href({ cal: null, pagina: null }) }] : []),
     ...(visita ? [{ texto: visita === "convenir" ? "Visita a convenir" : `Visita ${etiquetaTope(Number(visita)).toLowerCase()}`, quitar: href({ visita: null, pagina: null }) }] : []),
     ...(hoy ? [{ texto: "Urgente hoy", quitar: href({ hoy: null, pagina: null }) }] : []),
     ...(h24 ? [{ texto: "24 horas", quitar: href({ h24: null, pagina: null }) }] : []),
@@ -94,14 +103,22 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     slug: s,
     nombre: LOCALIDADES_BOGOTA.find((l) => l.slug === s)?.nombre ?? s,
   }));
-  const panel = { base: base.toString(), inicial, mostrarNinos: aplicaNinos(categoria), vecinas };
+  const panel = { base: base.toString(), inicial, mostrarNinos: aplicaNinos(categoria), vecinas, conteos, mostrarCalificacion: hayCalificados };
+  const ordenActual: Orden = orden === "calificacion" && !hayCalificados ? "relevancia" : (orden ?? "relevancia");
+  const opcionesOrden = ORDENES.filter((o) => o !== "calificacion" || hayCalificados).map((o) => ({ valor: o, texto: ETIQUETA_ORDEN[o] }));
+
+  // Sin resultados: ¿el texto corresponde a un oficio del catálogo? Si menciona un servicio no permitido no se ofrece el aviso.
+  const sinResultados = resultado.items.length === 0;
+  const prohibido = Boolean(q) && contieneServicioProhibido(q!);
+  const oficio = sinResultados && !prohibido ? (resultado.categoriaNombre ?? (q ? (await categoriaDeTexto(q))?.nombre : null) ?? null) : null;
+  const textoAviso = oficio ?? q ?? "";
 
   return (
     <>
       <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
         {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
         <aside className="hidden min-w-0 lg:block lg:flex-[1_1_250px]">
-          <div className="rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} /></div>
+          <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} modo="escritorio" /></div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
@@ -138,21 +155,11 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="flex flex-col gap-1">
               <h1 className="font-display text-[26px] font-extrabold leading-tight tracking-[-0.8px] sm:text-[34px] sm:tracking-[-1px]">{titulo}</h1>
-              <span className="text-[15px] text-gris">
+              <span role="status" aria-live="polite" aria-atomic="true" className="text-[15px] text-gris">
                 {resultado.total} {resultado.total === 1 ? "proveedor" : "proveedores"}
               </span>
             </div>
-            <form action="/buscar" className="flex items-center gap-2 text-sm text-tinta-2">
-              {q && <input type="hidden" name="q" value={q} />}
-              {localidad && <input type="hidden" name="localidad" value={localidad} />}
-              {categoria && <input type="hidden" name="categoria" value={categoria} />}
-              {[...paramsDesdeValores(inicial)].map(([k, x]) => <input key={`${k}-${x}`} type="hidden" name={k} value={x} />)}
-              <label htmlFor="orden">Ordenar por</label>
-              <select id="orden" name="orden" defaultValue={orden ?? "calificacion"} className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-2.5 text-sm font-semibold text-tinta">
-                {ORDENES.map((o) => <option key={o} value={o}>{ETIQUETA_ORDEN[o]}</option>)}
-              </select>
-              <button type="submit" className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-sm font-semibold text-tinta">Ordenar</button>
-            </form>
+            <SelectorOrden actual={ordenActual} opciones={opcionesOrden} base={paramsDesdeValores(inicial, base).toString()} />
           </div>
 
           {resultado.items.length > 0 ? (
@@ -183,23 +190,32 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             <p className="rounded-xl bg-piedra px-3.5 py-3 text-sm text-tinta-2">No pudimos medir tu ubicación, así que los ordenamos por calificación. Igual compartimos tu dirección con el proveedor que contactes.</p>
           )}
 
-          {enviada && resultado.items.length === 0 && (
-            <section className="rounded-[18px] bg-verde p-5 text-white">
-              <b className="font-display text-xl">Te estaremos enviando tus proveedores calificados a tu WhatsApp.</b>
-              <p className="mt-1.5 text-[15px] leading-normal">Guardamos lo que nos contaste y te escribimos apenas tengamos proveedores para tu solicitud.</p>
-            </section>
-          )}
-
-          <section className="rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
-            <b className="text-[15px]">{resultado.items.length > 0 ? "¿No encuentras lo que buscas?" : "No encontramos proveedores con esos criterios"}</b>
-            <p className="mt-1.5 text-sm leading-[1.45]">
-              Prueba localidades vecinas o quita filtros. También puedes pedirle a un conocido que se registre gratis.
-            </p>
-            <div className="mt-2 flex flex-wrap gap-x-4">
-              {hayFiltros && <Link href={limpiar} className="inline-flex min-h-11 items-center text-sm font-semibold underline">Quitar filtros</Link>}
-              <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
-              <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Registrar un proveedor</Link>
-            </div>
+          <section className="flex flex-col gap-3 rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
+            {sinResultados ? (
+              <>
+                <b className="text-[15px]">
+                  {hayFiltros ? "No hay proveedores con estos filtros. Prueba quitar alguno." : `Aún no tenemos proveedores para ${tema ?? "esta búsqueda"}.`}
+                </b>
+                {hayFiltros && <Link href={limpiar} className="inline-flex min-h-11 items-center self-start rounded-campo bg-tinta px-5 text-sm font-semibold text-white">Quitar filtros</Link>}
+                {!prohibido && !hayFiltros && (oficio || enviada) && textoAviso && (
+                  <AvisoWhatsApp texto={textoAviso} localidadInicial={localidad ?? "suba"} lugar={exacta ? "direccion" : "localidad"} existente={enviada} />
+                )}
+                <div className="flex flex-wrap gap-x-4">
+                  {oficio && <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">¿Ofreces este servicio? Regístrate gratis</Link>}
+                  <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
+                </div>
+              </>
+            ) : (
+              <>
+                <b className="text-[15px]">¿No encuentras lo que buscas?</b>
+                <p className="text-sm leading-[1.45]">Prueba localidades vecinas o quita filtros.</p>
+                <div className="flex flex-wrap gap-x-4">
+                  {hayFiltros && <Link href={limpiar} className="inline-flex min-h-11 items-center text-sm font-semibold underline">Quitar filtros</Link>}
+                  <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
+                  <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Registrar mi servicio</Link>
+                </div>
+              </>
+            )}
           </section>
         </div>
       </main>

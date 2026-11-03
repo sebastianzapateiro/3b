@@ -8,6 +8,8 @@ import { z } from "zod";
 import { contieneServicioProhibido, MENSAJE_CONTACTO_MAX, normalizarWhatsapp, TRATAMIENTO_DATOS } from "@las3b/shared";
 import { db, schema } from "@las3b/db";
 import { categoriaDeTexto, contarProveedores } from "@/lib/busqueda";
+import { hoyBogota } from "@/lib/seguimiento";
+import { type EstadoSolicitud, VALORES_ESTADO } from "@/lib/seguimiento-solicitudes";
 import { enBogota, geocodificar, type Punto } from "@/lib/ubicacion";
 
 const { solicitudesServicio, categorias, localidades } = schema;
@@ -20,15 +22,16 @@ const MAX_POR_NUMERO = 4;
 
 export const esquemaSolicitud = z.object({
   texto: z.string().trim().min(2, "Cuéntanos qué necesitas.").max(MENSAJE_CONTACTO_MAX, `Escribe hasta ${MENSAJE_CONTACTO_MAX} caracteres.`),
-  nombre: z.string().trim().min(2, "Escribe tu nombre.").max(80),
-  whatsapp: z.string().trim().max(20),
+  /** Opcionales: el buscador del inicio no los pide. Solo llegan cuando la persona deja su WhatsApp para que la avisen (búsqueda sin resultados). */
+  nombre: z.string().trim().max(80).optional(),
+  whatsapp: z.string().trim().max(20).optional(),
+  autoriza: z.boolean().optional(),
   /** «Ubicación para el servicio»: por localidad o por ubicación exacta. */
   ubicacion: z.enum(["localidad", "exacta"]).default("localidad"),
   localidad: z.string().trim().max(60).optional(),
   direccion: z.string().trim().max(200).optional(),
   lat: z.coerce.number().optional(),
   lng: z.coerce.number().optional(),
-  autoriza: z.literal(true, { error: "Para ayudarte necesitamos tu autorización para tratar tus datos." }),
   origen: z.string().trim().max(40).default("web"),
   web: z.string().max(0).optional(), // campo trampa contra robots
 });
@@ -39,8 +42,10 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
   const r = esquemaSolicitud.safeParse(entrada);
   if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos." };
   const d = r.data;
-  const whatsapp = normalizarWhatsapp(d.whatsapp);
-  if (!whatsapp) return { error: "Revisa el número de WhatsApp." };
+  const whatsapp = d.whatsapp ? normalizarWhatsapp(d.whatsapp) : null;
+  if (d.whatsapp && !whatsapp) return { error: "Revisa el número de WhatsApp." };
+  if (whatsapp && (!d.nombre || d.nombre.length < 2)) return { error: "Escribe tu nombre." };
+  if (whatsapp && !d.autoriza) return { error: "Para avisarte necesitamos tu autorización para tratar tus datos." };
 
   const [loc] = d.ubicacion === "localidad" && d.localidad ? await db.select({ id: localidades.id }).from(localidades).where(eq(localidades.slug, d.localidad)).limit(1) : [];
   if (d.ubicacion === "localidad" && !loc) return { error: "Elige la localidad del servicio." };
@@ -50,7 +55,7 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
   const desde = new Date(Date.now() - 3_600_000);
   const [porIp, porNumero] = await Promise.all([
     red.ip ? db.select({ n: sql<number>`count(*)::int` }).from(solicitudesServicio).where(and(eq(solicitudesServicio.ip, red.ip), gt(solicitudesServicio.createdAt, desde))) : [{ n: 0 }],
-    db.select({ n: sql<number>`count(*)::int` }).from(solicitudesServicio).where(and(eq(solicitudesServicio.whatsapp, whatsapp), gt(solicitudesServicio.createdAt, desde))),
+    whatsapp ? db.select({ n: sql<number>`count(*)::int` }).from(solicitudesServicio).where(and(eq(solicitudesServicio.whatsapp, whatsapp), gt(solicitudesServicio.createdAt, desde))) : [{ n: 0 }],
   ]);
   if ((porIp[0]?.n ?? 0) >= MAX_POR_IP || (porNumero[0]?.n ?? 0) >= MAX_POR_NUMERO) return { error: "Hiciste varias solicitudes seguidas. Intenta de nuevo en un rato." };
 
@@ -70,9 +75,11 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
       oficioSlug: categoria?.slug ?? null,
       categoriaId: categoria?.id ?? null,
       textoLibre: d.texto,
-      nombre: d.nombre,
+      nombre: d.nombre || null,
       whatsapp,
-      autorizaDatos: true,
+      // La búsqueda no pide datos personales: la autorización llega al dejar el WhatsApp o al contactar a un proveedor (registrarDatosContacto).
+      autorizaDatos: Boolean(whatsapp),
+      consentimientoVersion: whatsapp ? TRATAMIENTO_DATOS.version : null,
       localidadId: loc?.id ?? null,
       direccion: d.ubicacion === "exacta" ? d.direccion || null : null,
       lat: punto?.lat ?? (d.ubicacion === "exacta" ? dado?.lat : null) ?? null,
@@ -80,13 +87,41 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
       origenBanner: d.origen,
       resultados: total,
       cuentaComoDemanda: !prohibido,
-      consentimientoVersion: TRATAMIENTO_DATOS.version,
       ip: red.ip,
       userAgent: red.userAgent,
     })
     .returning({ id: solicitudesServicio.id });
 
   return { id: fila!.id, prohibido, total, enviarPorWhatsapp: !prohibido && total === 0 };
+}
+
+export const esquemaDatosContacto = z.object({
+  nombre: z.string().trim().min(2, "Escribe tu nombre.").max(80),
+  whatsapp: z.string().trim().max(20),
+  autoriza: z.literal(true, { error: "Para contactar al proveedor necesitamos tu autorización para tratar tus datos." }),
+  web: z.string().max(0).optional(), // campo trampa contra robots
+});
+
+/**
+ * Se piden al conectar con un proveedor, no al buscar: guarda nombre, WhatsApp y la autorización de datos (versión, IP y navegador).
+ * Si la persona ya hizo una búsqueda (`solicitudId`) los agrega a esa solicitud; si llegó directo a un perfil crea una solicitud mínima.
+ */
+export async function registrarDatosContacto(solicitudId: string | null, entrada: unknown, red: { ip: string | null; userAgent: string | null }): Promise<{ error: string } | { id: string }> {
+  const r = esquemaDatosContacto.safeParse(entrada);
+  if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos." };
+  const whatsapp = normalizarWhatsapp(r.data.whatsapp);
+  if (!whatsapp) return { error: "Revisa el número de WhatsApp." };
+  const desde = new Date(Date.now() - 3_600_000);
+  const [seguidas] = await db.select({ n: sql<number>`count(*)::int` }).from(solicitudesServicio).where(and(eq(solicitudesServicio.whatsapp, whatsapp), gt(solicitudesServicio.createdAt, desde)));
+  if ((seguidas?.n ?? 0) >=MAX_POR_NUMERO * 3) return { error: "Hiciste varias solicitudes seguidas. Intenta de nuevo en un rato." };
+
+  const datos = { nombre: r.data.nombre, whatsapp, autorizaDatos: true, consentimientoVersion: TRATAMIENTO_DATOS.version, ip: red.ip, userAgent: red.userAgent };
+  if (solicitudId) {
+    const [fila] = await db.update(solicitudesServicio).set(datos).where(eq(solicitudesServicio.id, solicitudId)).returning({ id: solicitudesServicio.id });
+    if (fila) return { id: fila.id };
+  }
+  const [fila] = await db.insert(solicitudesServicio).values({ ...datos, origenBanner: "contacto" }).returning({ id: solicitudesServicio.id });
+  return { id: fila!.id };
 }
 
 /** Texto del lugar para el mensaje al proveedor: «la localidad Suba» o «la ubicación Calle 80 # 20-30». */
@@ -97,9 +132,13 @@ export function lugarDeSolicitud(s: { localidad: string | null; direccion: strin
 }
 
 /** B7 · Solicitudes para el administrador, con los contactos (y el mensaje exacto) que cada una generó. */
-export async function listarSolicitudes(f: { estado?: string; sinResultado?: boolean; q?: string }, limite = 200) {
+export async function listarSolicitudes(f: { estado?: string; sinResultado?: boolean; q?: string; todas?: boolean; responsableId?: string; vencidas?: boolean }, limite = 200) {
   const condiciones = [
-    f.estado === "nueva" || f.estado === "avisada" ? eq(solicitudesServicio.estado, f.estado) : undefined,
+    f.estado && VALORES_ESTADO.includes(f.estado as EstadoSolicitud) ? eq(solicitudesServicio.estado, f.estado as EstadoSolicitud) : undefined,
+    // Por defecto solo los casos con contacto (dejaron su WhatsApp): son los que se pueden gestionar.
+    f.todas ? undefined : sql`${solicitudesServicio.whatsapp} IS NOT NULL`,
+    f.responsableId ? eq(solicitudesServicio.responsableId, f.responsableId) : undefined,
+    f.vencidas ? sql`${solicitudesServicio.estado} NOT IN ('atendida','sin_proveedor','descartada') AND ${solicitudesServicio.proximaAccionEn} <= ${hoyBogota()}` : undefined,
     f.sinResultado ? eq(solicitudesServicio.resultados, 0) : undefined,
     f.q?.trim() ? sql`(${solicitudesServicio.nombre} ILIKE ${`%${f.q.trim()}%`} OR ${solicitudesServicio.whatsapp} LIKE ${`%${f.q.replace(/\D/g, "") || "~"}%`} OR ${solicitudesServicio.textoLibre} ILIKE ${`%${f.q.trim()}%`})` : undefined,
   ].filter((c) => c !== undefined);
@@ -110,12 +149,16 @@ export async function listarSolicitudes(f: { estado?: string; sinResultado?: boo
       whatsapp: solicitudesServicio.whatsapp, texto: solicitudesServicio.textoLibre, categoria: categorias.nombre, direccion: solicitudesServicio.direccion,
       localidad: localidades.nombre, lat: solicitudesServicio.lat, lng: solicitudesServicio.lng, resultados: solicitudesServicio.resultados, origen: solicitudesServicio.origenBanner,
       version: solicitudesServicio.consentimientoVersion, demanda: solicitudesServicio.cuentaComoDemanda,
+      categoriaSlug: categorias.slug, localidadSlug: localidades.slug, responsableId: solicitudesServicio.responsableId,
+      responsable: schema.user.name, proximaAccion: solicitudesServicio.proximaAccionEn, actualizada: solicitudesServicio.actualizadaEn,
     })
     .from(solicitudesServicio)
     .leftJoin(categorias, eq(categorias.id, solicitudesServicio.categoriaId))
     .leftJoin(localidades, eq(localidades.id, solicitudesServicio.localidadId))
+    .leftJoin(schema.user, eq(schema.user.id, solicitudesServicio.responsableId))
     .where(and(...condiciones))
-    .orderBy(sql`${solicitudesServicio.createdAt} DESC`)
+    // Abiertas primero, con la próxima acción más vieja arriba; luego las más recientes.
+    .orderBy(sql`CASE WHEN ${solicitudesServicio.estado} IN ('atendida','sin_proveedor','descartada') THEN 1 ELSE 0 END`, sql`${solicitudesServicio.proximaAccionEn} ASC NULLS LAST`, sql`${solicitudesServicio.createdAt} DESC`)
     .limit(limite);
   if (filas.length === 0) return [];
 
@@ -134,7 +177,7 @@ export async function obtenerSolicitud(id: string) {
   const [s] = await db
     .select({
       id: solicitudesServicio.id, nombre: solicitudesServicio.nombre, texto: solicitudesServicio.textoLibre, categoria: categorias.nombre,
-      localidad: localidades.nombre, direccion: solicitudesServicio.direccion, lat: solicitudesServicio.lat, lng: solicitudesServicio.lng,
+      autorizado: solicitudesServicio.autorizaDatos, localidad: localidades.nombre, direccion: solicitudesServicio.direccion, lat: solicitudesServicio.lat, lng: solicitudesServicio.lng,
     })
     .from(solicitudesServicio)
     .leftJoin(categorias, eq(categorias.id, solicitudesServicio.categoriaId))
@@ -145,6 +188,10 @@ export async function obtenerSolicitud(id: string) {
   return {
     id: s.id,
     nombre: s.nombre,
+    /** Lo que escribió la persona, sin texto de relleno; null si llegó directo a un perfil. */
+    textoOriginal: s.texto,
+    /** true cuando ya dio nombre, WhatsApp y la autorización de datos (al contactar a un proveedor). */
+    autorizado: s.autorizado,
     categoria: s.categoria,
     lugar: lugarDeSolicitud(s),
     punto: s.lat != null && s.lng != null && !s.localidad ? { lat: s.lat, lng: s.lng } : null,

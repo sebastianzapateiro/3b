@@ -10,6 +10,7 @@ import { db, schema } from "@las3b/db";
 import { auth } from "@/lib/auth";
 import { enviarCorreo } from "@/lib/correo";
 import { parametro } from "@/lib/parametros";
+import { invitacionCuenta, whatsappInvitacion } from "@/lib/plantillas";
 
 const { verification, account } = schema;
 const PREFIJO = "reset-password:";
@@ -33,18 +34,14 @@ export async function crearInvitacion(usuarioId: string, destino = "/") {
 }
 
 export async function enviarInvitacionPorCorreo(a: { para: string; nombre: string; url: string; horas: number; motivo: string }) {
-  await enviarCorreo({
-    para: a.para,
-    asunto: "Te crearon una cuenta en LasTresB",
-    texto: `Hola, ${a.nombre}. ${a.motivo}\nPara elegir tu clave abre este enlace (vence en ${a.horas} horas):\n${a.url}\n\nSi no esperabas este correo, ignóralo.`,
-  });
+  await enviarCorreo({ para: a.para, ...invitacionCuenta({ nombre: a.nombre, motivo: a.motivo, url: a.url, horas: a.horas }) });
 }
 
 /** Enlace wa.me con el mensaje de invitación ya escrito: el equipo lo abre y lo envía desde su WhatsApp. */
 export function invitacionPorWhatsApp(whatsapp: string, nombre: string, url: string, horas: number) {
   const numero = whatsapp.replace(/\D/g, "");
   const conPais = numero.length === 10 ? `57${numero}` : numero;
-  const texto = `Hola, ${nombre}. Te registramos en LasTresB. Entra a este enlace para crear tu clave, revisar tus datos y aceptar los términos (vence en ${horas} horas): ${url}`;
+  const texto = whatsappInvitacion({ nombre, url, horas });
   return `https://wa.me/${conPais}?${new URLSearchParams({ text: texto })}`;
 }
 

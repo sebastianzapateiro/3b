@@ -78,6 +78,13 @@
       "when": 1793591130838,
       "tag": "0010_extensiones_busqueda",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793727812667,
+      "tag": "0011_luxuriant_speed_demon",
+      "breakpoints": true
     }
   ]
 }

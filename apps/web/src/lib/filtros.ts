@@ -7,7 +7,8 @@ import { TODAS_LAS_SUBCATEGORIAS, categoriaPorSlug } from "@las3b/shared";
 export const INSIGNIAS_FILTRO = ["verificado", "formalizado", "certificado", "apto_menores"] as const;
 export type InsigniaFiltro = (typeof INSIGNIAS_FILTRO)[number];
 
-export const ORDENES = ["calificacion", "resenas", "precio"] as const;
+/** `relevancia` es el orden por defecto (nivel del perfil y luego reseñas); `calificacion` solo se ofrece con proveedores de 3+ reseñas. */
+export const ORDENES = ["relevancia", "calificacion", "resenas", "precio"] as const;
 export type Orden = (typeof ORDENES)[number];
 
 /** Topes del filtro «Precio de la visita» (COP). Para cambiarlos basta editar esta lista: la interfaz se arma sola. */
@@ -43,6 +44,22 @@ export function aplicaNinos(categoria: string | undefined): boolean {
   const oficio = TODAS_LAS_SUBCATEGORIAS.find(({ sub }) => sub.slug === categoria);
   return oficio?.padre.slug === "clases-y-refuerzo" && Boolean(categoriaPorSlug("clases-y-refuerzo"));
 }
+
+/** Reseñas verificadas mínimas para mostrar «Calificación» y «Mejor calificados». */
+export const RESENAS_MINIMAS = 3;
+
+/** Cuántos proveedores tiene cada opción del panel dentro de la búsqueda actual (sin los demás filtros). */
+export type ConteosFiltros = {
+  insignias: Record<InsigniaFiltro, number>;
+  hoy: number;
+  h24: number;
+  /** Clave = tope en COP o «convenir». */
+  visita: Record<string, number>;
+  /** Proveedores con RESENAS_MINIMAS o más reseñas. */
+  conResenas: number;
+  cal4: number;
+  cal45: number;
+};
 
 export type ValoresFiltros = {
   insignias: InsigniaFiltro[];

@@ -5,6 +5,7 @@
  * Server Actions para guardar cada paso del registro de proveedor.
  * Estados: borrador → pendiente → aprobado | rechazado.
  */
+import { avisarRegistroRecibido } from "@/lib/avisos-proveedor";
 import { auth } from "@/lib/auth";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { estadoDocumentos } from "@/lib/documentos";
@@ -280,6 +281,7 @@ export async function guardarPaso3(formData: FormData) {
     })
     .where(eq(proveedores.id, p.id));
 
+  await avisarRegistroRecibido(p.id);
   redirect("/proveedores/registro/recibido");
 }
 

@@ -9,7 +9,9 @@ import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
 import { db, schema } from "@las3b/db";
 import { ipDeLaPeticion, POLITICAS_REGISTRO_COMPRADOR, registrarConsentimientos } from "./consentimientos";
+import { eq } from "drizzle-orm";
 import { enviarCorreo } from "./correo";
+import { bienvenidaCliente, bienvenidaProveedor, confirmarCorreo, recuperarClave } from "./plantillas";
 
 export const googleHabilitado = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
@@ -61,11 +63,7 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
-      void enviarCorreo({
-        para: user.email,
-        asunto: "Cambia tu clave de LasTresB",
-        texto: `Hola, ${user.name}. Para crear una clave nueva abre este enlace (vence en 1 hora):\n${url}\n\nSi no lo pediste, ignora este correo.`,
-      });
+      void enviarCorreo({ para: user.email, ...recuperarClave({ nombre: user.name, url }) });
     },
   },
   emailVerification: {
@@ -73,11 +71,12 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     autoSignInAfterVerification: false, // tras confirmar vuelve a /ingreso?verificado=1
     sendVerificationEmail: async ({ user, url }) => {
-      void enviarCorreo({
-        para: user.email,
-        asunto: "Confirma tu correo en LasTresB",
-        texto: `Hola, ${user.name}. Confirma tu correo abriendo este enlace:\n${url}`,
-      });
+      void enviarCorreo({ para: user.email, ...confirmarCorreo({ nombre: user.name, url }) });
+    },
+    // Al confirmar el correo: bienvenida de proveedor (si tiene perfil de proveedor) o de cliente.
+    afterEmailVerification: async (user) => {
+      const [prov] = await db.select({ id: schema.proveedores.id }).from(schema.proveedores).where(eq(schema.proveedores.usuarioId, user.id)).limit(1);
+      void enviarCorreo({ para: user.email, ...(prov ? bienvenidaProveedor({ nombre: user.name }) : bienvenidaCliente({ nombre: user.name })) });
     },
   },
   socialProviders: social,

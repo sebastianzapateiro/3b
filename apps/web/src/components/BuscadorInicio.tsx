@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { LOCALIDADES_BOGOTA } from "@las3b/shared";
@@ -9,9 +8,9 @@ const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-wh
 const etiqueta = "text-[13px] font-semibold text-gris";
 
 /**
- * Buscador «¿Qué estás buscando?» del inicio (CU-01). Además de lo que se busca pide la ubicación del servicio
- * (por localidad o exacta), el nombre y el WhatsApp, con la autorización de datos. La solicitud queda guardada
- * (/api/v1/solicitudes) y «Contactar por WA» la usa para armar el mensaje al proveedor.
+ * Buscador «¿Qué estás buscando?» del inicio (CU-01). Pide lo que se busca y la ubicación del servicio
+ * (por localidad o exacta); no pide datos personales. La solicitud queda guardada (/api/v1/solicitudes) y al pulsar
+ * «Contactar por WA» se piden nombre, WhatsApp y la autorización de datos (/contactar) antes de armar el mensaje.
  */
 export function BuscadorInicio({ localidadInicial }: { localidadInicial: string }) {
   const router = useRouter();
@@ -48,14 +47,11 @@ export function BuscadorInicio({ localidadInicial }: { localidadInicial: string 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           texto,
-          nombre: f.get("nombre"),
-          whatsapp: f.get("whatsapp"),
           ubicacion: modo,
           localidad: modo === "localidad" ? localidad : undefined,
           direccion: modo === "exacta" ? String(f.get("direccion") ?? "").trim() || undefined : undefined,
           lat: modo === "exacta" ? punto?.lat : undefined,
           lng: modo === "exacta" ? punto?.lng : undefined,
-          autoriza: f.get("autoriza") === "on",
           origen: "home",
           web: f.get("web"),
         }),
@@ -98,32 +94,24 @@ export function BuscadorInicio({ localidadInicial }: { localidadInicial: string 
         )}
       </div>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className={`${etiqueta} mb-1.5`}>Ubicación para el servicio</legend>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por ubicación exacta")}</div>
-        {modo === "exacta" && (
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor={`${id}-dir`} className="text-sm text-tinta-2">Escribe la dirección o el lugar donde necesitas el servicio. La compartimos con el proveedor para que te cotice.</label>
-            <input id={`${id}-dir`} name="direccion" maxLength={200} autoComplete="street-address" placeholder="Ej: Calle 80 # 20-30, Barrios Unidos" className={campo} />
-            <button type="button" onClick={usarMiUbicacion} className="self-start text-sm font-semibold text-verde underline">Usar mi ubicación actual</button>
-            {ubicando && <span role="status" className="text-sm text-gris">{ubicando}</span>}
-          </div>
-        )}
-      </fieldset>
-
-      <div className="grid gap-3.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_190px] sm:items-end">
-        <div className="flex min-w-0 flex-col gap-1.5"><label htmlFor={`${id}-nombre`} className={etiqueta}>Tu nombre</label><input id={`${id}-nombre`} name="nombre" required maxLength={80} autoComplete="given-name" className={campo} /></div>
-        <div className="flex min-w-0 flex-col gap-1.5"><label htmlFor={`${id}-wa`} className={etiqueta}>Tu WhatsApp</label><input id={`${id}-wa`} name="whatsapp" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} /></div>
-        <button type="submit" disabled={enviando} className="flex h-13 items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60">
+      <div className="flex flex-col gap-3.5 sm:flex-row sm:items-end sm:gap-4">
+        <fieldset className="flex min-w-0 flex-1 flex-col gap-2">
+          <legend className={`${etiqueta} mb-1.5`}>Ubicación para el servicio</legend>
+          <div className="flex flex-col gap-2 sm:flex-row">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por dirección exacta")}</div>
+        </fieldset>
+        <button type="submit" disabled={enviando} className="flex h-13 w-full items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60 sm:w-[190px] sm:flex-none">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           {enviando ? "Buscando…" : "Buscar"}
         </button>
       </div>
-
-      <label className="flex items-start gap-2.5 text-[13px] leading-snug text-tinta-2">
-        <input type="checkbox" name="autoriza" required className="mt-0.5 size-[18px] flex-none accent-verde" />
-        <span>Acepto los <Link href="/terminos" target="_blank" className="underline">términos de uso</Link> y autorizo el tratamiento de mis datos (nombre, WhatsApp y ubicación) para mostrarme proveedores y escribirme por WhatsApp, según la <Link href="/privacidad" target="_blank" className="underline">política de tratamiento de datos</Link>.</span>
-      </label>
+      {modo === "exacta" && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor={`${id}-dir`} className="text-sm text-tinta-2">Escribe la dirección o el lugar donde necesitas el servicio. La compartimos con el proveedor para que te cotice.</label>
+          <input id={`${id}-dir`} name="direccion" maxLength={200} autoComplete="street-address" placeholder="Ej: Calle 80 # 20-30, Barrios Unidos" className={campo} />
+          <button type="button" onClick={usarMiUbicacion} className="self-start text-sm font-semibold text-verde underline">Usar mi ubicación actual</button>
+          {ubicando && <span role="status" className="text-sm text-gris">{ubicando}</span>}
+        </div>
+      )}
       <div aria-hidden="true" className="absolute -left-[9999px]"><label htmlFor={`${id}-web`}>No llenar</label><input id={`${id}-web`} name="web" tabIndex={-1} autoComplete="off" /></div>
 
       {error && <p role="alert" className="rounded-xl bg-[#FDF3F0] px-3.5 py-3 text-sm text-ladrillo-oscuro">{error}</p>}

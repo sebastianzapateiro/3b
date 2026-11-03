@@ -55,7 +55,7 @@ export function Pie() {
 
         <nav aria-label="Proveedores" className="flex flex-col">
           <h2 className={titulo}>Proveedores</h2>
-          <Link href="/ingreso" className={enlace}>Registra tu servicio</Link>
+          <Link href="/ingreso" className={enlace}>Registrar mi servicio</Link>
           <Link href="/terminos-proveedores" className={enlace}>Términos del proveedor</Link>
         </nav>
       </div>

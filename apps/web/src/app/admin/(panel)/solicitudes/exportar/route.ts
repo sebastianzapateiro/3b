@@ -12,13 +12,13 @@ export async function GET(req: Request) {
   if (v.error || !v.user || !v.roles.includes("admin")) return new Response("No autorizado", { status: 403 });
 
   const p = new URL(req.url).searchParams;
-  const filas = await listarSolicitudes({ estado: p.get("estado") ?? undefined, sinResultado: p.get("sin") === "1", q: p.get("q") ?? undefined }, 10000);
+  const filas = await listarSolicitudes({ estado: p.get("estado") ?? undefined, sinResultado: p.get("sin") === "1", q: p.get("q") ?? undefined, todas: true }, 10000);
   await auditar({ actorId: v.user.id, rol: v.rol, accion: "solicitudes_exportadas", objetoTipo: "solicitud", resultado: `${filas.length} filas` });
 
   const csv = [
-    ["fecha", "estado", "nombre", "whatsapp", "solicitud", "categoria", "localidad", "direccion_exacta", "con_coordenadas", "proveedores_encontrados", "banner", "autorizacion_version", "contactos_a_proveedores", "mensajes"].join(","),
+    ["fecha", "estado", "nombre", "whatsapp", "solicitud", "categoria", "localidad", "direccion_exacta", "con_coordenadas", "proveedores_encontrados", "banner", "autorizacion_version", "responsable", "proxima_accion", "contactos_a_proveedores", "mensajes"].join(","),
     ...filas.map((s) => [
-      s.creada.toISOString(), s.estado, s.nombre, s.whatsapp, s.texto, s.categoria, s.localidad, s.direccion, s.lat != null ? "si" : "no", s.resultados, s.origen, s.version,
+      s.creada.toISOString(), s.estado, s.nombre, s.whatsapp, s.texto, s.categoria, s.localidad, s.direccion, s.lat != null ? "si" : "no", s.resultados, s.origen, s.version, s.responsable, s.proximaAccion,
       s.contactos.map((c) => c.proveedor).join(" | "), s.contactos.map((c) => c.mensaje).join(" | "),
     ].map(celda).join(",")),
   ].join("\n");

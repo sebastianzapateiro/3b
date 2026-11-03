@@ -1,5 +1,6 @@
 /** P2 / B5 · Catálogo: categorías de dos niveles, localidades y diccionario de búsqueda. */
-import { type AnyPgColumn, boolean, integer, pgEnum, pgTable, real, serial, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { user } from "./auth";
+import { type AnyPgColumn, boolean, date, integer, pgEnum, pgTable, real, serial, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 export const categorias = pgTable("categorias", {
   id: serial().primaryKey(),
@@ -49,7 +50,11 @@ export const barrios = pgTable("barrios", {
   localidadId: integer().notNull().references(() => localidades.id),
 });
 
-export const estadoSolicitudServicioEnum = pgEnum("estado_solicitud_servicio", ["nueva", "avisada"]);
+/**
+ * Seguimiento de la demanda: nueva → en_gestion (el equipo busca proveedor) → proveedor_contactado (se le pidió que escriba al cliente)
+ * → avisada (se le contó al cliente) → atendida. Cierres: sin_proveedor (no se consiguió) o descartada (no aplica).
+ */
+export const estadoSolicitudServicioEnum = pgEnum("estado_solicitud_servicio", ["nueva", "avisada", "en_gestion", "proveedor_contactado", "atendida", "sin_proveedor", "descartada"]);
 
 /**
  * Demanda sin cubrir: alguien pidió un servicio sin proveedores suficientes y dejó su WhatsApp (opcional)
@@ -81,5 +86,9 @@ export const solicitudesServicio = pgTable("solicitudes_servicio", {
   consentimientoVersion: text(),
   ip: text(),
   userAgent: text(),
+  /** Seguimiento (backoffice): quién lleva el caso y cuándo toca volver a mirarlo. */
+  responsableId: text().references(() => user.id),
+  proximaAccionEn: date(),
+  actualizadaEn: timestamp({ withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });

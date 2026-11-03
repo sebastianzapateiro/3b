@@ -3,9 +3,9 @@
  * Si existe RESEND_API_KEY, usa la API de Resend (https://resend.com).
  * Mientras tanto, el enlace sale en la consola del servidor (desarrollo/local).
  */
-type Correo = { para: string; asunto: string; texto: string };
+type Correo = { para: string; asunto: string; texto: string; /** Versión con diseño; el texto plano va siempre como respaldo. */ html?: string };
 
-export async function enviarCorreo({ para, asunto, texto }: Correo) {
+export async function enviarCorreo({ para, asunto, texto, html }: Correo) {
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey) {
     try {
@@ -20,6 +20,7 @@ export async function enviarCorreo({ para, asunto, texto }: Correo) {
           to: [para],
           subject: asunto,
           text: texto,
+          ...(html ? { html } : {}),
         }),
       });
       if (!res.ok) {

@@ -21,7 +21,7 @@ const {
 } = schema;
 
 export { INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type Orden } from "@/lib/filtros";
-import { ORDENES, valoresDesdeParams, type InsigniaFiltro, type Orden } from "@/lib/filtros";
+import { ORDENES, RESENAS_MINIMAS, TOPES_VISITA, valoresDesdeParams, type ConteosFiltros, type InsigniaFiltro, type Orden } from "@/lib/filtros";
 
 export const POR_PAGINA = 10;
 
@@ -191,6 +191,39 @@ async function condicionesDe(f: FiltrosBusqueda) {
   if (f.h24) condiciones.push(sql`${proveedores.disponible24h}`);
 
   return { donde: and(...condiciones), categoria };
+}
+
+/** Conteo por opción del panel dentro de la búsqueda (q, localidad, categoría, vecinas), en una sola consulta. */
+export async function conteosDeFiltros(f: FiltrosBusqueda): Promise<ConteosFiltros> {
+  const { donde } = await condicionesDe({ q: f.q, localidad: f.localidad, categoria: f.categoria, tambien: f.tambien });
+  const conInsignia = (clave: InsigniaFiltro) =>
+    sql`count(*) FILTER (WHERE ${proveedores.id} IN (SELECT pi.proveedor_id FROM ${proveedorInsignias} pi JOIN ${insignias} i ON i.id = pi.insignia_id WHERE i.clave = ${clave} AND (pi.vence IS NULL OR pi.vence >= CURRENT_DATE)))::int`;
+  const [c] = await db
+    .select({
+      verificado: conInsignia("verificado"),
+      formalizado: conInsignia("formalizado"),
+      certificado: conInsignia("certificado"),
+      apto_menores: conInsignia("apto_menores"),
+      hoy: sql<number>`count(*) FILTER (WHERE ${proveedores.atiendeUrgencias})::int`,
+      h24: sql<number>`count(*) FILTER (WHERE ${proveedores.disponible24h})::int`,
+      convenir: sql<number>`count(*) FILTER (WHERE ${proveedores.visitaAConvenir})::int`,
+      ...Object.fromEntries(TOPES_VISITA.map((t) => [`v${t}`, sql<number>`count(*) FILTER (WHERE ${precioVisitaSql} <= ${t})::int`])),
+      conResenas: sql<number>`count(*) FILTER (WHERE ${proveedores.totalResenas} >= ${RESENAS_MINIMAS})::int`,
+      cal4: sql<number>`count(*) FILTER (WHERE ${proveedores.promedio} >= 4)::int`,
+      cal45: sql<number>`count(*) FILTER (WHERE ${proveedores.promedio} >= 4.5)::int`,
+    })
+    .from(proveedores)
+    .where(donde);
+  const r = (c ?? {}) as Record<string, number>;
+  return {
+    insignias: { verificado: r.verificado ?? 0, formalizado: r.formalizado ?? 0, certificado: r.certificado ?? 0, apto_menores: r.apto_menores ?? 0 },
+    hoy: r.hoy ?? 0,
+    h24: r.h24 ?? 0,
+    visita: { convenir: r.convenir ?? 0, ...Object.fromEntries(TOPES_VISITA.map((t) => [String(t), r[`v${t}`] ?? 0])) },
+    conResenas: r.conResenas ?? 0,
+    cal4: r.cal4 ?? 0,
+    cal45: r.cal45 ?? 0,
+  };
 }
 
 /** Cuántos proveedores cumplen los filtros (para «Ver N proveedores» en vivo). */

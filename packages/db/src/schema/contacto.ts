@@ -19,6 +19,24 @@ export const contactos = pgTable("contactos", {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Bitácora de cada solicitud (B7): cambios de estado, notas, a qué proveedores se les pidió contactar al cliente y cuándo se avisó al cliente.
+ * Solo se agrega: no se edita ni se borra.
+ */
+export const solicitudSeguimiento = pgTable("solicitud_seguimiento", {
+  id: uuid().primaryKey().defaultRandom(),
+  solicitudId: uuid().notNull().references(() => solicitudesServicio.id),
+  autorId: text().notNull().references(() => user.id),
+  /** nota | estado | proveedor (se le escribió a un proveedor) | cliente (se le escribió al cliente) | asignacion */
+  tipo: text().notNull(),
+  canal: text(),
+  proveedorId: uuid().references(() => proveedores.id),
+  /** Estado al que pasó la solicitud, si el evento lo cambió. */
+  estadoNuevo: text(),
+  nota: text(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
 /** CU-38: el proveedor confirma llegada y se genera un código para el comprador. */
 export const servicios = pgTable("servicios", {
   id: uuid().primaryKey().defaultRandom(),

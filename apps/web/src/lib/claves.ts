@@ -9,6 +9,7 @@ import { db, schema } from "@las3b/db";
 import { auth } from "@/lib/auth";
 import { enviarCorreo } from "@/lib/correo";
 import { esCorreoFicticio } from "@/lib/invitaciones";
+import { claveCambiadaPorEquipo } from "@/lib/plantillas";
 
 const { user, session, verification } = schema;
 
@@ -33,11 +34,7 @@ export async function asignarClave(usuarioId: string, clave: string) {
   await db.delete(session).where(eq(session.userId, usuarioId));
 
   if (!esCorreoFicticio(persona.email)) {
-    void enviarCorreo({
-      para: persona.email,
-      asunto: "Cambiaron tu clave de LasTresB",
-      texto: `Hola, ${persona.name}. El equipo de LasTresB te asignó una clave nueva y cerró tus sesiones abiertas.\nSi no lo pediste, escríbenos de inmediato.`,
-    });
+    void enviarCorreo({ para: persona.email, ...claveCambiadaPorEquipo({ nombre: persona.name }) });
   }
   return { correo: persona.email };
 }

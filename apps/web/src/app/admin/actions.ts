@@ -13,6 +13,7 @@ import { slugSchema } from "@las3b/shared";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
+import { avisarProveedorAprobado, avisarProveedorRechazado } from "@/lib/avisos-proveedor";
 import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
@@ -58,6 +59,7 @@ export async function aprobarProveedor(formData: FormData) {
   }
 
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "proveedor_aprobado", objetoTipo: "proveedor", objetoId: id });
+  await avisarProveedorAprobado(id);
   revalidatePath("/admin", "layout");
   volver("/admin/aprobaciones", { ok: "Proveedor aprobado y publicado." });
 }
@@ -76,6 +78,7 @@ export async function rechazarProveedor(formData: FormData) {
     .set({ estado: "rechazado", motivoRechazo: mensaje ? `${motivo}: ${mensaje}` : motivo, updatedAt: new Date() })
     .where(eq(proveedores.id, id));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "proveedor_rechazado", objetoTipo: "proveedor", objetoId: id, motivo: `${motivo}${mensaje ? `: ${mensaje}` : ""}` });
+  await avisarProveedorRechazado(id, mensaje ? `${motivo}: ${mensaje}` : motivo);
   revalidatePath("/admin", "layout");
   volver("/admin/aprobaciones", { ok: "Proveedor rechazado. Quedó el motivo registrado." });
 }
