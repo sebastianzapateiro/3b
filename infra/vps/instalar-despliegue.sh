@@ -14,7 +14,8 @@ LLAVE=$(cat "$PUB")
 
 ssh lastresb-root 'install -m 700 -o root -g root /dev/stdin /opt/lastresb/desplegar.sh' < infra/vps/desplegar.sh
 
-ssh lastresb-root bash -s -- "$LLAVE" <<'REMOTO'
+# ssh une los argumentos con espacios y el servidor los vuelve a separar: la llave va citada con %q.
+ssh lastresb-root bash -s -- "$(printf '%q' "$LLAVE")" <<'REMOTO'
 set -euo pipefail
 LLAVE="$1"
 id despliegue >/dev/null 2>&1 || useradd --system --create-home --shell /bin/sh despliegue
@@ -25,5 +26,6 @@ install -d -m 700 -o despliegue -g despliegue /home/despliegue/.ssh
 printf 'command="sudo /opt/lastresb/desplegar.sh \\"$SSH_ORIGINAL_COMMAND\\"",restrict %s\n' "$LLAVE" > /home/despliegue/.ssh/authorized_keys
 chown despliegue:despliegue /home/despliegue/.ssh/authorized_keys
 chmod 600 /home/despliegue/.ssh/authorized_keys
+grep -q "restrict ssh-ed25519 AAAA" /home/despliegue/.ssh/authorized_keys || { echo "La llave no quedó completa." >&2; exit 1; }
 echo "Listo: usuario despliegue con llave restringida."
 REMOTO
