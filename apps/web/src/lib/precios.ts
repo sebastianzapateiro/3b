@@ -20,7 +20,7 @@ export async function oficiosDelProveedor(proveedorId: string) {
     .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
     .where(eq(proveedorCategorias.proveedorId, proveedorId))
     .orderBy(asc(categorias.id));
-  return filas.map((f) => ({ id: f.id, nombre: f.nombre, sinPrecio: f.slug === CATEGORIA_SIN_PRECIO }));
+  return filas.map((f) => ({ id: f.id, nombre: f.nombre, slug: f.slug, sinPrecio: f.slug === CATEGORIA_SIN_PRECIO }));
 }
 
 /** ¿Este oficio (categoría) no publica precio? */

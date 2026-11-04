@@ -32,6 +32,7 @@ type FilaTablero = {
   menores: number;
   rut: number;
   masivo: number;
+  sin_fotos: number;
   por_categoria: { nombre: string; n: number }[] | null;
   por_localidad: { nombre: string; contactos: number; activos: number }[] | null;
   estados: Record<string, number> | null;
@@ -54,6 +55,8 @@ export async function datosTablero(rango: RangoTablero) {
       (SELECT count(*)::int FROM proveedores
         WHERE segmento = 'independiente_sin_rut' AND estado IN ('aprobado','en_revision')
           AND rut_fecha_limite BETWEEN current_date AND current_date + 5) AS rut,
+      (SELECT count(*)::int FROM proveedores pv WHERE pv.estado IN ('aprobado','en_revision','pendiente')
+        AND (SELECT count(DISTINCT d.tipo) FROM documentos d WHERE d.proveedor_id = pv.id AND d.tipo IN ('documento_frente','selfie')) < 2) AS sin_fotos,
       (SELECT coalesce(max(c), 0)::int FROM (
         SELECT count(*) AS c FROM auditoria WHERE accion = 'documento_abierto' AND created_at >= now() - interval '1 hour' GROUP BY actor_id
       ) m) AS masivo,
@@ -104,7 +107,7 @@ export async function datosTablero(rango: RangoTablero) {
     porLocalidad: t?.por_localidad ?? [],
     demanda: t?.demanda ?? [],
     estados: t?.estados ?? {},
-    alertas: { reclamosPronto: t?.reclamos_pronto ?? 0, menoresPorVencer: t?.menores ?? 0, rutPorVencer: t?.rut ?? 0, documentosEnUnaHora: t?.masivo ?? 0 },
+    alertas: { reclamosPronto: t?.reclamos_pronto ?? 0, menoresPorVencer: t?.menores ?? 0, rutPorVencer: t?.rut ?? 0, documentosEnUnaHora: t?.masivo ?? 0, sinFotos: t?.sin_fotos ?? 0 },
   };
 }
 

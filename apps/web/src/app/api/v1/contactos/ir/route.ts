@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { enlaceConMensaje, enlaceWhatsApp, mensajeSolicitud } from "@las3b/shared";
 import { auth } from "@/lib/auth";
+import { tieneFotosDeIdentidad } from "@/lib/documentos";
 import { redirigir } from "@/lib/redireccion";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 
@@ -31,6 +32,8 @@ export async function GET(req: Request) {
     .where(eq(schema.proveedores.slug, slug))
     .limit(1);
   if (!p || (p.estado !== "aprobado" && p.estado !== "en_revision")) return redirigir(req, "/");
+  // Sin la foto de su documento y su selfie, aún no recibe contactos: se vuelve a su perfil.
+  if (!(await tieneFotosDeIdentidad(p.id))) return redirigir(req, `/${slug}`);
 
   const [cat] = await db
     .select({ id: schema.categorias.id, nombre: schema.categorias.nombre })

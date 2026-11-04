@@ -117,5 +117,6 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
     distribucion: [0, 1, 2, 8, 26].map((n) => n),
     enlaces: [],
     esEjemplo: true,
+    contactable: true,
   };
 }

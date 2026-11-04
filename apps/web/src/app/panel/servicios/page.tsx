@@ -16,8 +16,9 @@ function Campos({ s, oficios }: { s?: { nombre: string; descripcion: string | nu
   const sinPrecio = oficio?.sinPrecio ?? false;
   return (
     <div className={`grid gap-3 ${sinPrecio ? "" : "sm:grid-cols-[2fr_1fr_1fr]"}`}>
+      {!varios && oficio && <p className="text-sm text-gris sm:col-span-3">Oficio: <b className="text-tinta">{oficio.nombre}</b></p>}
       {varios && (
-        <div className="flex flex-col gap-1.5 sm:col-span-3"><label className="text-sm font-semibold">Oficio</label>
+        <div className="flex flex-col gap-1.5 sm:col-span-3"><label className="text-sm font-semibold">¿De cuál de tus oficios es este servicio?</label>
           <select name="categoriaId" defaultValue={s?.categoriaId ?? oficios[0]!.id} className={campo}>{oficios.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}</select>
           {oficios.some((o) => o.sinPrecio) && <span className="text-[13px] text-gris">En Aseo y limpieza el precio es «{PRECIO_A_CONVENIR_PROVEEDOR.toLowerCase()}»: no se guarda valor.</span>}
         </div>
@@ -52,7 +53,11 @@ export default async function ServiciosPanel({ searchParams }: { searchParams: P
           : "Los precios son orientativos: el valor final lo acuerdas con cada cliente. Se muestran en tu página como «desde»."}
       </p>
 
-      {lista.map((s) => (
+      {oficios.length === 0 && <Aviso tono="error">Primero elige tus oficios en el paso «Tus datos y oficios»: cada servicio va dentro de uno de ellos.</Aviso>}
+
+      {oficios.length > 1 && <p className="text-sm text-gris">Tienes {oficios.length} oficios: <b className="text-tinta">{oficios.map((o) => o.nombre).join(", ")}</b>. Cada servicio se agrega dentro de uno de ellos.</p>}
+
+      {lista.slice().sort((x, y) => (x.categoriaId ?? 0) - (y.categoriaId ?? 0)).map((s) => (
         <div key={s.id} className="flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-5">
           <form action={actualizarServicio} className="flex flex-col gap-3">
             <input type="hidden" name="id" value={s.id} />
@@ -68,6 +73,7 @@ export default async function ServiciosPanel({ searchParams }: { searchParams: P
 
       <form action={agregarServicio} className="flex flex-col gap-3 rounded-[22px] border-2 border-dashed border-borde-campo p-5">
         <h2 className="font-display text-xl font-bold">Agregar un servicio</h2>
+        <p className="-mt-1 text-sm text-gris">Un oficio puede tener varios servicios, por ejemplo «Visita de diagnóstico» o «Instalación».</p>
         <Campos oficios={oficios} />
         <button type="submit" className="h-11 self-start rounded-xl bg-verde px-5 text-sm font-semibold text-white">Agregar servicio</button>
       </form>

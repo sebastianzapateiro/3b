@@ -146,10 +146,13 @@ export default async function Tablero({ searchParams }: { searchParams: Promise<
               {d.alertas.rutPorVencer > 0 && (
                 <div className="flex gap-2.5 rounded-xl bg-amarillo-suave p-3 text-sm leading-[1.4] text-amarillo-oscuro"><b>RUT</b>{d.alertas.rutPorVencer} independientes sin RUT a menos de 5 días de pausa</div>
               )}
+              {d.alertas.sinFotos > 0 && (
+                <div className="flex gap-2.5 rounded-xl bg-amarillo-suave p-3 text-sm leading-[1.4] text-amarillo-oscuro"><b>Fotos</b>{d.alertas.sinFotos} proveedores no han subido su documento y su selfie: no pueden recibir contactos</div>
+              )}
               {d.alertas.documentosEnUnaHora > 30 && (
                 <div className="flex gap-2.5 rounded-xl bg-piedra p-3 text-sm leading-[1.4] text-tinta-2"><b>Auditoría</b>Un verificador abrió más de 30 documentos en una hora</div>
               )}
-              {d.alertas.reclamosPronto + d.alertas.menoresPorVencer + d.alertas.rutPorVencer === 0 && d.alertas.documentosEnUnaHora <= 30 && (
+              {d.alertas.reclamosPronto + d.alertas.menoresPorVencer + d.alertas.rutPorVencer + d.alertas.sinFotos === 0 && d.alertas.documentosEnUnaHora <= 30 && (
                 <p className="text-[15px] text-gris">Sin alertas por ahora.</p>
               )}
             </section>

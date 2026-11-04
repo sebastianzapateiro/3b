@@ -71,7 +71,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
   const iniciales = p.nombre.split(" ").map((x) => x[0]).join("").toUpperCase().slice(0, 2);
   const url = absoluta(`/${p.slug}`);
   // El clic se registra en `contactos` antes de abrir WhatsApp: es lo que habilita la reseña (regla 4).
-  const enlaceWA = p.esEjemplo || !p.whatsapp ? null : `/api/v1/contactos/ir?p=${p.slug}&origen=perfil`;
+  const enlaceWA = p.esEjemplo || !p.whatsapp || !p.contactable ? null : `/api/v1/contactos/ir?p=${p.slug}&origen=perfil`;
   const subtitulo = [p.categorias.join(" y "), p.localidades.join(", ")].filter(Boolean).join(" · ");
   const tiene = (clave: string) => p.insignias.some((i) => i.clave === clave);
   const desde = p.desde.toLocaleDateString("es-CO", { month: "long", year: "numeric", timeZone: "UTC" });

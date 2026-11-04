@@ -116,7 +116,7 @@ export const portafolioFotos = pgTable("portafolio_fotos", {
 });
 
 export const tipoArchivoEnum = pgEnum("tipo_archivo", [
-  "documento_frente", "documento_reverso", "rut", "camara_comercio", "matricula", "autorizacion_ley_1918", "portafolio",
+  "documento_frente", "documento_reverso", "selfie", "rut", "camara_comercio", "matricula", "autorizacion_ley_1918", "portafolio",
 ]);
 
 /** Archivos en el bucket privado; la base solo guarda la ruta. Acceso con URL firmada de 5 min y auditoría. */

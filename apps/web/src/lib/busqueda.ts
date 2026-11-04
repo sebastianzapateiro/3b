@@ -89,6 +89,8 @@ export type ResultadoBusqueda = {
   /** Menor «precio desde» de un servicio con unidad visita; null si no publicó. */
   precioVisita: number | null;
   visitaAConvenir: boolean;
+  /** Ya subió la foto de su documento y su selfie: solo entonces se le puede contactar. */
+  contactable: boolean;
 };
 
 export type PaginaResultados = {
@@ -284,6 +286,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
     convenir: proveedores.visitaAConvenir,
     urgencias: proveedores.atiendeUrgencias,
     h24: proveedores.disponible24h,
+    contactable: sql<boolean>`(SELECT count(DISTINCT d.tipo) = 2 FROM documentos d WHERE d.proveedor_id = ${proveedores.id} AND d.tipo IN ('documento_frente', 'selfie'))`,
   };
   let filas;
   if (f.punto) {
@@ -354,6 +357,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       disponible24h: r.h24,
       precioVisita: r.precioVisita != null ? Number(r.precioVisita) : null,
       visitaAConvenir: r.convenir,
+      contactable: Boolean(r.contactable),
     })),
     total,
     pagina,

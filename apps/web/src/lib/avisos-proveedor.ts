@@ -3,6 +3,7 @@
  * Si la cuenta tiene el correo de relleno del alta asistida (sin correo real), no se envía nada: el equipo
  * avisa por WhatsApp con las plantillas `whatsappProveedorAprobado` / `whatsappProveedorRechazado`.
  */
+import { tieneFotosDeIdentidad } from "@/lib/documentos";
 import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { enviarCorreo } from "@/lib/correo";
@@ -26,7 +27,8 @@ export async function avisarRegistroRecibido(proveedorId: string) {
 
 export async function avisarProveedorAprobado(proveedorId: string) {
   const d = await destinatario(proveedorId);
-  if (d) void enviarCorreo({ para: d.correo, ...proveedorAprobado({ nombre: d.nombre, nombrePublico: d.nombrePublico, slug: d.slug }) });
+  const sinFotos = !(await tieneFotosDeIdentidad(proveedorId));
+  if (d) void enviarCorreo({ para: d.correo, ...proveedorAprobado({ nombre: d.nombre, nombrePublico: d.nombrePublico, slug: d.slug, sinFotos }) });
 }
 
 export async function avisarProveedorRechazado(proveedorId: string, motivo: string) {

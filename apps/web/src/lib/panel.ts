@@ -117,11 +117,11 @@ export async function resenasDelProveedor(proveedorId: string) {
 
 export async function perfilEditable(proveedorId: string) {
   const [cats, locsElegidas, todas] = await Promise.all([
-    db.select({ nombre: categorias.nombre }).from(proveedorCategorias).innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId)).where(eq(proveedorCategorias.proveedorId, proveedorId)),
+    db.select({ nombre: categorias.nombre, slug: categorias.slug }).from(proveedorCategorias).innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId)).where(eq(proveedorCategorias.proveedorId, proveedorId)),
     db.select({ id: proveedorLocalidades.localidadId }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedorId)),
     db.select({ id: localidades.id, nombre: localidades.nombre }).from(localidades).where(eq(localidades.activa, true)).orderBy(asc(localidades.numero)),
   ]);
-  return { categorias: cats.map((c) => c.nombre), localidadesElegidas: new Set(locsElegidas.map((l) => l.id)), localidades: todas };
+  return { categorias: cats.map((c) => c.nombre), slugsOficios: cats.map((c) => c.slug), localidadesElegidas: new Set(locsElegidas.map((l) => l.id)), localidades: todas };
 }
 
 export async function verificacionDelProveedor(proveedorId: string) {

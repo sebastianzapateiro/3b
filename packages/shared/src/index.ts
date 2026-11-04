@@ -7,3 +7,4 @@ export * from "./politicas";
 export * from "./motivos";
 export * from "./habiles";
 export * from "./parametros";
+export * from "./como-trabajas";

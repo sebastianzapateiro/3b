@@ -1,0 +1,1 @@
+ALTER TYPE "public"."tipo_archivo" ADD VALUE 'selfie' BEFORE 'rut';

@@ -67,7 +67,7 @@ export function CargaDocumento({ doc, onCargado, api = "/api/v1/yo/documentos" }
         <div className="flex min-w-0 flex-col">
           <span className="text-[15px] font-semibold">
             {doc.nombre}
-            {doc.antesDeEnviar ? <span className="font-normal text-gris"> · obligatorio</span> : <span className="font-normal text-gris"> · opcional</span>}
+            <span className="font-normal text-gris"> · opcional para inscribirte</span>
           </span>
           <span className={`text-[13px] ${cargado ? "font-semibold text-verde-oscuro" : "text-gris"}`}>
             {estado === "subiendo" ? "Subiendo…" : cargado ? `Cargado · ${FORMATO[cargado.mime] ?? "archivo"} · ${tamano(cargado.bytes)}` : (doc.ayuda ?? "JPG, PNG, HEIC o PDF hasta 10 MB")}

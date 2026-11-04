@@ -18,6 +18,7 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
   const borrador = p.estado === "borrador";
   const [r, alta] = await Promise.all([resumenPanel(p.id), pendientesAlta(p.id)]);
   const visible = p.estado === "aprobado" || p.estado === "en_revision";
+  const fotosListas = alta.tareas.find((t) => t.clave === "documentos")?.ok ?? false;
 
   return (
     <div className="flex flex-col gap-5">
@@ -29,6 +30,16 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
       )}
       {p.estado === "pendiente" && (
         <div className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">Tu perfil está en revisión. Te avisamos cuando quede publicado.</div>
+      )}
+      {!borrador && p.estado !== "rechazado" && !fotosListas && (
+        <div role="status" className="flex flex-col gap-2 rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">
+          <p>
+            {visible
+              ? <><b>Ya tenemos tus datos y ya eres visible para nuestros clientes</b>, pero no te podrán contactar hasta que tengamos la foto de tu documento y tu selfie.</>
+              : <><b>Ya tenemos tus datos.</b> Cuando el equipo apruebe tu perfil, los clientes no podrán contactarte hasta que subas la foto de tu documento y tu selfie.</>}
+          </p>
+          <Link href="/panel/verificacion#documentos" className="flex h-11 items-center justify-center self-start rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Subir mis fotos</Link>
+        </div>
       )}
       {p.rutFechaLimite && p.segmento === "independiente_sin_rut" && (
         <div className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">Tienes hasta el <b>{p.rutFechaLimite}</b> para cargar tu RUT. Si no, el perfil se pausa. <Link href="/panel/verificacion" className="font-semibold underline">Ir a verificación</Link></div>
@@ -72,39 +83,32 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
   );
 }
 
-/** Tarjeta principal del alta: porcentaje grande y el siguiente paso como botón. */
+/** Tarjeta principal del alta, compacta: porcentaje, una línea de contexto y el siguiente paso como botón. */
 function Avance({ alta, bienvenida }: { alta: AltaProveedor; bienvenida: boolean }) {
   const s = alta.listo ? null : alta.siguiente;
   return (
-    <section aria-labelledby="avance-titulo" className={`${tarjeta} flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:gap-7 sm:p-7`}>
-      <AnilloAvance porcentaje={alta.porcentaje} tamano={120} grosor={11} />
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <div className="flex flex-col gap-1">
-          {bienvenida && <span className="text-sm font-semibold text-verde">Te damos la bienvenida a LasTresB</span>}
-          <h2 id="avance-titulo" className="font-display text-[26px] font-extrabold leading-tight tracking-[-0.6px]">
-            {alta.listo ? "Tu perfil está listo para enviar" : `Tu perfil está al ${alta.porcentaje} %`}
-          </h2>
-          <p className="text-[15px] leading-normal text-tinta-2">
-            {alta.listo
-              ? "Revisa tus datos, acepta los términos y envíalo. El equipo lo revisa antes de publicarlo."
-              : "Es un borrador y nadie lo ve todavía. Completa los pasos y envíalo a revisión: lo que guardes queda guardado."}
-          </p>
-        </div>
-        {alta.listo ? (
-          <Link href="/panel/confirmar" className="flex h-[52px] items-center justify-center gap-2 rounded-campo bg-tinta px-7 text-base font-semibold text-white sm:self-start">Revisar y enviar a revisión</Link>
-        ) : (
-          s && (
-            <div className="flex flex-col gap-2 rounded-[16px] bg-amarillo-suave p-4 sm:flex-row sm:items-center sm:justify-between">
-              <span className="flex flex-col text-amarillo-oscuro">
-                <span className="text-xs font-bold uppercase tracking-[0.8px]">Siguiente paso</span>
-                <b className="text-base">{s.titulo}</b>
-                <span className="text-sm">{s.texto}</span>
-              </span>
-              <Link href={s.href} className="flex h-11 flex-none items-center justify-center rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Continuar</Link>
-            </div>
-          )
-        )}
+    <section aria-labelledby="avance-titulo" className={`${tarjeta} flex flex-col gap-3 p-4 sm:p-5`}>
+      <div className="flex items-baseline gap-3">
+        <b id="avance-titulo" className="font-display text-[40px] font-extrabold leading-none tabular-nums tracking-[-1px]">
+          {alta.porcentaje} %<span className="sr-only"> de tu perfil</span>
+        </b>
+        <span className="text-[15px] leading-snug text-tinta-2">
+          {alta.listo ? "Tu perfil está listo para enviar." : bienvenida ? "¡Bienvenido! Tu perfil es un borrador: nadie lo ve aún." : "Tu perfil es un borrador: nadie lo ve aún."}
+        </span>
       </div>
+      {alta.listo ? (
+        <Link href="/panel/confirmar" className="flex h-12 items-center justify-center rounded-campo bg-tinta px-6 text-base font-semibold text-white sm:self-start">Revisar y enviar a revisión</Link>
+      ) : (
+        s && (
+          <div className="flex items-center justify-between gap-3 rounded-[14px] bg-amarillo-suave px-4 py-3">
+            <span className="flex min-w-0 flex-col text-amarillo-oscuro">
+              <span className="text-[11px] font-bold uppercase tracking-[0.8px]">Siguiente paso</span>
+              <b className="text-base leading-tight">{s.titulo}</b>
+            </span>
+            <Link href={s.href} className="flex h-10 flex-none items-center justify-center rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Continuar</Link>
+          </div>
+        )
+      )}
     </section>
   );
 }
@@ -113,7 +117,7 @@ function Avance({ alta, bienvenida }: { alta: AltaProveedor; bienvenida: boolean
 function Pasos({ alta }: { alta: AltaProveedor }) {
   return (
     <section className={`${tarjeta} flex flex-col p-2 sm:p-3`}>
-      <h2 className="px-3 pb-1 pt-3 font-display text-xl font-bold">Pasos para publicar tu perfil</h2>
+      <h2 className="px-3 pb-1 pt-3 font-display text-xl font-bold">Pasos para publicar</h2>
       <ol className="flex flex-col">
         {alta.tareas.map((t, i) => {
           const actual = alta.siguiente?.clave === t.clave && !alta.listo;
@@ -129,7 +133,7 @@ function Pasos({ alta }: { alta: AltaProveedor }) {
                   </span>
                   <span className="text-sm text-gris">{t.texto}</span>
                 </span>
-                <span className={`flex-none text-sm font-semibold ${t.ok ? "text-gris" : "text-verde"}`}>{t.ok ? "Editar" : actual ? "Empezar" : "Completar"}</span>
+                <span className="flex flex-none flex-col items-end gap-0.5 text-sm font-semibold">{t.ok ? <><span className="text-verde-oscuro">Terminado</span><span className="font-normal text-gris underline">Editar</span></> : <span className="text-verde">{t.iniciada ? "Completar" : "Empezar"}</span>}</span>
               </Link>
             </li>
           );

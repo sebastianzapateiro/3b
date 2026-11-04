@@ -13,7 +13,8 @@ import { guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } f
 import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
 import { quitarFoto } from "@/lib/fotos";
-import { oficioDelServicio } from "@/lib/precios";
+import { opcionesComoTrabaja } from "@las3b/shared";
+import { oficioDelServicio, oficiosDelProveedor } from "@/lib/precios";
 import { marcarServicioPrestado } from "@/lib/servicios-prestados";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, proveedorLocalidades } = schema;
@@ -55,11 +56,11 @@ export async function guardarPerfil(formData: FormData) {
     .set({
       presentacion: r.data.presentacion || null,
       aniosExperiencia: r.data.aniosExperiencia ?? null,
-      emiteFactura: formData.has("emiteFactura"),
       ofreceGarantia: formData.has("ofreceGarantia"),
       atiendeUrgencias: formData.has("atiendeUrgencias"),
       disponible24h: formData.has("disponible24h"),
-      visitaAConvenir: formData.has("visitaAConvenir"),
+      // Si no marca ninguna de «Cómo trabajas», queda a convenir por defecto.
+      visitaAConvenir: formData.has("visitaAConvenir") || !["ofreceGarantia", "atiendeUrgencias", "disponible24h"].some((c) => formData.has(c)),
       updatedAt: new Date(),
     })
     .where(eq(proveedores.id, proveedor.id));
@@ -165,10 +166,33 @@ export async function marcarPrestado(formData: FormData) {
 
 export async function guardarNegocioPanel(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
+  const antes = opcionesComoTrabaja((await oficiosDelProveedor(proveedor.id)).map((o) => o.slug));
   const r = await guardarNegocio(proveedor, formData);
   if ("error" in r) return volver("/panel/perfil", { error: r.error });
   revalidatePath("/panel", "layout");
-  redirect(await rutaSiguientePaso(proveedor.id, "Datos de tu negocio guardados."));
+  // Si cambió de oficio y tenía marcadas opciones de «Cómo trabajas» que ya no aplican, se le pregunta de una vez.
+  const despues = opcionesComoTrabaja((await oficiosDelProveedor(proveedor.id)).map((o) => o.slug));
+  const [m] = await db.select({ ofreceGarantia: proveedores.ofreceGarantia, atiendeUrgencias: proveedores.atiendeUrgencias, disponible24h: proveedores.disponible24h }).from(proveedores).where(eq(proveedores.id, proveedor.id)).limit(1);
+  const sobran = (["ofreceGarantia", "atiendeUrgencias", "disponible24h"] as const).filter((c) => m?.[c] && antes.has(c) && !despues.has(c));
+  if (sobran.length > 0) return volver("/panel/perfil", { ajustar: sobran.join(",") });
+  redirect(await rutaSiguientePaso(proveedor.id, "Tus datos y oficios quedaron guardados."));
+}
+
+/** Respuesta a «¿Quitamos las opciones que ya no aplican a tu oficio?». */
+export async function ajustarComoTrabaja(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const quitar = formData.get("decision") === "quitar";
+  if (quitar) {
+    const op = opcionesComoTrabaja((await oficiosDelProveedor(proveedor.id)).map((o) => o.slug));
+    await db.update(proveedores).set({
+      ...(op.has("ofreceGarantia") ? {} : { ofreceGarantia: false }),
+      ...(op.has("atiendeUrgencias") ? {} : { atiendeUrgencias: false }),
+      ...(op.has("disponible24h") ? {} : { disponible24h: false }),
+      updatedAt: new Date(),
+    }).where(eq(proveedores.id, proveedor.id));
+    revalidatePath("/panel", "layout");
+  }
+  redirect(await rutaSiguientePaso(proveedor.id, quitar ? "Ajustamos tus opciones de «Cómo trabajas»." : "Dejamos tus opciones como estaban."));
 }
 
 export async function guardarIdentidadPanel(formData: FormData) {

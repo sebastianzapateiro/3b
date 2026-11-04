@@ -19,6 +19,7 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
   if (p.estado !== "borrador") redirect("/panel");
   const sp = await searchParams;
   const [datos, docs, alta] = await Promise.all([datosParaConfirmar(p.id), estadoDocumentos(p.id), pendientesAlta(p.id)]);
+  const fotosListas = docs.lista.filter((d) => d.tipo === "documento_frente" || d.tipo === "selfie").every((d) => d.cargado);
   const faltan = alta.tareas.filter((t) => !t.ok && !t.opcional);
 
   return (
@@ -67,13 +68,13 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
         <fieldset className="flex flex-col gap-3 text-sm leading-snug text-tinta-2">
           <legend className="sr-only">Autorizaciones</legend>
           <label className="flex items-start gap-2"><input type="checkbox" name="aceptaTerminosProveedor" required className={casilla} /><span>Acepto los <Link href="/terminos-proveedores" target="_blank" className="font-semibold text-verde underline">términos de uso para proveedores</Link> y entiendo que el servicio, el precio y la garantía los acuerdo con cada cliente.</span></label>
-          <label className="flex items-start gap-2"><input type="checkbox" name="aceptaDatos" required className={casilla} /><span>Autorizo el tratamiento de mis datos personales (documento, fecha de nacimiento, dirección) para verificar mi identidad, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.</span></label>
+          <label className="flex items-start gap-2"><input type="checkbox" name="aceptaDatos" required className={casilla} /><span>Autorizo el tratamiento de mis datos personales (documento, fecha de nacimiento, dirección) y de los sensibles que suba, como la foto de mi documento y mi selfie, para verificar mi identidad. Entiendo que son privados y que la autorización es voluntaria, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.</span></label>
           <label className="flex items-start gap-2"><input type="checkbox" name="declaraNoPermitidos" required className={casilla} /><span>Declaro que no ofreceré transporte de personas ni servicios de salud o cuidado de personas.</span></label>
           {datos.exigeLey1918 && (
             <label className="flex items-start gap-2"><input type="checkbox" name="autorizaLey1918" required className={casilla} /><span>Mi categoría trabaja con menores. Autorizo la consulta de antecedentes en el registro de inhabilidades (Ley 1918 de 2018) para recibir la insignia «Apto para menores».</span></label>
           )}
         </fieldset>
-        {docs.faltan.length > 0 && <p className="text-sm font-semibold text-ladrillo-oscuro">Antes de enviar, carga: {docs.faltan.join(", ")}.</p>}
+        {!fotosListas && <p className="rounded-[14px] bg-amarillo-suave p-3 text-sm leading-normal text-amarillo-oscuro">Puedes enviar sin tus fotos. Pero tu perfil no será publicable hasta que el equipo lo apruebe <b>y</b> hayas cargado la foto de tu documento y tu selfie. <Link href="/panel/verificacion#documentos" className="font-semibold underline">Subirlas ahora</Link></p>}
         <button type="submit" disabled={faltan.length > 0} className="h-[52px] rounded-campo bg-tinta text-base font-semibold text-white disabled:opacity-40">Enviar a revisión</button>
       </form>
     </div>

@@ -100,6 +100,7 @@ const altaAsistida = z.object({
   direccion: z.string().min(5, "Escribe la dirección de notificaciones."),
   presentacion: z.string().max(280, "La presentación admite hasta 280 caracteres.").optional(),
   servicio: z.string().optional(),
+  servicioCategoria: z.string().optional(),
   precio: z.string().optional(),
   unidad: z.enum(["visita", "hora", "clase", "trabajo"]).default("visita"),
   slug: slugSchema,
@@ -117,6 +118,7 @@ export async function crearProveedorAsistido(formData: FormData) {
   const categoriaIds = formData.getAll("categoria").map(Number).filter(Number.isInteger);
   const localidadIds = formData.getAll("localidad").map(Number).filter(Number.isInteger);
   if (categoriaIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una categoría." });
+  if (d.servicio && d.servicioCategoria && !categoriaIds.includes(Number(d.servicioCategoria))) volver("/admin/proveedores/nuevo", { error: "El oficio del servicio debe ser uno de los oficios elegidos." });
   if (localidadIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una localidad." });
   // Con el correo el proveedor ingresa después de crear su clave: sin él la invitación no le sirve.
   const invitar = texto(formData, "accion") === "invitar";
@@ -163,8 +165,9 @@ export async function crearProveedorAsistido(formData: FormData) {
   await db.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: id, categoriaId })));
   await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: id, localidadId })));
   if (d.servicio) {
-    const sinPrecio = await categoriasSinPrecio([categoriaIds[0]!]);
-    await db.insert(serviciosProveedor).values({ proveedorId: id, categoriaId: categoriaIds[0], nombre: d.servicio, precioDesde: sinPrecio ? null : d.precio?.replace(/\D/g, "") || null, unidad: sinPrecio ? "trabajo" : d.unidad });
+    const categoriaServicio = Number(d.servicioCategoria) || categoriaIds[0]!;
+    const sinPrecio = await categoriasSinPrecio([categoriaServicio]);
+    await db.insert(serviciosProveedor).values({ proveedorId: id, categoriaId: categoriaServicio, nombre: d.servicio, precioDesde: sinPrecio ? null : d.precio?.replace(/\D/g, "") || null, unidad: sinPrecio ? "trabajo" : d.unidad });
   }
 
   await guardarCompletitud(id);

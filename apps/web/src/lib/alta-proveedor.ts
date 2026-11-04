@@ -8,7 +8,7 @@ import { and, count, eq, inArray, isNotNull, asc } from "drizzle-orm";
 import { z } from "zod";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { normalizarWhatsapp, slugSchema, sugerirSlug, SLUGS_RESERVADOS } from "@las3b/shared";
-import { estadoDocumentos } from "@/lib/documentos";
+import { estadoDocumentos, FOTOS_DE_IDENTIDAD } from "@/lib/documentos";
 import { FOTOS_MINIMAS, guardarCompletitud } from "@/lib/completitud";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, serviciosProveedor, categorias, portafolioFotos } = schema;
@@ -47,7 +47,7 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
 }
 
 export type SeccionPanel = "perfil" | "servicios" | "fotos" | "verificacion";
-export type TareaAlta = { clave: string; titulo: string; texto: string; ok: boolean; href: string; seccion: SeccionPanel; opcional?: boolean };
+export type TareaAlta = { clave: string; titulo: string; texto: string; ok: boolean; href: string; seccion: SeccionPanel; opcional?: boolean; /** Ya guardó algo pero falta: se muestra «Completar»; sin nada, «Empezar». */ iniciada?: boolean };
 
 /**
  * Qué le falta al borrador para enviarlo a revisión. `listo` ignora las tareas opcionales.
@@ -75,13 +75,14 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     estadoDocumentos(proveedorId),
     db.select({ n: count() }).from(portafolioFotos).where(and(eq(portafolioFotos.proveedorId, proveedorId), eq(portafolioFotos.estado, "visible"))),
   ]);
+  const fotosIdentidad = docs.lista.filter((r) => (FOTOS_DE_IDENTIDAD as readonly string[]).includes(r.tipo)).every((r) => r.cargado);
   const tareas: TareaAlta[] = [
-    { clave: "negocio", titulo: "Datos de tu negocio", texto: "Nombre, WhatsApp, oficio y la dirección de tu página.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim() && p.segmento && (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
+    { clave: "negocio", titulo: "Tus datos y oficios", texto: "Nombre, WhatsApp, tus oficios y la dirección de tu página.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim() && p.segmento && (cats?.n ?? 0) > 0), iniciada: Boolean(p?.whatsapp.trim() || p?.segmento || (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
-    { clave: "servicios", titulo: "Tus servicios", texto: "Al menos un servicio, con su precio desde.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
-    { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
-    { clave: "documentos", titulo: "Fotos de tus documentos", texto: docs.faltan.length ? `Falta: ${docs.faltan.join(", ")}.` : "Las que pide tu tipo de negocio y tu oficio.", ok: docs.faltan.length === 0, href: "/panel/verificacion#documentos", seccion: "verificacion" },
-    { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, href: "/panel/fotos", seccion: "fotos", opcional: true },
+    { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
+    { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
+    { clave: "documentos", titulo: "Tu documento y tu foto", texto: "Foto de tu documento y una selfie (datos sensibles y privados). Puedes hacerlo después, pero sin ellas los clientes no podrán contactarte.", ok: fotosIdentidad, iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
+    { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, iniciada: (fotos?.n ?? 0) > 0, href: "/panel/fotos", seccion: "fotos", opcional: true },
     { clave: "sobre", titulo: "Sobre mí", texto: "Cuéntales a los clientes cómo trabajas. Ayuda a que te escriban.", ok: Boolean(p?.presentacion?.trim()), href: "/panel/perfil#sobre", seccion: "perfil", opcional: true },
   ];
   const obligatorias = tareas.filter((t) => !t.opcional);
@@ -123,7 +124,7 @@ export async function negocioEditable(proveedorId: string) {
 }
 
 const esquemaNegocio = z.object({
-  nombrePublico: z.string().trim().min(2, "Escribe el nombre de tu negocio.").max(80, "El nombre admite hasta 80 caracteres."),
+  nombrePublico: z.string().trim().min(2, "Escribe el nombre con el que te van a ver los clientes.").max(80, "El nombre admite hasta 80 caracteres."),
   whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Escribe un WhatsApp válido, por ejemplo 300 123 4567." }), z.NEVER)),
   segmento: z.enum(["independiente_sin_rut", "independiente_con_rut", "empresa"], { message: "Elige si eres independiente o empresa." }),
   slug: slugSchema,
@@ -136,7 +137,8 @@ export async function guardarNegocio(proveedor: { id: string; estado: string }, 
   if (proveedor.estado !== "borrador") return { error: "Tu perfil ya fue enviado: para cambiar estos datos escríbenos." };
   const r = esquemaNegocio.safeParse(Object.fromEntries(formData));
   if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos." };
-  const categoriaIds = formData.getAll("categoria").map(Number).filter(Number.isInteger);
+  // Los desplegables vacíos llegan como "" (= 0): se descartan, igual que los repetidos.
+  const categoriaIds = [...new Set(formData.getAll("categoria").map(Number).filter((c) => Number.isInteger(c) && c > 0))];
   if (categoriaIds.length === 0) return { error: "Elige al menos un oficio." };
   if (categoriaIds.length > 3) return { error: "Elige máximo 3 oficios." };
 

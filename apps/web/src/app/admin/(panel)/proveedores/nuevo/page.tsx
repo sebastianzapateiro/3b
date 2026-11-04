@@ -80,7 +80,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <h2 className="font-display text-xl font-bold"><span className="text-verde">3.</span> Qué ofrece y dónde</h2>
             <fieldset className={grupo}>
-              <legend className="mb-2 text-sm font-semibold">Categorías</legend>
+              <legend className="mb-2 text-sm font-semibold">Oficios <span className="font-normal text-gris">(puede tener varios)</span></legend>
               <div className="flex flex-wrap gap-2">
                 {cats.map((c) => <label key={c.id} className={chip}><input type="checkbox" name="categoria" value={c.id} className="size-4 accent-white" />{c.nombre}</label>)}
               </div>
@@ -92,6 +92,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
               </div>
             </fieldset>
             <div className="flex flex-wrap gap-3.5">
+              <div className={`${grupo} flex-[1_1_100%]`}><label htmlFor="servicioCategoria" className={etiqueta}>Oficio del primer servicio</label><select id="servicioCategoria" name="servicioCategoria" className={campoAdmin}><option value="">El primero de los oficios marcados arriba</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select><span className="text-xs text-gris">Cada servicio va atado a un oficio, y debe ser uno de los marcados arriba. Más servicios se agregan después, en el perfil del proveedor.</span></div>
               <div className={`${grupo} flex-[2_1_240px]`}><label htmlFor="servicio" className={etiqueta}>Primer servicio</label><input id="servicio" name="servicio" placeholder="Ej: Visita de diagnóstico" className={campoAdmin} /></div>
               <div className={`${grupo} flex-[1_1_140px]`}><label htmlFor="precio" className={etiqueta}>Precio desde</label><input id="precio" name="precio" inputMode="numeric" placeholder="$ valor" className={campoAdmin} /></div>
               <div className={`${grupo} flex-[1_1_120px]`}><label htmlFor="unidad" className={etiqueta}>Por</label><select id="unidad" name="unidad" className={campoAdmin}><option value="visita">Visita</option><option value="hora">Hora</option><option value="clase">Clase</option><option value="trabajo">Trabajo</option></select></div>

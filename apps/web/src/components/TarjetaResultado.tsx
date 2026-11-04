@@ -70,12 +70,16 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
         <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta sm:hidden">
           Ver perfil
         </Link>
-        {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
+        {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. Sin sus fotos de identidad, aún no se puede contactar. */}
+        {!r.contactable ? (
+          <span aria-disabled="true" className="flex h-[46px] flex-[1.4] items-center justify-center rounded-[14px] bg-piedra px-3 text-center text-[13px] font-semibold leading-tight text-gris">Aún no disponible para contactar</span>
+        ) : (
         <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro sm:flex-none">
           <IconoWhatsApp />
           <span className="sm:hidden">WhatsApp</span>
           <span className="hidden sm:inline">Contactar por WA</span>
         </a>
+        )}
       </div>
     </article>
   );

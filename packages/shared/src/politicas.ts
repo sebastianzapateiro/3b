@@ -29,11 +29,11 @@ export const RESPONSABLE = {
 
 export const TRATAMIENTO_DATOS: TextoLegal = {
   tipo: "tratamiento_datos",
-  version: "2.1",
-  vigenteDesde: "2026-10-30",
+  version: "2.2",
+  vigenteDesde: "2026-11-04",
   titulo: "Política de tratamiento de datos personales",
   introduccion: "Esta política explica qué datos personales trata LasTresB, para qué, quién los recibe y cómo puedes ejercer tus derechos, conforme a la Ley 1581 de 2012 y sus normas reglamentarias.",
-  pendientes: ["Razón social, NIT y correo de datos personales del responsable.", "Revisión de un abogado (finalidades, transferencias y plazos de conservación).", "Definir si aplica la inscripción en el Registro Nacional de Bases de Datos (SIC)."],
+  pendientes: ["Razón social, NIT y correo de datos personales del responsable.", "Revisión de un abogado del tratamiento de la foto del documento y la selfie como datos sensibles (plazo de conservación y eliminación).", "Revisión de un abogado (finalidades, transferencias y plazos de conservación).", "Definir si aplica la inscripción en el Registro Nacional de Bases de Datos (SIC)."],
   secciones: [
     {
       titulo: "1. Responsable del tratamiento",
@@ -44,7 +44,7 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
       lista: [
         "Cuentas de compradores: nombre, correo, celular (opcional), declaración de mayoría de edad, contactos que haces con proveedores y las reseñas que publicas.",
         "Solicitudes de servicio (banner «¿Qué estás buscando?»): nombre, WhatsApp, lo que necesitas, la dirección o ubicación aproximada si decides darla, y el mensaje que envías a cada proveedor desde LasTresB.",
-        "Proveedores: nombre público y de identificación, documento de identidad (cifrado), fecha de nacimiento, dirección de notificaciones, WhatsApp, RUT, matrícula o certificaciones, fotos de trabajos, presentación, servicios, precios y localidades.",
+        "Proveedores: nombre público y de identificación, documento de identidad (cifrado), foto de ese documento y selfie (datos sensibles), fecha de nacimiento, dirección de notificaciones, WhatsApp, RUT, matrícula o certificaciones, fotos de trabajos, presentación, servicios, precios y localidades.",
         "Proveedores en categorías con menores: la autorización firmada y el resultado de la consulta del registro de inhabilidades (Ley 1918 de 2018).",
         "Datos técnicos: dirección IP y dispositivo en los consentimientos y en el registro de auditoría; cookies según la política de cookies.",
       ],
@@ -65,12 +65,13 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
       titulo: "4. Qué es público y qué es privado",
       parrafos: [
         "Es público en el portafolio del proveedor: nombre público, presentación, servicios, precios orientativos, localidades, fotos de trabajos, insignias y reseñas. El número de WhatsApp se usa para el botón de contacto.",
-        "Nunca se muestran en público ni en la API pública: documento de identidad, dirección de notificaciones, fecha de nacimiento, RUT y los archivos de verificación. Solo los ve el equipo de verificación autorizado y cada apertura queda registrada.",
+        "Nunca se muestran en público ni en la API pública: documento de identidad, la foto de ese documento y tu selfie, dirección de notificaciones, fecha de nacimiento, RUT y los archivos de verificación. Solo los ve el equipo de verificación autorizado y cada apertura queda registrada.",
       ],
     },
     {
       titulo: "5. Datos sensibles y de menores",
       parrafos: [
+        "La foto de tu documento de identidad y tu selfie son datos sensibles (pueden revelar rasgos biométricos). Las pedimos solo para verificar que eres quien dices ser y evitar suplantaciones; solo las tratamos con tu autorización expresa y facultativa; se guardan en almacenamiento privado, solo las ve el equipo de verificación autorizado, cada apertura queda registrada y nunca se publican. Puedes inscribirte sin subirlas, pero mientras no estén cargadas los clientes no podrán contactarte.",
         "La información sobre antecedentes de la Ley 1918 es un dato sensible. Solo la tratamos si el proveedor lo autoriza de forma expresa, es voluntario y es necesario únicamente para otorgar la insignia «Apto para menores». Responder o no es opcional, pero sin ello no se puede publicar en categorías con menores.",
         "LasTresB está dirigida a mayores de 18 años y no recolecta datos de menores de edad.",
       ],
