@@ -5,6 +5,7 @@
  * Escritorio: panel con foto a la izquierda y formulario a la derecha. Celular: franja con la foto arriba.
  * TODO: fotos definitivas (hoy se usan las del banco de imágenes del proyecto, ver public/fotos/CREDITOS.md).
  */
+import { AyudaInscripcion } from "@/components/AyudaInscripcion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -188,6 +189,7 @@ export function IngresoClient({ destino, google, apple, aviso }: { destino: stri
               </p>
             </>
           )}
+          <AyudaInscripcion tipo={tipo} />
         </div>
       </section>
     </main>
