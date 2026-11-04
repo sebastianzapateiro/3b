@@ -5,6 +5,38 @@ o «Soy proveedor» en `/ingreso`. Sirve para probar el alta, explicarla al equi
 
 Código: `app/ingreso/`, `app/proveedores/registro/route.ts`, `lib/alta-proveedor.ts`, `lib/documentos.ts`, `app/panel/`.
 
+## Lista de chequeo del proveedor
+
+Para acompañar a un proveedor o probar el alta de punta a punta. El detalle de cada paso está en las etapas de abajo.
+
+**Inscripción**
+- [ ] Eligió «Soy proveedor» en `/ingreso`
+- [ ] Creó la cuenta con Google («Sí, crear mi cuenta») o con correo y clave
+- [ ] Si usó correo: confirmó el enlace que le llegó e ingresó
+- [ ] Llegó a `/panel` con la bienvenida
+
+**Datos del perfil (obligatorios)**
+- [ ] Datos del negocio: nombre, WhatsApp, tipo (sin RUT, con RUT o empresa), de 1 a 3 oficios y dirección de la página
+- [ ] Localidades donde trabaja
+- [ ] Al menos un servicio con «precio desde»
+- [ ] Datos de identidad: documento, dirección de notificaciones y fecha de nacimiento
+- [ ] Documento de identidad por las dos caras
+- [ ] RUT, si es *con RUT*, *empresa* o su oficio lo exige
+- [ ] Cámara de comercio, si es empresa
+- [ ] Matrícula o certificación, si su oficio la exige
+
+**Recomendados**
+- [ ] Fotos de sus trabajos
+- [ ] «Sobre mí»
+
+**Envío**
+- [ ] Marcó las casillas en `/panel/confirmar` (términos, datos personales, servicios no permitidos y, si trabaja con menores, Ley 1918)
+- [ ] Tocó «Enviar a revisión» y el panel dice «En revisión del equipo»
+
+**Después de aprobado**
+- [ ] Su perfil sale en la búsqueda
+- [ ] Si es *sin RUT*: cargó el RUT dentro de los 30 días
+
 ## Etapa 1 · Inscripción (`/ingreso`)
 
 1. **Elige «Soy proveedor».** El tipo se guarda en una cookie (`l3b_tipo`, 1 hora) para que sobreviva al ir y volver de Google.

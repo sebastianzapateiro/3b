@@ -15,6 +15,8 @@
 
 ## Alta del proveedor (CU-30 / CU-32, Decisión)
 
+Paso a paso y lista de chequeo del proveedor: [`09-paso-a-paso-proveedor.md`](09-paso-a-paso-proveedor.md).
+
 Preguntas iniciales definen el segmento:
 
 - **Independiente sin RUT:** cédula por ambas caras, correo y WhatsApp verificados, dirección de notificaciones. Publica al ser aprobado y tiene **30 días** para cargar RUT; si no, pasa a `pausado_por_rut`.
