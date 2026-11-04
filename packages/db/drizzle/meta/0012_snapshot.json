@@ -1,5 +1,5 @@
 {
-  "id": "72b40c6b-04fd-43b3-9146-f72c7d2ba725",
+  "id": "15e0607a-5744-44a0-b92e-46d7602d700a",
   "prevId": "f07069a7-0e5c-4b33-97f6-c6ceb90c78a5",
   "version": "7",
   "dialect": "postgresql",
@@ -94,15 +94,15 @@
         "account_user_id_user_id_fk": {
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -171,25 +171,25 @@
         "session_user_id_user_id_fk": {
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "session_token_unique": {
           "name": "session_token_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "token"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -250,15 +250,15 @@
         "two_factor_user_id_user_id_fk": {
           "name": "two_factor_user_id_user_id_fk",
           "tableFrom": "two_factor",
-          "tableTo": "user",
           "columnsFrom": [
             "user_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -361,10 +361,10 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -407,28 +407,28 @@
         "usuario_roles_usuario_id_user_id_fk": {
           "name": "usuario_roles_usuario_id_user_id_fk",
           "tableFrom": "usuario_roles",
-          "tableTo": "user",
           "columnsFrom": [
             "usuario_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "usuario_roles_asignado_por_user_id_fk": {
           "name": "usuario_roles_asignado_por_user_id_fk",
           "tableFrom": "usuario_roles",
-          "tableTo": "user",
           "columnsFrom": [
             "asignado_por"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -524,15 +524,15 @@
         "barrios_localidad_id_localidades_id_fk": {
           "name": "barrios_localidad_id_localidades_id_fk",
           "tableFrom": "barrios",
-          "tableTo": "localidades",
           "columnsFrom": [
             "localidad_id"
           ],
+          "tableTo": "localidades",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -636,25 +636,25 @@
         "categorias_padre_id_categorias_id_fk": {
           "name": "categorias_padre_id_categorias_id_fk",
           "tableFrom": "categorias",
-          "tableTo": "categorias",
           "columnsFrom": [
             "padre_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "categorias_slug_unique": {
           "name": "categorias_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -710,10 +710,10 @@
       "uniqueConstraints": {
         "localidades_slug_unique": {
           "name": "localidades_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -819,12 +819,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "proveedores_mostrados": {
-          "name": "proveedores_mostrados",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "consentimiento_version": {
           "name": "consentimiento_version",
           "type": "text",
@@ -875,41 +869,41 @@
         "solicitudes_servicio_localidad_id_localidades_id_fk": {
           "name": "solicitudes_servicio_localidad_id_localidades_id_fk",
           "tableFrom": "solicitudes_servicio",
-          "tableTo": "localidades",
           "columnsFrom": [
             "localidad_id"
           ],
+          "tableTo": "localidades",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "solicitudes_servicio_categoria_id_categorias_id_fk": {
           "name": "solicitudes_servicio_categoria_id_categorias_id_fk",
           "tableFrom": "solicitudes_servicio",
-          "tableTo": "categorias",
           "columnsFrom": [
             "categoria_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "solicitudes_servicio_responsable_id_user_id_fk": {
           "name": "solicitudes_servicio_responsable_id_user_id_fk",
           "tableFrom": "solicitudes_servicio",
-          "tableTo": "user",
           "columnsFrom": [
             "responsable_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -953,26 +947,26 @@
         "terminos_busqueda_categoria_id_categorias_id_fk": {
           "name": "terminos_busqueda_categoria_id_categorias_id_fk",
           "tableFrom": "terminos_busqueda",
-          "tableTo": "categorias",
           "columnsFrom": [
             "categoria_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "terminos_busqueda_termino_categoriaId_unique": {
           "name": "terminos_busqueda_termino_categoriaId_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "termino",
             "categoria_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -1026,28 +1020,28 @@
         "consultas_inhabilidades_proveedor_id_proveedores_id_fk": {
           "name": "consultas_inhabilidades_proveedor_id_proveedores_id_fk",
           "tableFrom": "consultas_inhabilidades",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "consultas_inhabilidades_verificador_id_user_id_fk": {
           "name": "consultas_inhabilidades_verificador_id_user_id_fk",
           "tableFrom": "consultas_inhabilidades",
-          "tableTo": "user",
           "columnsFrom": [
             "verificador_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1117,15 +1111,15 @@
         "documentos_proveedor_id_proveedores_id_fk": {
           "name": "documentos_proveedor_id_proveedores_id_fk",
           "tableFrom": "documentos",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1169,10 +1163,10 @@
       "uniqueConstraints": {
         "insignias_clave_unique": {
           "name": "insignias_clave_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "clave"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -1248,15 +1242,15 @@
         "portafolio_fotos_proveedor_id_proveedores_id_fk": {
           "name": "portafolio_fotos_proveedor_id_proveedores_id_fk",
           "tableFrom": "portafolio_fotos",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1287,28 +1281,28 @@
         "proveedor_categorias_proveedor_id_proveedores_id_fk": {
           "name": "proveedor_categorias_proveedor_id_proveedores_id_fk",
           "tableFrom": "proveedor_categorias",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "proveedor_categorias_categoria_id_categorias_id_fk": {
           "name": "proveedor_categorias_categoria_id_categorias_id_fk",
           "tableFrom": "proveedor_categorias",
-          "tableTo": "categorias",
           "columnsFrom": [
             "categoria_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -1366,41 +1360,41 @@
         "proveedor_insignias_proveedor_id_proveedores_id_fk": {
           "name": "proveedor_insignias_proveedor_id_proveedores_id_fk",
           "tableFrom": "proveedor_insignias",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "proveedor_insignias_insignia_id_insignias_id_fk": {
           "name": "proveedor_insignias_insignia_id_insignias_id_fk",
           "tableFrom": "proveedor_insignias",
-          "tableTo": "insignias",
           "columnsFrom": [
             "insignia_id"
           ],
+          "tableTo": "insignias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "proveedor_insignias_otorgada_por_user_id_fk": {
           "name": "proveedor_insignias_otorgada_por_user_id_fk",
           "tableFrom": "proveedor_insignias",
-          "tableTo": "user",
           "columnsFrom": [
             "otorgada_por"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -1439,28 +1433,28 @@
         "proveedor_localidades_proveedor_id_proveedores_id_fk": {
           "name": "proveedor_localidades_proveedor_id_proveedores_id_fk",
           "tableFrom": "proveedor_localidades",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "proveedor_localidades_localidad_id_localidades_id_fk": {
           "name": "proveedor_localidades_localidad_id_localidades_id_fk",
           "tableFrom": "proveedor_localidades",
-          "tableTo": "localidades",
           "columnsFrom": [
             "localidad_id"
           ],
+          "tableTo": "localidades",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -1720,41 +1714,41 @@
             }
           ],
           "isUnique": false,
-          "concurrently": false,
+          "with": {},
           "method": "btree",
-          "with": {}
+          "concurrently": false
         }
       },
       "foreignKeys": {
         "proveedores_usuario_id_user_id_fk": {
           "name": "proveedores_usuario_id_user_id_fk",
           "tableFrom": "proveedores",
-          "tableTo": "user",
           "columnsFrom": [
             "usuario_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "proveedores_usuarioId_unique": {
           "name": "proveedores_usuarioId_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "usuario_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "proveedores_slug_unique": {
           "name": "proveedores_slug_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "slug"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -1829,28 +1823,28 @@
         "servicios_proveedor_proveedor_id_proveedores_id_fk": {
           "name": "servicios_proveedor_proveedor_id_proveedores_id_fk",
           "tableFrom": "servicios_proveedor",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "servicios_proveedor_categoria_id_categorias_id_fk": {
           "name": "servicios_proveedor_categoria_id_categorias_id_fk",
           "tableFrom": "servicios_proveedor",
-          "tableTo": "categorias",
           "columnsFrom": [
             "categoria_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1888,15 +1882,15 @@
         "slugs_historial_proveedor_id_proveedores_id_fk": {
           "name": "slugs_historial_proveedor_id_proveedores_id_fk",
           "tableFrom": "slugs_historial",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -1960,15 +1954,15 @@
         "acciones_moderacion_moderador_id_user_id_fk": {
           "name": "acciones_moderacion_moderador_id_user_id_fk",
           "tableFrom": "acciones_moderacion",
-          "tableTo": "user",
           "columnsFrom": [
             "moderador_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2049,67 +2043,67 @@
         "contactos_proveedor_id_proveedores_id_fk": {
           "name": "contactos_proveedor_id_proveedores_id_fk",
           "tableFrom": "contactos",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "contactos_comprador_id_user_id_fk": {
           "name": "contactos_comprador_id_user_id_fk",
           "tableFrom": "contactos",
-          "tableTo": "user",
           "columnsFrom": [
             "comprador_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "contactos_categoria_id_categorias_id_fk": {
           "name": "contactos_categoria_id_categorias_id_fk",
           "tableFrom": "contactos",
-          "tableTo": "categorias",
           "columnsFrom": [
             "categoria_id"
           ],
+          "tableTo": "categorias",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "contactos_localidad_id_localidades_id_fk": {
           "name": "contactos_localidad_id_localidades_id_fk",
           "tableFrom": "contactos",
-          "tableTo": "localidades",
           "columnsFrom": [
             "localidad_id"
           ],
+          "tableTo": "localidades",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "contactos_solicitud_id_solicitudes_servicio_id_fk": {
           "name": "contactos_solicitud_id_solicitudes_servicio_id_fk",
           "tableFrom": "contactos",
-          "tableTo": "solicitudes_servicio",
           "columnsFrom": [
             "solicitud_id"
           ],
+          "tableTo": "solicitudes_servicio",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2180,15 +2174,15 @@
         "reportes_reportante_id_user_id_fk": {
           "name": "reportes_reportante_id_user_id_fk",
           "tableFrom": "reportes",
-          "tableTo": "user",
           "columnsFrom": [
             "reportante_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2284,51 +2278,51 @@
         "resenas_contacto_id_contactos_id_fk": {
           "name": "resenas_contacto_id_contactos_id_fk",
           "tableFrom": "resenas",
-          "tableTo": "contactos",
           "columnsFrom": [
             "contacto_id"
           ],
+          "tableTo": "contactos",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "resenas_proveedor_id_proveedores_id_fk": {
           "name": "resenas_proveedor_id_proveedores_id_fk",
           "tableFrom": "resenas",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "resenas_comprador_id_user_id_fk": {
           "name": "resenas_comprador_id_user_id_fk",
           "tableFrom": "resenas",
-          "tableTo": "user",
           "columnsFrom": [
             "comprador_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "resenas_contactoId_unique": {
           "name": "resenas_contactoId_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "contacto_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -2372,15 +2366,15 @@
         "respuestas_resena_resena_id_resenas_id_fk": {
           "name": "respuestas_resena_resena_id_resenas_id_fk",
           "tableFrom": "respuestas_resena",
-          "tableTo": "resenas",
           "columnsFrom": [
             "resena_id"
           ],
+          "tableTo": "resenas",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -2437,32 +2431,32 @@
         "servicios_contacto_id_contactos_id_fk": {
           "name": "servicios_contacto_id_contactos_id_fk",
           "tableFrom": "servicios",
-          "tableTo": "contactos",
           "columnsFrom": [
             "contacto_id"
           ],
+          "tableTo": "contactos",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "servicios_contactoId_unique": {
           "name": "servicios_contactoId_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "contacto_id"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "servicios_codigo_unique": {
           "name": "servicios_codigo_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "codigo"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       },
       "policies": {},
@@ -2535,41 +2529,41 @@
         "solicitud_seguimiento_solicitud_id_solicitudes_servicio_id_fk": {
           "name": "solicitud_seguimiento_solicitud_id_solicitudes_servicio_id_fk",
           "tableFrom": "solicitud_seguimiento",
-          "tableTo": "solicitudes_servicio",
           "columnsFrom": [
             "solicitud_id"
           ],
+          "tableTo": "solicitudes_servicio",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "solicitud_seguimiento_autor_id_user_id_fk": {
           "name": "solicitud_seguimiento_autor_id_user_id_fk",
           "tableFrom": "solicitud_seguimiento",
-          "tableTo": "user",
           "columnsFrom": [
             "autor_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "solicitud_seguimiento_proveedor_id_proveedores_id_fk": {
           "name": "solicitud_seguimiento_proveedor_id_proveedores_id_fk",
           "tableFrom": "solicitud_seguimiento",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2662,15 +2656,15 @@
         "auditoria_actor_id_user_id_fk": {
           "name": "auditoria_actor_id_user_id_fk",
           "tableFrom": "auditoria",
-          "tableTo": "user",
           "columnsFrom": [
             "actor_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -2759,28 +2753,28 @@
         "consentimientos_usuario_id_user_id_fk": {
           "name": "consentimientos_usuario_id_user_id_fk",
           "tableFrom": "consentimientos",
-          "tableTo": "user",
           "columnsFrom": [
             "usuario_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "consentimientos_politica_id_politicas_id_fk": {
           "name": "consentimientos_politica_id_politicas_id_fk",
           "tableFrom": "consentimientos",
-          "tableTo": "politicas",
           "columnsFrom": [
             "politica_id"
           ],
+          "tableTo": "politicas",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3017,28 +3011,28 @@
         "reclamos_proveedor_id_proveedores_id_fk": {
           "name": "reclamos_proveedor_id_proveedores_id_fk",
           "tableFrom": "reclamos",
-          "tableTo": "proveedores",
           "columnsFrom": [
             "proveedor_id"
           ],
+          "tableTo": "proveedores",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         },
         "reclamos_reclamante_id_user_id_fk": {
           "name": "reclamos_reclamante_id_user_id_fk",
           "tableFrom": "reclamos",
-          "tableTo": "user",
           "columnsFrom": [
             "reclamante_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3104,15 +3098,15 @@
         "solicitudes_datos_usuario_id_user_id_fk": {
           "name": "solicitudes_datos_usuario_id_user_id_fk",
           "tableFrom": "solicitudes_datos",
-          "tableTo": "user",
           "columnsFrom": [
             "usuario_id"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -3274,10 +3268,10 @@
     }
   },
   "schemas": {},
+  "views": {},
   "sequences": {},
   "roles": {},
   "policies": {},
-  "views": {},
   "_meta": {
     "columns": {},
     "schemas": {},
