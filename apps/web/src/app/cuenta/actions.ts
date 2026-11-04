@@ -19,7 +19,8 @@ export async function guardarPerfil(formData: FormData) {
   if (!r.success) redirect(`/cuenta?${new URLSearchParams({ error: r.error.issues[0]?.message ?? "Revisa los datos." })}`);
 
   // Por Better Auth y no por SQL: así también renueva la cookie de sesión (cookieCache) con el nombre nuevo.
-  await auth.api.updateUser({ headers: await headers(), body: { name: r.data.nombre, telefono: r.data.telefono || null } });
+  await auth.api.updateUser({ headers: await headers(), body: { name: r.data.nombre, ...(formData.has("telefono") ? { telefono: r.data.telefono || null } : {}) } });
+  // Un proveedor no repite su celular aquí: su WhatsApp es el de su perfil (el formulario no trae el campo y no se toca).
   revalidatePath("/cuenta");
   redirect(`/cuenta?${new URLSearchParams({ ok: "Datos guardados." })}`);
 }

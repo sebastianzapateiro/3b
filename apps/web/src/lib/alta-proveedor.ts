@@ -28,13 +28,13 @@ async function slugLibre(base: string): Promise<string> {
 }
 
 /** Crea el borrador del proveedor (idempotente). Nombre y dirección salen de la cuenta; se editan en el panel. */
-export async function crearBorrador(usuario: { id: string; name?: string | null; email: string }) {
+export async function crearBorrador(usuario: { id: string; name?: string | null; email: string; telefono?: string | null }) {
   const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   if (existe) return existe.id;
   const nombre = usuario.name?.trim() || usuario.email.split("@")[0]!;
   const [p] = await db
     .insert(proveedores)
-    .values({ usuarioId: usuario.id, estado: "borrador", nombrePublico: nombre, slug: await slugLibre(sugerirSlug(nombre)), whatsapp: "" })
+    .values({ usuarioId: usuario.id, estado: "borrador", nombrePublico: nombre, slug: await slugLibre(sugerirSlug(nombre)), whatsapp: normalizarWhatsapp(usuario.telefono ?? "") ?? "" })
     .onConflictDoNothing({ target: proveedores.usuarioId })
     .returning({ id: proveedores.id });
   if (p) {
@@ -77,7 +77,8 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     db.select({ n: count() }).from(portafolioFotos).where(and(eq(portafolioFotos.proveedorId, proveedorId), eq(portafolioFotos.estado, "visible"))),
   ]);
   const tareas: TareaAlta[] = [
-    { clave: "negocio", titulo: "Tus datos y oficios", texto: "Nombre, WhatsApp, tus oficios y la dirección de tu página.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim() && p.segmento && (cats?.n ?? 0) > 0), iniciada: Boolean(p?.whatsapp.trim() || p?.segmento || (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
+    { clave: "contacto", titulo: "Tus datos de contacto", texto: "Tu nombre, tu WhatsApp y tu correo. Es lo primero: así podemos escribirte.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim()), iniciada: Boolean(p?.nombre.trim() || p?.whatsapp.trim()), href: "/panel/perfil#contacto", seccion: "perfil" },
+    { clave: "negocio", titulo: "Tus oficios y tu página", texto: "Qué haces, cómo trabajas y la dirección de tu página.", ok: Boolean(p?.segmento && (cats?.n ?? 0) > 0), iniciada: Boolean(p?.segmento || (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
     { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
     { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
@@ -124,12 +125,25 @@ export async function negocioEditable(proveedorId: string) {
   return { oficios, elegidos: new Set(elegidos.map((e) => e.id)) };
 }
 
-const esquemaNegocio = z.object({
+const esquemaContacto = z.object({
   nombrePublico: z.string().trim().min(2, "Escribe el nombre con el que te van a ver los clientes.").max(80, "El nombre admite hasta 80 caracteres."),
   whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Escribe un WhatsApp válido, por ejemplo 300 123 4567." }), z.NEVER)),
+});
+
+const esquemaNegocio = z.object({
   segmento: z.enum(["independiente_sin_rut", "independiente_con_rut", "empresa"], { message: "Elige si eres independiente o empresa." }),
   slug: slugSchema,
 });
+
+/** Lo primero que se le pide al proveedor: nombre y WhatsApp (el correo ya viene de la cuenta). Se guarda aparte, al instante. */
+export async function guardarContacto(proveedor: { id: string; estado: string }, formData: FormData): Promise<Resultado> {
+  if (proveedor.estado !== "borrador") return { error: "Tu perfil ya fue enviado: para cambiar estos datos escríbenos." };
+  const r = esquemaContacto.safeParse(Object.fromEntries(formData));
+  if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos." };
+  await db.update(proveedores).set({ nombrePublico: r.data.nombrePublico, whatsapp: r.data.whatsapp, updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  await guardarCompletitud(proveedor.id);
+  return { ok: true };
+}
 
 /**
  * Datos del negocio: solo mientras es borrador (después, nombre, dirección y oficio los revisa el equipo).

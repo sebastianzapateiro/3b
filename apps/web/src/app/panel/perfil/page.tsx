@@ -7,14 +7,14 @@ import { CargaFotoPerfil } from "@/components/CargaFotoPerfil";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
 import { urlPublica } from "@/lib/almacenamiento";
 import { parametro } from "@/lib/parametros";
-import { ajustarComoTrabaja, guardarNegocioPanel, guardarPerfil, quitarFotoPerfilAccion } from "../actions";
+import { ajustarComoTrabaja, guardarContactoPanel, guardarNegocioPanel, guardarPerfil, quitarFotoPerfilAccion } from "../actions";
 
 /** P8 · Perfil del proveedor (CU-34) y, en borrador, datos del negocio del alta (CU-30). Mockup: docs/mockups/Panel_proveedor.md. */
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-4 text-base";
 const tarjeta = "flex scroll-mt-24 flex-col gap-5 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6";
 
 export default async function PerfilPanel({ searchParams }: { searchParams: Promise<{ ajustar?: string; ok?: string; error?: string }> }) {
-  const { proveedor: p } = await exigirProveedor();
+  const { proveedor: p, usuario } = await exigirProveedor();
   const sp = await searchParams;
   const borrador = p.estado === "borrador";
   const [e, n] = await Promise.all([perfilEditable(p.id), borrador ? negocioEditable(p.id) : null]);
@@ -43,11 +43,11 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
         <CargaFotoPerfil actual={p.fotoPerfil ? urlPublica(p.fotoPerfil) : null} iniciales={p.nombre.split(" ").map((x) => x[0]).join("").toUpperCase().slice(0, 2)} maxMb={maxMbFoto} quitar={quitarFotoPerfilAccion} />
       </section>
 
-      {n && (
-        <FormularioGuiado id="negocio" action={guardarNegocioPanel} className={tarjeta}>
+      {borrador && (
+        <FormularioGuiado id="contacto" action={guardarContactoPanel} className={`${tarjeta} scroll-mt-24`}>
           <div className="flex flex-col gap-1">
-            <h2 className="font-display text-2xl font-bold">Tus datos y oficios</h2>
-            <p className="text-sm text-gris">Mientras tu perfil sea borrador puedes cambiarlos. Después de enviarlo, los revisa el equipo.</p>
+            <h2 className="font-display text-2xl font-bold">Tus datos de contacto</h2>
+            <p className="text-sm text-gris">Es lo primero que necesitamos: así te escribimos y los clientes te contactan.</p>
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="nombrePublico" className="text-sm font-semibold">Nombre público</label>
@@ -58,6 +58,21 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
             <label htmlFor="whatsapp" className="text-sm font-semibold">WhatsApp</label>
             <input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" required defaultValue={whatsappParaCampo(p.whatsapp)} placeholder="300 123 4567" className={`${campo} sm:max-w-64`} />
             <span className="text-xs text-gris">Aquí te escriben los clientes.</span>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <span className="text-sm font-semibold">Correo</span>
+            <span className="flex min-h-13 items-center rounded-campo bg-piedra px-4 text-base text-tinta-2">{usuario.email}</span>
+            <span className="text-xs text-gris">Es el de tu cuenta: ahí te avisamos de tu perfil.</span>
+          </div>
+          <button type="submit" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-tinta px-8 text-[17px] font-semibold text-white">Guardar y seguir</button>
+        </FormularioGuiado>
+      )}
+
+      {n && (
+        <FormularioGuiado id="negocio" action={guardarNegocioPanel} className={tarjeta}>
+          <div className="flex flex-col gap-1">
+            <h2 className="font-display text-2xl font-bold">Tus oficios y tu página</h2>
+            <p className="text-sm text-gris">Mientras tu perfil sea borrador puedes cambiarlos. Después de enviarlo, los revisa el equipo.</p>
           </div>
           <fieldset className="flex flex-col gap-2 text-[15px]">
             <legend className="mb-1 text-sm font-semibold">¿Cómo trabajas?</legend>

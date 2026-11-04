@@ -9,7 +9,7 @@ import { db, schema } from "@las3b/db";
 import { headers } from "next/headers";
 import { ipDeLaPeticion, registrarConsentimientos } from "@/lib/consentimientos";
 import { avisarRegistroRecibido } from "@/lib/avisos-proveedor";
-import { guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } from "@/lib/alta-proveedor";
+import { guardarContacto, guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } from "@/lib/alta-proveedor";
 import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
 import { quitarFoto, quitarFotoPerfil } from "@/lib/fotos";
@@ -164,6 +164,14 @@ export async function marcarPrestado(formData: FormData) {
 
 /* Alta dentro del panel (CU-30): datos del negocio e identidad, solo en borrador */
 
+export async function guardarContactoPanel(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const r = await guardarContacto(proveedor, formData);
+  if ("error" in r) return volver("/panel/perfil", { error: r.error });
+  revalidatePath("/panel", "layout");
+  redirect(await rutaSiguientePaso(proveedor.id, "Datos de contacto guardados."));
+}
+
 export async function guardarNegocioPanel(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
   const antes = opcionesComoTrabaja((await oficiosDelProveedor(proveedor.id)).map((o) => o.slug));
@@ -175,7 +183,7 @@ export async function guardarNegocioPanel(formData: FormData) {
   const [m] = await db.select({ ofreceGarantia: proveedores.ofreceGarantia, atiendeUrgencias: proveedores.atiendeUrgencias, disponible24h: proveedores.disponible24h }).from(proveedores).where(eq(proveedores.id, proveedor.id)).limit(1);
   const sobran = (["ofreceGarantia", "atiendeUrgencias", "disponible24h"] as const).filter((c) => m?.[c] && antes.has(c) && !despues.has(c));
   if (sobran.length > 0) return volver("/panel/perfil", { ajustar: sobran.join(",") });
-  redirect(await rutaSiguientePaso(proveedor.id, "Tus datos y oficios quedaron guardados."));
+  redirect(await rutaSiguientePaso(proveedor.id, "Tus oficios y tu página quedaron guardados."));
 }
 
 /** Respuesta a «¿Quitamos las opciones que ya no aplican a tu oficio?». */

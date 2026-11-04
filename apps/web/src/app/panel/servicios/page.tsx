@@ -53,7 +53,7 @@ export default async function ServiciosPanel({ searchParams }: { searchParams: P
           : "Los precios son orientativos: el valor final lo acuerdas con cada cliente. Se muestran en tu página como «desde»."}
       </p>
 
-      {oficios.length === 0 && <Aviso tono="error">Primero elige tus oficios en el paso «Tus datos y oficios»: cada servicio va dentro de uno de ellos.</Aviso>}
+      {oficios.length === 0 && <Aviso tono="error">Primero elige tus oficios en el paso «Tus oficios y tu página»: cada servicio va dentro de uno de ellos.</Aviso>}
 
       {oficios.length > 1 && <p className="text-sm text-gris">Tienes {oficios.length} oficios: <b className="text-tinta">{oficios.map((o) => o.nombre).join(", ")}</b>. Cada servicio se agrega dentro de uno de ellos.</p>}
 

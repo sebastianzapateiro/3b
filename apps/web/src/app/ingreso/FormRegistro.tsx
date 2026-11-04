@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components/cuenta";
+import { normalizarWhatsapp } from "@las3b/shared";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
@@ -15,6 +16,9 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
     e.preventDefault();
     const datos = new FormData(e.currentTarget);
     const correo = String(datos.get("correo"));
+    // El WhatsApp es lo primero que necesitamos de un proveedor: se pide y se guarda desde el registro.
+    const whatsapp = proveedor ? normalizarWhatsapp(String(datos.get("whatsapp") ?? "")) : null;
+    if (proveedor && !whatsapp) return setError("Escribe un WhatsApp válido, por ejemplo 300 123 4567.");
     setCargando(true);
     setError("");
     const { error } = await authClient.signUp.email({
@@ -22,6 +26,7 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
       email: correo,
       password: String(datos.get("clave")),
       declaraMayorDeEdad: datos.get("mayorDeEdad") === "on",
+      ...(whatsapp ? ({ telefono: whatsapp } as object) : {}),
       // Lo valida y registra el servidor (hooks de auth.ts → consentimientos).
       ...({ aceptaPoliticas: datos.get("politicas") === "on" } as object),
       callbackURL: "/ingreso?verificado=1",
@@ -47,12 +52,19 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
     <form onSubmit={registrar} className="flex flex-col gap-3.5">
       <div className="flex flex-col gap-1.5">
         <label htmlFor="nombre" className={etiqueta}>Nombre</label>
-        <input id="nombre" name="nombre" autoComplete="name" placeholder="Como quieres que te vean en tus reseñas" required className={campo} />
+        <input id="nombre" name="nombre" autoComplete="name" placeholder={proveedor ? "Con el que te verán los clientes" : "Como quieres que te vean en tus reseñas"} required className={campo} />
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="correo" className={etiqueta}>Correo electrónico</label>
         <input id="correo" name="correo" type="email" autoComplete="email" placeholder="tucorreo@ejemplo.com" required className={campo} />
       </div>
+      {proveedor && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="whatsapp" className={etiqueta}>WhatsApp</label>
+          <input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="300 123 4567" required className={campo} />
+          <span className="text-sm text-gris">Aquí te escriben los clientes y te avisamos de tu perfil.</span>
+        </div>
+      )}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="clave" className={etiqueta}>Clave</label>
         <CampoClave id="clave" autoComplete="new-password" placeholder="Mínimo 8 caracteres" minLength={8} />

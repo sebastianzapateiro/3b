@@ -84,7 +84,7 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
       <section id="documentos" className={tarjeta}>
         <h2 className="font-display text-2xl font-bold">Documentos</h2>
         {alta && !alta.tareas.find((t) => t.clave === "negocio")?.ok && (
-          <p className="rounded-[14px] bg-amarillo-suave px-4 py-3 text-sm text-amarillo-oscuro">Completa primero los <Link href="/panel/perfil#negocio" className="font-semibold underline">datos y oficios</Link>: según tu oficio y si eres empresa, te pedimos otros documentos.</p>
+          <p className="rounded-[14px] bg-amarillo-suave px-4 py-3 text-sm text-amarillo-oscuro">Completa primero los <Link href="/panel/perfil#negocio" className="font-semibold underline">oficios y tu página</Link>: según tu oficio y si eres empresa, te pedimos otros documentos.</p>
         )}
         {p.rutFechaLimite && !docs.lista.find((d) => d.tipo === "rut")?.cargado && (
           <p className="rounded-[14px] bg-amarillo-suave px-4 py-3 text-sm font-semibold text-amarillo-oscuro">Carga tu RUT antes del {fecha(p.rutFechaLimite)} para que tu página siga publicada.</p>
