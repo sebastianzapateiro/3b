@@ -49,7 +49,7 @@ apps/web/src/
     buscar/                P2 resultados
     [slug]/                P7 portafolio, calificar (P5), OG por proveedor
     servicios/, categorias/, localidades/, guias/   Páginas SEO por oficio y localidad
-    proveedores/registro/  P3 crea el borrador y redirige a /panel (route.ts; enlaces con prefetch={false})
+    proveedores/registro/  P3 crea el borrador y redirige a /panel (page.tsx, no route handler: la Server Action de Google no seguía el 307; enlaces con prefetch={false})
     panel/                 Panel del proveedor: tareas del alta en el Resumen, perfil (+ datos del negocio en borrador), servicios, reseñas, verificación (+ identidad en borrador); confirmar (acepta términos y envía a revisión)
     reclamos/, reportar/   Formularios públicos (CU-10/11, reportes)
     terminos/, terminos-proveedores/, privacidad/, cookies/, resenas/, retiro-de-contenido/   Legales
