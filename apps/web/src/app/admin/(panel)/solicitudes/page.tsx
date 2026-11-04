@@ -31,12 +31,14 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
   const { roles, user } = await exigirBackoffice();
   if (!roles.includes("admin")) notFound();
   const sp = await searchParams;
-  const filtro = { estado: sp.estado, sinResultado: sp.sin === "1", q: sp.q, todas: sp.todas === "1", vencidas: sp.vencidas === "1", responsableId: sp.mios === "1" ? user.id : undefined };
+  const rangoDemanda = (["7", "30", "mes"] as const).find((r) => r === sp.rango) ?? "30";
+  const demanda = sp.demanda === "1" ? { oficioSlug: sp.d, texto: sp.dt, localidadSlug: sp.dl && sp.dl !== "-" ? sp.dl : undefined, rango: rangoDemanda } : undefined;
+  const filtro = { demanda, estado: sp.estado, sinResultado: sp.sin === "1", q: sp.q, todas: sp.todas === "1", vencidas: sp.vencidas === "1", responsableId: sp.mios === "1" ? user.id : undefined };
   const [filas, porEnviar, conteos] = await Promise.all([listarSolicitudes(filtro), calificacionesPorEnviar(), conteosSeguimiento(user.id)]);
   const historial = await historialDe(filas.map((s) => s.id));
   const hoy = hoyBogota();
 
-  const actuales = Object.entries({ estado: sp.estado, sin: sp.sin, q: sp.q, todas: sp.todas, vencidas: sp.vencidas, mios: sp.mios }).filter((e): e is [string, string] => Boolean(e[1]));
+  const actuales = Object.entries({ demanda: sp.demanda, rango: sp.rango, d: sp.d, dt: sp.dt, dl: sp.dl, estado: sp.estado, sin: sp.sin, q: sp.q, todas: sp.todas, vencidas: sp.vencidas, mios: sp.mios }).filter((e): e is [string, string] => Boolean(e[1]));
   const ruta = (cambios: Record<string, string | null>) => {
     const p = new URLSearchParams(actuales);
     for (const [k, v] of Object.entries(cambios)) (v == null ? p.delete(k) : p.set(k, v));
@@ -97,6 +99,13 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
           <button type="submit" className="h-11 rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Filtrar</button>
         </form>
 
+        {demanda && (
+          <p className="flex flex-wrap items-center gap-3 rounded-2xl bg-amarillo-suave p-3.5 text-[15px]">
+            <span>Viene de <b>Demanda sin cubrir</b>: {filas.length} solicitud{filas.length === 1 ? "" : "es"} de «{filas[0]?.categoria ?? sp.dt ?? "Sin especificar"}» en {filas[0]?.localidad ?? "cualquier localidad"}, {rangoDemanda === "mes" ? "este mes" : `últimos ${rangoDemanda} días`}.</span>
+            <Link href="/admin/solicitudes" className="font-semibold text-verde underline">Quitar filtro</Link>
+          </p>
+        )}
+
         {filas.length === 0 && <p className="text-[15px] text-gris">No hay solicitudes con esos filtros.</p>}
 
         {filas.map((s) => {
@@ -124,7 +133,7 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
                 <dt className="text-gris">WhatsApp</dt><dd>{s.whatsapp ? `+${s.whatsapp}` : "No dejó WhatsApp"}</dd>
                 <dt className="text-gris">Qué busca</dt><dd>{s.texto ? `«${s.texto}»` : "—"}{s.categoria && <span className="text-gris"> · {s.categoria}</span>}</dd>
                 <dt className="text-gris">Ubicación del servicio</dt><dd>{s.localidad ? `Por localidad: ${s.localidad}` : s.direccion ? `Exacta: ${s.direccion}` : s.lat != null ? "Exacta: ubicación compartida" : "—"}{!s.localidad && s.lat != null && <span className="text-gris"> · medida</span>}</dd>
-                <dt className="text-gris">Se le mostraron</dt><dd>{s.resultados ?? "—"} proveedores</dd>
+                <dt className="text-gris">Se le mostraron</dt><dd>{s.resultados ?? "—"} proveedores{s.mostrados && s.mostrados.length > 0 && <span className="block text-[13px] text-tinta-2">{s.mostrados.map((p) => p.nombre).join(" · ")}{(s.resultados ?? 0) > s.mostrados.length ? ` · y ${(s.resultados ?? 0) - s.mostrados.length} más` : ""}</span>}</dd>
                 <dt className="text-gris">Autorización</dt><dd>{s.version ? `Política de datos v${s.version}` : "Sin autorización: no se comparten sus datos"}</dd>
                 <dt className="text-gris">Responsable</dt><dd>{s.responsable ?? "Sin asignar"}</dd>
                 <dt className="text-gris">Próxima acción</dt><dd className={vencida ? "font-semibold text-ladrillo-oscuro" : ""}>{s.proximaAccion ? dia(s.proximaAccion) : "Sin fecha"}</dd>

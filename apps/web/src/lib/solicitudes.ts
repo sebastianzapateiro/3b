@@ -7,7 +7,8 @@ import { and, eq, gt, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { contieneServicioProhibido, MENSAJE_CONTACTO_MAX, normalizarWhatsapp, TRATAMIENTO_DATOS } from "@las3b/shared";
 import { db, schema } from "@las3b/db";
-import { categoriaDeTexto, contarProveedores } from "@/lib/busqueda";
+import { buscarProveedores, categoriaDeTexto, contarProveedores } from "@/lib/busqueda";
+import { desdeRango, type RangoTablero } from "@/lib/admin";
 import { hoyBogota } from "@/lib/seguimiento";
 import { type EstadoSolicitud, VALORES_ESTADO } from "@/lib/seguimiento-solicitudes";
 import { enBogota, geocodificar, type Punto } from "@/lib/ubicacion";
@@ -69,6 +70,10 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
   const filtros = categoria ? { categoria: categoria.slug } : { q: d.texto };
   const total = prohibido ? 0 : await contarProveedores(d.ubicacion === "localidad" ? { ...filtros, localidad: d.localidad } : filtros);
 
+  // Foto de lo que se le mostró (los primeros), para que el equipo vea qué proveedores arrojó la búsqueda.
+  const filtrosListado = d.ubicacion === "localidad" ? { ...filtros, localidad: d.localidad } : { ...filtros, ...(punto ? { punto } : {}) };
+  const mostrados = prohibido || total === 0 ? [] : (await buscarProveedores(filtrosListado)).items.slice(0, 10).map((p) => ({ slug: p.slug, nombre: p.nombre }));
+
   const [fila] = await db
     .insert(solicitudesServicio)
     .values({
@@ -86,6 +91,7 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
       lng: punto?.lng ?? (d.ubicacion === "exacta" ? dado?.lng : null) ?? null,
       origenBanner: d.origen,
       resultados: total,
+      proveedoresMostrados: mostrados,
       cuentaComoDemanda: !prohibido,
       ip: red.ip,
       userAgent: red.userAgent,
@@ -132,7 +138,7 @@ export function lugarDeSolicitud(s: { localidad: string | null; direccion: strin
 }
 
 /** B7 · Solicitudes para el administrador, con los contactos (y el mensaje exacto) que cada una generó. */
-export async function listarSolicitudes(f: { estado?: string; sinResultado?: boolean; q?: string; todas?: boolean; responsableId?: string; vencidas?: boolean }, limite = 200) {
+export async function listarSolicitudes(f: { estado?: string; sinResultado?: boolean; q?: string; todas?: boolean; responsableId?: string; vencidas?: boolean; demanda?: { oficioSlug?: string; texto?: string; localidadSlug?: string; rango: RangoTablero } }, limite = 200) {
   const condiciones = [
     f.estado && VALORES_ESTADO.includes(f.estado as EstadoSolicitud) ? eq(solicitudesServicio.estado, f.estado as EstadoSolicitud) : undefined,
     // Por defecto solo los casos con contacto (dejaron su WhatsApp): son los que se pueden gestionar.
@@ -140,6 +146,12 @@ export async function listarSolicitudes(f: { estado?: string; sinResultado?: boo
     f.responsableId ? eq(solicitudesServicio.responsableId, f.responsableId) : undefined,
     f.vencidas ? sql`${solicitudesServicio.estado} NOT IN ('atendida','sin_proveedor','descartada') AND ${solicitudesServicio.proximaAccionEn} <= ${hoyBogota()}` : undefined,
     f.sinResultado ? eq(solicitudesServicio.resultados, 0) : undefined,
+    // Viene de «Demanda sin cubrir» del tablero: mismo servicio, misma localidad y mismo periodo.
+    ...(f.demanda ? [
+      sql`${solicitudesServicio.cuentaComoDemanda} AND ${solicitudesServicio.createdAt} >= ${desdeRango(f.demanda.rango)}`,
+      f.demanda.oficioSlug ? eq(solicitudesServicio.oficioSlug, f.demanda.oficioSlug) : sql`${solicitudesServicio.oficioSlug} IS NULL AND coalesce(nullif(trim(${solicitudesServicio.textoLibre}), ''), '') = ${f.demanda.texto ?? ""}`,
+      f.demanda.localidadSlug ? sql`${solicitudesServicio.localidadId} = (SELECT id FROM localidades WHERE slug = ${f.demanda.localidadSlug})` : sql`${solicitudesServicio.localidadId} IS NULL`,
+    ] : []),
     f.q?.trim() ? sql`(${solicitudesServicio.nombre} ILIKE ${`%${f.q.trim()}%`} OR ${solicitudesServicio.whatsapp} LIKE ${`%${f.q.replace(/\D/g, "") || "~"}%`} OR ${solicitudesServicio.textoLibre} ILIKE ${`%${f.q.trim()}%`})` : undefined,
   ].filter((c) => c !== undefined);
 
@@ -147,7 +159,7 @@ export async function listarSolicitudes(f: { estado?: string; sinResultado?: boo
     .select({
       id: solicitudesServicio.id, creada: solicitudesServicio.createdAt, estado: solicitudesServicio.estado, nombre: solicitudesServicio.nombre,
       whatsapp: solicitudesServicio.whatsapp, texto: solicitudesServicio.textoLibre, categoria: categorias.nombre, direccion: solicitudesServicio.direccion,
-      localidad: localidades.nombre, lat: solicitudesServicio.lat, lng: solicitudesServicio.lng, resultados: solicitudesServicio.resultados, origen: solicitudesServicio.origenBanner,
+      localidad: localidades.nombre, lat: solicitudesServicio.lat, lng: solicitudesServicio.lng, resultados: solicitudesServicio.resultados, mostrados: solicitudesServicio.proveedoresMostrados, origen: solicitudesServicio.origenBanner,
       version: solicitudesServicio.consentimientoVersion, demanda: solicitudesServicio.cuentaComoDemanda,
       categoriaSlug: categorias.slug, localidadSlug: localidades.slug, responsableId: solicitudesServicio.responsableId,
       responsable: schema.user.name, proximaAccion: solicitudesServicio.proximaAccionEn, actualizada: solicitudesServicio.actualizadaEn,

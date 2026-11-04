@@ -68,10 +68,10 @@ export default async function Tablero({ searchParams }: { searchParams: Promise<
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-sm tabular-nums">
-                <thead><tr className="text-left text-gris"><th className="py-2 font-semibold">Servicio</th><th className="py-2 font-semibold">Localidad</th><th className="py-2 text-right font-semibold">Solicitudes</th><th className="py-2 text-right font-semibold">Con WhatsApp</th></tr></thead>
+                <thead><tr className="text-left text-gris"><th className="py-2 font-semibold">Servicio</th><th className="py-2 font-semibold">Localidad</th><th className="py-2 text-right font-semibold">Solicitudes</th><th className="py-2 text-right font-semibold">Con WhatsApp</th><th className="py-2 text-right font-semibold"><span className="sr-only">Detalle</span></th></tr></thead>
                 <tbody>
                   {d.demanda.map((x, i) => (
-                    <tr key={i} className="border-t border-borde-suave"><td className="py-2.5">{x.oficio}</td><td>{x.localidad ?? "Cualquiera"}</td><td className="text-right">{x.n}</td><td className="text-right">{x.conWhatsapp}</td></tr>
+                    <tr key={i} className="border-t border-borde-suave"><td className="py-2.5">{x.oficio}</td><td>{x.localidad ?? "Cualquiera"}</td><td className="text-right">{x.n}</td><td className="text-right">{x.conWhatsapp}</td><td className="text-right"><Link href={`/admin/solicitudes?${new URLSearchParams({ demanda: "1", rango, ...(x.oficioSlug ? { d: x.oficioSlug } : { dt: x.texto ?? "" }), dl: x.localidadSlug ?? "-", todas: "1" })}`} className="inline-flex min-h-9 items-center rounded-lg border border-borde-campo px-3 text-[13px] font-semibold hover:border-tinta">Ver solicitudes</Link></td></tr>
                   ))}
                 </tbody>
               </table>

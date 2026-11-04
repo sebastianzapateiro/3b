@@ -1,0 +1,1 @@
+ALTER TABLE "solicitudes_servicio" ADD COLUMN "proveedores_mostrados" jsonb;

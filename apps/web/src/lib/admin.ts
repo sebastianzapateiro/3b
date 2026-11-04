@@ -17,7 +17,7 @@ const filas = <T>(r: unknown) => r as T[];
 
 export type RangoTablero = "7" | "30" | "mes";
 
-function desdeRango(rango: RangoTablero) {
+export function desdeRango(rango: RangoTablero) {
   if (rango === "mes") return sql`date_trunc('month', now())`;
   return sql`now() - make_interval(days => ${Number(rango)})`;
 }
@@ -35,7 +35,7 @@ type FilaTablero = {
   por_categoria: { nombre: string; n: number }[] | null;
   por_localidad: { nombre: string; contactos: number; activos: number }[] | null;
   estados: Record<string, number> | null;
-  demanda: { oficio: string; localidad: string | null; n: number; conWhatsapp: number }[] | null;
+  demanda: { oficio: string; localidad: string | null; n: number; conWhatsapp: number; oficioSlug: string | null; texto: string | null; localidadSlug: string | null }[] | null;
 };
 
 /** Todo el tablero en una sola consulta: la base está lejos (~170 ms por viaje) y antes eran 11 en serie. */
@@ -74,7 +74,8 @@ export async function datosTablero(rango: RangoTablero) {
       (SELECT json_object_agg(estado, n) FROM (SELECT estado::text AS estado, count(*)::int AS n FROM proveedores GROUP BY 1) x) AS estados,
       (SELECT json_agg(x) FROM (
         SELECT coalesce(c.nombre, nullif(trim(s.texto_libre), ''), 'Sin especificar') AS oficio, l.nombre AS localidad,
-               count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp"
+               count(*)::int AS n, count(s.whatsapp)::int AS "conWhatsapp",
+               min(s.oficio_slug) AS "oficioSlug", min(nullif(trim(s.texto_libre), '')) AS texto, min(l.slug) AS "localidadSlug"
         FROM solicitudes_servicio s
         LEFT JOIN categorias c ON c.slug = s.oficio_slug
         LEFT JOIN localidades l ON l.id = s.localidad_id

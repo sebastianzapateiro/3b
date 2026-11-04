@@ -1,6 +1,6 @@
 /** P2 / B5 · Catálogo: categorías de dos niveles, localidades y diccionario de búsqueda. */
 import { user } from "./auth";
-import { type AnyPgColumn, boolean, date, integer, pgEnum, pgTable, real, serial, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, date, integer, jsonb, pgEnum, pgTable, real, serial, text, timestamp, unique, uuid } from "drizzle-orm/pg-core";
 
 export const categorias = pgTable("categorias", {
   id: serial().primaryKey(),
@@ -82,6 +82,8 @@ export const solicitudesServicio = pgTable("solicitudes_servicio", {
   origenBanner: text(),
   /** Cuántos proveedores se le mostraron; 0 = «te enviaremos tus proveedores por WhatsApp». */
   resultados: integer(),
+  /** Los primeros proveedores que se le mostraron (foto del momento de la búsqueda), para el seguimiento. */
+  proveedoresMostrados: jsonb().$type<{ slug: string; nombre: string }[]>(),
   /** Versión de la política de tratamiento de datos que autorizó, con IP y navegador. */
   consentimientoVersion: text(),
   ip: text(),
