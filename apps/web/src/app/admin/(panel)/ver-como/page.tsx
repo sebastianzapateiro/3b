@@ -7,6 +7,8 @@ import { verComoProveedor } from "./actions";
 /** B1 · Visuales del administrador: panel de un proveedor (solo lectura) y vista de cliente con sesión. Solo administradores. */
 const ESTADO: Record<string, string> = { borrador: "Borrador", pendiente: "Pendiente", aprobado: "Aprobado", en_revision: "En revisión", rechazado: "Rechazado", pausado: "Pausado", pausado_por_rut: "Pausado por RUT", suspendido: "Suspendido" };
 
+export const metadata = { title: "Ver como proveedor" };
+
 export default async function VerComo({ searchParams }: { searchParams: Promise<{ q?: string; error?: string }> }) {
   await exigirBackoffice(true);
   const { q, error } = await searchParams;

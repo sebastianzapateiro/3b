@@ -27,6 +27,8 @@ function textoEvento(e: EventoHistorial) {
   return "Nota";
 }
 
+export const metadata = { title: "Solicitudes" };
+
 export default async function Solicitudes({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { roles, user } = await exigirBackoffice();
   if (!roles.includes("admin")) notFound();

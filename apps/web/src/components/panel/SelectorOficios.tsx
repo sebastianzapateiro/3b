@@ -26,7 +26,7 @@ export function SelectorOficios({ oficios, elegidos, maximo = 3 }: { oficios: { 
       {filas.length < maximo && (
         <button type="button" onClick={() => setFilas((f) => [...f, ""])} className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-verde">+ Agregar otro oficio</button>
       )}
-      <p className="text-sm text-gris">Cada servicio que ofrezcas (paso 3) va dentro de uno de estos oficios. Si cambias de oficio más adelante, te preguntaremos si quieres ajustar tus opciones de «Cómo trabajas».</p>
+      <p className="text-sm text-gris">Cada servicio que ofrezcas va dentro de uno de estos oficios. Si cambias de oficio más adelante, te preguntaremos si quieres ajustar tus opciones de «Cómo trabajas».</p>
     </fieldset>
   );
 }

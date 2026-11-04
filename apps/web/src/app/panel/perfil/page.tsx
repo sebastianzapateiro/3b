@@ -13,6 +13,8 @@ import { ajustarComoTrabaja, guardarContactoPanel, guardarNegocioPanel, guardarP
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-4 text-base";
 const tarjeta = "flex scroll-mt-24 flex-col gap-5 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6";
 
+export const metadata = { title: "Tu perfil" };
+
 export default async function PerfilPanel({ searchParams }: { searchParams: Promise<{ ajustar?: string; ok?: string; error?: string }> }) {
   const { proveedor: p, usuario } = await exigirProveedor();
   const sp = await searchParams;

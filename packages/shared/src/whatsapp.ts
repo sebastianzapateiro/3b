@@ -27,5 +27,5 @@ export function enlaceConMensaje(telefonoE164: string, mensaje: string): string 
  */
 export function mensajeSolicitud(d: { proveedor: string; cliente: string; categoria: string | null; lugar: string | null; solicitud: string | null }): string {
   const servicio = d.categoria ? `un servicio de ${d.categoria.toLowerCase()}` : "un servicio";
-  return `Hola ${d.proveedor}, soy ${d.cliente}. Te escribo para cotizar ${servicio}${d.lugar ? ` para ${d.lugar}` : ""}. Te encontré en la página lastresb.com.co y pude ver tu perfil.${d.solicitud ? ` Solicitud: "${d.solicitud}"` : ""}`;
+  return `Hola ${d.proveedor}, soy ${d.cliente}. Te escribo para cotizar ${servicio}${d.lugar ? ` para ${d.lugar}` : ""}.${d.solicitud ? ` Necesito: ${d.solicitud.trim()}${/[.!?]$/.test(d.solicitud.trim()) ? "" : "."}` : ""} Te encontré en la página lastresb.com.co y pude ver tu perfil.`;
 }

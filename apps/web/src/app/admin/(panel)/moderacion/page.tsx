@@ -11,6 +11,8 @@ const TABS: Record<TipoCola, string> = { todo: "Todo", resena: "Reseñas", foto:
 const horas = (d: Date) => Math.max(0, Math.floor((Date.now() - new Date(d).getTime()) / 3_600_000));
 const fecha = (d: Date) => new Date(d).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" });
 
+export const metadata = { title: "Moderación" };
+
 export default async function Moderacion({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { roles } = await exigirBackoffice();
   if (!roles.includes("moderador") && !roles.includes("admin")) redirect("/admin");

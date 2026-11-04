@@ -6,7 +6,7 @@ import { useId, useState } from "react";
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-3.5 text-base text-tinta";
 const etiqueta = "text-[13px] font-semibold text-gris";
 
-/** Nombre, WhatsApp y autorización de tratamiento de datos, pedidos justo antes de conectar con un proveedor. */
+/** Nombre, qué necesita, WhatsApp y autorización de tratamiento de datos, pedidos justo antes de conectar con un proveedor. */
 export function FormularioContacto({ destino }: { destino: string }) {
   const id = useId();
   const [enviando, setEnviando] = useState(false);
@@ -21,7 +21,7 @@ export function FormularioContacto({ destino }: { destino: string }) {
       const r = await fetch("/api/v1/solicitudes/datos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: f.get("nombre"), whatsapp: f.get("whatsapp"), autoriza: f.get("autoriza") === "on", web: f.get("web") }),
+        body: JSON.stringify({ nombre: f.get("nombre"), necesidad: f.get("necesidad"), whatsapp: f.get("whatsapp"), autoriza: f.get("autoriza") === "on", web: f.get("web") }),
       });
       const j = await r.json();
       if (!r.ok) return setError(j.error ?? "No pudimos guardar tus datos. Intenta de nuevo.");
@@ -38,6 +38,10 @@ export function FormularioContacto({ destino }: { destino: string }) {
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${id}-nombre`} className={etiqueta}>Tu nombre</label>
         <input id={`${id}-nombre`} name="nombre" required maxLength={80} autoComplete="given-name" className={campo} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`${id}-necesidad`} className={etiqueta}>¿Qué necesitas?</label>
+        <textarea id={`${id}-necesidad`} name="necesidad" required minLength={3} maxLength={300} rows={3} placeholder="Ej: arreglar una fuga en el baño" className={`${campo} h-auto py-3`} />
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${id}-wa`} className={etiqueta}>Tu WhatsApp</label>

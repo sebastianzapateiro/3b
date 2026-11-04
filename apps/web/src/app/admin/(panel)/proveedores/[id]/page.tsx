@@ -63,6 +63,8 @@ const ACCIONES: Record<string, string> = {
   perfil_editado_por_equipo: "Perfil editado por el equipo",
 };
 
+export const metadata = { title: "Proveedor" };
+
 export default async function Revision({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | undefined>> }) {
   const { id } = await params;
   const sp = await searchParams;

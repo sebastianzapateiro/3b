@@ -5,7 +5,7 @@ import { meta } from "@/lib/seo";
 import { MOTIVOS_CONTACTO } from "@/lib/contacto";
 import { enviarMensaje } from "./actions";
 
-export const metadata = meta({ titulo: "Contacto", descripcion: "Escríbenos para resolver una duda, contarnos una sugerencia o hablar con el equipo de LasTresB.", ruta: "/contacto" });
+export const metadata = meta({ titulo: "Contacto y ayuda con LasTresB", descripcion: "Escríbenos para resolver una duda, contarnos una sugerencia o hablar con el equipo de LasTresB, el directorio de servicios de Bogotá.", ruta: "/contacto" });
 
 const campo = "h-12 w-full rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-base";
 const tarjeta = "rounded-[22px] border border-borde-suave bg-white shadow-[0_8px_30px_rgba(27,38,35,0.06)]";

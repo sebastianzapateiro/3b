@@ -32,6 +32,8 @@ const PASO: Record<string, string> = {
 };
 const fecha = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("es-CO", { dateStyle: "medium", timeZone: "UTC" });
 
+export const metadata = { title: "Verificación" };
+
 export default async function Verificacion({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor: p } = await exigirProveedor();
   const sp = await searchParams;

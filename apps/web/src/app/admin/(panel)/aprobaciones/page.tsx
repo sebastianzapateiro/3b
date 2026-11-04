@@ -13,6 +13,8 @@ const TABS: Record<Cola, string> = {
 type Params = Record<string, string | string[] | undefined>;
 const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 
+export const metadata = { title: "Aprobaciones" };
+
 export default async function Aprobaciones({ searchParams }: { searchParams: Promise<Params> }) {
   const sp = await searchParams;
   const cola = COLAS.find((c) => c === uno(sp.cola)) ?? "pendientes";

@@ -23,6 +23,8 @@ const CATEGORIA_NUEVA = {
   proveedores: 0,
 };
 
+export const metadata = { title: "Catálogo" };
+
 export default async function Catalogo({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await exigirBackoffice(true);
   const sp = await searchParams;

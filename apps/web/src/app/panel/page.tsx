@@ -12,6 +12,8 @@ import { cambiarPausa } from "./actions";
 const tarjeta = "rounded-[20px] border border-[#EAE3D5] bg-white";
 const numero = "font-display text-[38px] leading-none tabular-nums";
 
+export const metadata = { title: "Resumen" };
+
 export default async function Resumen({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string; bienvenida?: string }> }) {
   const { proveedor: p } = await exigirProveedor();
   const sp = await searchParams;

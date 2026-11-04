@@ -8,6 +8,8 @@ const fecha = (d: Date) => new Date(d).toLocaleDateString("es-CO", { dateStyle: 
 
 const ESTADO = { contactado: "Te contactó", prestado: "Servicio prestado · calificación pedida", calificado: "Ya te calificó" } as const;
 
+export const metadata = { title: "Contactos" };
+
 export default async function ContactosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;

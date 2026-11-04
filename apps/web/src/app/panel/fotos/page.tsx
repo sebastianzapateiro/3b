@@ -7,6 +7,8 @@ import { exigirProveedor } from "@/lib/panel";
 import { quitarFotoTrabajo } from "../actions";
 
 /** P8 · Fotos de trabajos (CU-36): llenan el portafolio y llevan el perfil al nivel «destacado». */
+export const metadata = { title: "Fotos de trabajos" };
+
 export default async function FotosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;

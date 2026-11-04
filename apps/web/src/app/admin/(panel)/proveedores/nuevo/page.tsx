@@ -13,6 +13,8 @@ const etiqueta = "text-sm font-semibold";
 const radio = "size-[18px] accent-verde";
 const chip = "flex h-[38px] cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-borde-campo px-3.5 text-sm has-[:checked]:border-verde has-[:checked]:bg-verde has-[:checked]:font-semibold has-[:checked]:text-white";
 
+export const metadata = { title: "Nuevo proveedor" };
+
 export default async function NuevoProveedor({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const [cats, locs, recientes] = await Promise.all([

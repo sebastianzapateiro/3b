@@ -8,6 +8,8 @@ import { guardarParametros } from "./actions";
 /** B8 · Auditoría (solo lectura) y parámetros configurables. Mockup: docs/mockups/BO_Auditoria.dc.html. */
 const hora = (d: Date) => new Date(d).toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
 
+export const metadata = { title: "Auditoría" };
+
 export default async function Auditoria({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { roles } = await exigirBackoffice();
   const esAdmin = roles.includes("admin");

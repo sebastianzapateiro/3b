@@ -10,6 +10,8 @@ const ESTADOS = { abierto: "Recibida", en_proceso: "En proceso", respondido: "Re
 const POLITICAS: Record<string, string> = { terminos_compradores: "Términos de uso", tratamiento_datos: "Tratamiento de datos personales", terminos_proveedores: "Términos para proveedores", aviso_privacidad: "Aviso de privacidad", cookies: "Cookies", resenas: "Política de reseñas", autorizacion_ley_1918: "Autorización Ley 1918" };
 const fecha = (d: Date | string) => new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium", timeZone: "UTC" });
 
+export const metadata = { title: "Mi privacidad" };
+
 export default async function Privacidad({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const u = await exigirUsuario("/cuenta/privacidad");
   const sp = await searchParams;

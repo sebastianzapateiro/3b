@@ -14,6 +14,8 @@ import { datosParaConfirmar, exigirProveedor } from "@/lib/panel";
 const tarjeta = "flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6";
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
 
+export const metadata = { title: "Publicar" };
+
 export default async function Confirmar({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { proveedor: p } = await exigirProveedor();
   if (p.estado !== "borrador") redirect("/panel");

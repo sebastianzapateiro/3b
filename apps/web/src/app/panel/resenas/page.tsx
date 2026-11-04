@@ -5,6 +5,8 @@ import { responderResena } from "../actions";
 /** P8 · Reseñas recibidas y respuesta única (CU-45). Mockup: docs/mockups/Panel_proveedor.md. */
 const fecha = (d: Date) => new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium" });
 
+export const metadata = { title: "Reseñas" };
+
 export default async function ResenasPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;

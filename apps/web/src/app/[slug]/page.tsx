@@ -1,3 +1,4 @@
+import { urlPublica } from "@/lib/almacenamiento";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
@@ -31,9 +32,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const oficios = p.categorias.slice(0, 2).join(" y ") || "servicios";
     const zona = p.localidades.slice(0, 2).join(" y ") || "Bogotá";
     const titulo = `${p.nombre}: ${oficios} en ${zona}, Bogotá`;
-    const descripcion =
-      p.presentacion?.slice(0, 155) ??
-      `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`;
+    // `||` y no `??`: una presentación vacía no debe dejar la meta descripción en blanco.
+    const descripcion = (p.presentacion?.trim() || `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`).slice(0, 155);
     return meta({ titulo, descripcion, ruta: `/${p.slug}`, tipo: "profile" });
   }
   if (r.tipo === "demo" || r.tipo === "no_disponible") {
@@ -77,6 +77,7 @@ export default async function PortafolioProveedor({ params }: Props) {
           slug: p.slug,
           nombre: p.nombre,
           descripcion: p.presentacion,
+          imagen: p.fotoPerfil ?? (p.fotos[0] ? urlPublica(p.fotos[0].rutaMiniatura ?? p.fotos[0].ruta) : null),
           servicios: p.categorias,
           localidades: p.localidades,
           calificacion: { promedio: p.promedio, total: p.totalResenas },

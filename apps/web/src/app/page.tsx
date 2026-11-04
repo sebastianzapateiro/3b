@@ -107,7 +107,7 @@ export default function Home() {
 
         <section className="relative z-10 mx-auto -mt-[88px] flex max-w-[940px] flex-col items-center gap-5 px-5 sm:-mt-[108px] sm:px-6">
           <div className="w-full">
-            <BuscadorInicio localidadInicial={LOCALIDAD_INICIAL} />
+            <BuscadorInicio />
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2">
             <span className="text-[13px] text-gris sm:text-sm">Populares:</span>

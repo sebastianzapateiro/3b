@@ -9,7 +9,7 @@ export type Pregunta = { pregunta: string; respuesta: string };
 const GENERALES = {
   costo: {
     pregunta: "¿Cuánto cuesta usar LasTresB?",
-    respuesta: "Nada. LasTresB es 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión. Contactas directo al proveedor por WhatsApp y lo que pagas por el servicio va completo a él.",
+    respuesta: "Nada. LasTresB es 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión. Contactas directo al proveedor por WhatsApp y lo que pagas por el servicio va completo a él. LasTresB no recibe dinero por los servicios.",
   },
   contacto: {
     pregunta: "¿Cómo contacto a un proveedor?",
@@ -107,7 +107,6 @@ export function faqGuia(slug: string): Pregunta[] {
       { pregunta: "¿Quién responde si se daña algo?", respuesta: "Debe quedar acordado antes con el proveedor. Documenta con fotos el estado de tus cosas." },
     ],
     "que-hacer-si-el-servicio-quedo-mal": [
-      { pregunta: "¿Dónde presento un reclamo?", respuesta: "En la página de reclamos de LasTresB. Primero intenta resolverlo con el proveedor por escrito." },
       { pregunta: "¿Puedo dejar una reseña si tuve un mal servicio?", respuesta: "Sí, si contactaste al proveedor desde LasTresB. Cuenta los hechos sin insultos." },
     ],
   };
@@ -184,7 +183,6 @@ export const FAQ_RESENAS: Pregunta[] = [
 ];
 
 export const FAQ_TERMINOS_PROVEEDORES: Pregunta[] = [
-  { pregunta: "¿LasTresB me cobra comisión?", respuesta: "No. LasTresB es 100% gratis para proveedores y clientes, sin costo de inscripción ni comisión. El cliente te contacta directo por WhatsApp y acuerdan servicio, precio, fecha y garantía entre ustedes; LasTresB no recibe dinero por tus servicios." },
   { pregunta: "¿LasTresB es mi empleador?", respuesta: "No. LasTresB es una plataforma de contacto: no es empleador, contratista ni agencia de empleo, y no define horarios, jornadas ni condiciones del trabajo. La relación es independiente y la acuerdas directamente con tu cliente." },
   { pregunta: "¿Quién es dueño de mis fotos?", respuesta: "Tú. Nos das una licencia no exclusiva y gratuita, mientras tengas perfil, para mostrarlas en el portal y compartirlas para promocionar tu perfil." },
   { pregunta: "¿Pueden suspender mi perfil?", respuesta: "Sí, si incumples los términos. Normalmente te avisamos el motivo y tienes 5 días hábiles para dar tu versión; en casos de fraude o riesgo para personas puede ser inmediato y provisional." },

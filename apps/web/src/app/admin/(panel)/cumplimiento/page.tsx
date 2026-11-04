@@ -10,6 +10,8 @@ const POLITICAS: Record<string, string> = { terminos_compradores: "Términos par
 const fechaCorta = (d: string | Date) => new Date(typeof d === "string" ? `${d}T00:00:00Z` : d).toLocaleDateString("es-CO", { dateStyle: "long", timeZone: "UTC" });
 const ESTADO: Record<string, string> = { abierto: "Abierto", en_proceso: "En proceso", respondido: "Respondido", cerrado: "Cerrado" };
 
+export const metadata = { title: "Cumplimiento" };
+
 export default async function Cumplimiento({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { roles } = await exigirBackoffice();
   const sp = await searchParams;

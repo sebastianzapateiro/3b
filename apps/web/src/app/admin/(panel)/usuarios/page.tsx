@@ -17,6 +17,8 @@ const ROLES = [
 const TONO_ROL: Record<string, "gris" | "verde" | "amarillo" | "rojo"> = { comprador: "gris", proveedor: "verde", verificador: "amarillo", moderador: "rojo", admin: "amarillo" };
 const fecha = (d: Date | null) => (d ? new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium" }) : "—");
 
+export const metadata = { title: "Usuarios" };
+
 export default async function Usuarios({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await exigirBackoffice(true);
   const sp = await searchParams;

@@ -4,7 +4,7 @@ import { Faq } from "@/components/Faq";
 import { FAQ_NOSOTROS } from "@/lib/faqs";
 import { meta } from "@/lib/seo";
 
-export const metadata = meta({ titulo: "Nosotros", descripcion: "LasTresB es un directorio gratuito donde encuentras en Bogotá a quien te ayude, por localidad, y le escribes directo por WhatsApp.", ruta: "/nosotros" });
+export const metadata = meta({ titulo: "Quiénes somos: servicios de confianza en Bogotá", descripcion: "LasTresB es un directorio gratuito donde encuentras en Bogotá a quien te ayude, por localidad, y le escribes directo por WhatsApp.", ruta: "/nosotros" });
 
 const tarjeta = "rounded-[22px] border border-borde-suave bg-white shadow-[0_8px_30px_rgba(27,38,35,0.06)]";
 

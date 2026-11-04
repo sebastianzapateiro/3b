@@ -103,6 +103,7 @@ export async function crearSolicitud(entrada: unknown, red: { ip: string | null;
 
 export const esquemaDatosContacto = z.object({
   nombre: z.string().trim().min(2, "Escribe tu nombre.").max(80),
+  necesidad: z.string().trim().min(3, "Cuéntale al proveedor qué necesitas.").max(300, "Cuéntalo en máximo 300 caracteres."),
   whatsapp: z.string().trim().max(20),
   autoriza: z.literal(true, { error: "Para contactar al proveedor necesitamos tu autorización para tratar tus datos." }),
   web: z.string().max(0).optional(), // campo trampa contra robots
@@ -121,7 +122,7 @@ export async function registrarDatosContacto(solicitudId: string | null, entrada
   const [seguidas] = await db.select({ n: sql<number>`count(*)::int` }).from(solicitudesServicio).where(and(eq(solicitudesServicio.whatsapp, whatsapp), gt(solicitudesServicio.createdAt, desde)));
   if ((seguidas?.n ?? 0) >=MAX_POR_NUMERO * 3) return { error: "Hiciste varias solicitudes seguidas. Intenta de nuevo en un rato." };
 
-  const datos = { nombre: r.data.nombre, whatsapp, autorizaDatos: true, consentimientoVersion: TRATAMIENTO_DATOS.version, ip: red.ip, userAgent: red.userAgent };
+  const datos = { nombre: r.data.nombre, textoLibre: r.data.necesidad, whatsapp, autorizaDatos: true, consentimientoVersion: TRATAMIENTO_DATOS.version, ip: red.ip, userAgent: red.userAgent };
   if (solicitudId) {
     const [fila] = await db.update(solicitudesServicio).set(datos).where(eq(solicitudesServicio.id, solicitudId)).returning({ id: solicitudesServicio.id });
     if (fila) return { id: fila.id };

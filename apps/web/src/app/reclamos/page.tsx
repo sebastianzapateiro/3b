@@ -3,7 +3,7 @@ import { FAQ_RECLAMOS } from "@/lib/faqs";
 import { meta } from "@/lib/seo";
 import { presentarReclamo } from "./actions";
 
-export const metadata = meta({ titulo: "Reclamos", descripcion: "Presenta un reclamo sobre un proveedor o un perfil publicado en LasTresB y conoce cómo lo tramitamos.", ruta: "/reclamos" });
+export const metadata = meta({ titulo: "Reclamos y solicitudes sobre tus datos", descripcion: "Presenta un reclamo sobre un proveedor o un perfil publicado en LasTresB y conoce cómo lo tramitamos.", ruta: "/reclamos" });
 
 const campo = "h-12 w-full rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-base";
 const fecha = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("es-CO", { dateStyle: "long", timeZone: "UTC" });

@@ -19,7 +19,7 @@ export default async function Contactar({ searchParams }: { searchParams: Promis
         {prov ? `Escríbele a ${prov.nombre}` : "Escríbele al proveedor"}
       </h1>
       <p className="text-base leading-normal text-tinta-2">
-        Para abrir el chat de WhatsApp con el proveedor necesitamos tu nombre y tu número. Así el proveedor sabe quién le escribe y puede cotizarte.
+        Para abrir el chat de WhatsApp con el proveedor necesitamos tu nombre, qué necesitas y tu número. Así el proveedor sabe quién le escribe y qué buscas, y puede cotizarte.
       </p>
       <FormularioContacto destino={destino} />
     </main>

@@ -37,6 +37,8 @@ function Campos({ s, oficios }: { s?: { nombre: string; descripcion: string | nu
   );
 }
 
+export const metadata = { title: "Servicios y precios" };
+
 export default async function ServiciosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;

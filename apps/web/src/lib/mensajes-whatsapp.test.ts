@@ -6,7 +6,7 @@ describe("mensaje del cliente al proveedor", () => {
 
   it("incluye la localidad y deja la solicitud del cliente tal cual, entre comillas", () => {
     const m = mensajeSolicitud({ ...base, lugar: "la localidad Suba" });
-    expect(m).toBe(`Hola Don Jorge, soy Marcela. Te escribo para cotizar un servicio de plomería para la localidad Suba. Te encontré en la página lastresb.com.co y pude ver tu perfil. Solicitud: "${base.solicitud}"`);
+    expect(m).toBe(`Hola Don Jorge, soy Marcela. Te escribo para cotizar un servicio de plomería para la localidad Suba. Te encontré en la página lastresb.com.co y pude ver tu perfil.`.replace("Te encontré", `Necesito: ${base.solicitud} Te encontré`));
   });
 
   it("incluye la ubicación exacta cuando el cliente la escribió", () => {
@@ -15,12 +15,12 @@ describe("mensaje del cliente al proveedor", () => {
 
   it("sin solicitud escrita (llegó directo al perfil) no lleva la parte de «Solicitud»", () => {
     const m = mensajeSolicitud({ ...base, solicitud: null, lugar: null });
-    expect(m).not.toContain("Solicitud:");
+    expect(m).not.toContain("Necesito:");
     expect(m.endsWith("pude ver tu perfil.")).toBe(true);
   });
 
   it("omite el lugar y la categoría si no se conocen", () => {
-    expect(mensajeSolicitud({ ...base, categoria: null, lugar: null })).toContain("cotizar un servicio. Te encontré");
+    expect(mensajeSolicitud({ ...base, categoria: null, lugar: null })).toContain("cotizar un servicio. Necesito:");
   });
 });
 

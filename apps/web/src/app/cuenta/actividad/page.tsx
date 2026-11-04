@@ -5,6 +5,8 @@ import { actividadDelUsuario, exigirUsuario } from "@/lib/cuenta";
 const tarjeta = "flex flex-col gap-3 rounded-[22px] border border-borde-suave bg-white p-5 sm:p-6";
 const fecha = (d: Date) => new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium" });
 
+export const metadata = { title: "Mi actividad" };
+
 export default async function Actividad() {
   const u = await exigirUsuario("/cuenta/actividad");
   const { contactos, resenas } = await actividadDelUsuario(u.id);

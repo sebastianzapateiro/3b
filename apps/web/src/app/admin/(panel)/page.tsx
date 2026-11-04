@@ -16,6 +16,8 @@ const ESTADOS: { clave: string[]; texto: string; color: string }[] = [
 
 const numero = "font-display text-[40px] leading-none tabular-nums";
 
+export const metadata = { title: "Tablero" };
+
 export default async function Tablero({ searchParams }: { searchParams: Promise<{ rango?: string }> }) {
   const { rango: r } = await searchParams;
   const rango: RangoTablero = r === "30" || r === "mes" ? r : "7";
