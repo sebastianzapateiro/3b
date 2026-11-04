@@ -4,6 +4,7 @@ import { negocioEditable, whatsappParaCampo } from "@/lib/alta-proveedor";
 import { FormularioGuiado } from "@/components/panel/FormularioGuiado";
 import { exigirProveedor, perfilEditable } from "@/lib/panel";
 import { CargaFotoPerfil } from "@/components/CargaFotoPerfil";
+import { AVISO_SERVICIOS_SALUD, esOficioConAvisoSalud } from "@las3b/shared";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
 import { urlPublica } from "@/lib/almacenamiento";
 import { parametro } from "@/lib/parametros";
@@ -35,6 +36,10 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
             <button name="decision" value="dejar" type="submit" className="h-11 rounded-xl border-2 border-tinta px-4 text-sm font-semibold text-tinta">Dejarlo así</button>
           </form>
         </div>
+      )}
+
+      {e.slugsOficios.some(esOficioConAvisoSalud) && (
+        <p role="note" className="rounded-[18px] border-2 border-amarillo-oscuro bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro"><b>Aviso importante.</b> {AVISO_SERVICIOS_SALUD}</p>
       )}
 
       <section id="foto" className={`${tarjeta} scroll-mt-24`}>

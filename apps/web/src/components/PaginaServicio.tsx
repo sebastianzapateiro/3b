@@ -52,6 +52,13 @@ export function PaginaServicio({
     ...(variante === "localidad" ? [{ nombre: localidad!.nombre, ruta }] : variante === "base" ? [] : [{ nombre: variante === "urgente" ? "Urgente" : "Económico", ruta }]),
   ];
 
+  const opciones = [
+    variante !== "base" && <li key="base"><Link href={`/servicios/${sub.slug}`} className={`${enlace} font-semibold`}>{sub.nombre} en toda Bogotá</Link></li>,
+    variante !== "urgente" && variantesPublicadas.urgente && <li key="urgente"><Link href={`/servicios/${sub.slug}/urgente`} className={enlace}>Urgente / 24 horas</Link></li>,
+    variante !== "economico" && variantesPublicadas.economico && <li key="economico"><Link href={`/servicios/${sub.slug}/economico`} className={enlace}>Los más económicos</Link></li>,
+    ...nombres(localidadesFuertes).filter((l) => l.slug !== localidad?.slug).map((l) => <li key={l.slug}><Link href={`/servicios/${sub.slug}/${l.slug}`} className={enlace}>{sub.nombre} en {l.nombre}</Link></li>),
+  ].filter(Boolean);
+
   return (
     <>
       <JsonLd datos={jsonLdMigas(migas)} />
@@ -79,11 +86,13 @@ export function PaginaServicio({
         <header className="flex flex-col gap-3">
           <h1 className="text-balance font-display text-[32px] font-extrabold leading-[1.08] tracking-[-1px] sm:text-5xl">{titulo}</h1>
           <p className="max-w-[720px] text-base leading-relaxed text-tinta-2 sm:text-lg">{introduccion(sub, variante, localidad?.nombre, barrios)}</p>
-          <div className="flex flex-wrap gap-2">
-            <Link href={buscar} className="flex h-12 items-center rounded-campo bg-tinta px-6 text-base font-semibold text-white">Buscar y filtrar</Link>
-            {variante === "base" && <BotonCercanos oficio={sub.slug} />}
-            <Link href="/ingreso" className="flex h-12 items-center rounded-campo border-2 border-tinta px-6 text-base font-semibold text-tinta">Ofrezco este servicio</Link>
-          </div>
+          {suficiente && (
+            <div className="flex flex-wrap gap-2">
+              <Link href={buscar} className="flex h-12 items-center rounded-campo bg-tinta px-6 text-base font-semibold text-white">Buscar y filtrar</Link>
+              {variante === "base" && <BotonCercanos oficio={sub.slug} />}
+              <Link href="/ingreso" className="flex h-12 items-center rounded-campo border-2 border-tinta px-6 text-base font-semibold text-tinta">Ofrezco este servicio</Link>
+            </div>
+          )}
         </header>
 
         {suficiente ? (
@@ -97,13 +106,17 @@ export function PaginaServicio({
         ) : (
           <section aria-labelledby="sin-proveedores" className="flex flex-col gap-3">
             <h2 id="sin-proveedores" className="font-display text-2xl font-bold">Aún no tenemos proveedores para este servicio</h2>
-            <p className="text-[15px] leading-normal text-tinta-2">Prueba con otra localidad o cuéntanos qué necesitas desde el <Link href="/" className="font-semibold text-verde underline">inicio</Link>. ¿Ofreces este servicio? <Link href="/ingreso" className="font-semibold text-verde underline">Regístrate gratis</Link>.</p>
+            <p className="max-w-[640px] text-base leading-normal text-tinta-2">Estamos sumando proveedores. Cuéntanos qué necesitas o, si ofreces este servicio, inscríbete gratis.</p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/" className="flex h-12 items-center rounded-campo bg-tinta px-6 text-base font-semibold text-white">Cuéntanos qué necesitas</Link>
+              <Link href="/ingreso" className="flex h-12 items-center rounded-campo border-2 border-tinta px-6 text-base font-semibold text-tinta">Ofrezco este servicio</Link>
+            </div>
           </section>
         )}
 
         {sub.seo.problemas.length > 0 && (
           <section aria-labelledby="problemas" className="flex flex-col gap-2">
-            <h2 id="problemas" className="font-display text-xl font-bold">Problemas que resuelven</h2>
+            <h2 id="problemas" className="font-display text-xl font-bold">Lo que suelen resolver</h2>
             <ul className="flex flex-wrap gap-2">{sub.seo.problemas.map((p) => <li key={p} className="flex h-9 items-center rounded-full bg-piedra px-3.5 text-sm">{p}</li>)}</ul>
           </section>
         )}
@@ -116,15 +129,12 @@ export function PaginaServicio({
         )}
 
 
-        <section aria-labelledby="otras-paginas" className="flex flex-col gap-2">
-          <h2 id="otras-paginas" className="font-display text-xl font-bold">Más opciones de {sub.nombre.toLowerCase()}</h2>
-          <ul className="flex flex-wrap gap-x-5">
-            {variante !== "base" && <li><Link href={`/servicios/${sub.slug}`} className={`${enlace} font-semibold`}>{sub.nombre} en toda Bogotá</Link></li>}
-            {variante !== "urgente" && variantesPublicadas.urgente && <li><Link href={`/servicios/${sub.slug}/urgente`} className={enlace}>Urgente / 24 horas</Link></li>}
-            {variante !== "economico" && variantesPublicadas.economico && <li><Link href={`/servicios/${sub.slug}/economico`} className={enlace}>Los más económicos</Link></li>}
-            {nombres(localidadesFuertes).filter((l) => l.slug !== localidad?.slug).map((l) => <li key={l.slug}><Link href={`/servicios/${sub.slug}/${l.slug}`} className={enlace}>{sub.nombre} en {l.nombre}</Link></li>)}
-          </ul>
-        </section>
+        {opciones.length > 0 && (
+          <section aria-labelledby="otras-paginas" className="flex flex-col gap-2">
+            <h2 id="otras-paginas" className="font-display text-xl font-bold">Más opciones de {sub.nombre.toLowerCase()}</h2>
+            <ul className="flex flex-wrap gap-x-5">{opciones}</ul>
+          </section>
+        )}
 
         <section aria-labelledby="afines" className="flex flex-col gap-2">
           <h2 id="afines" className="font-display text-xl font-bold">Otros oficios de {padre.nombre}</h2>

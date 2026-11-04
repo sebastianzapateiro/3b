@@ -9,6 +9,7 @@ import { verificarSesionAdmin } from "@/lib/verificacion";
 import { redirect } from "next/navigation";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { esOficioConAvisoSalud } from "@las3b/shared";
 import { auth } from "@/lib/auth";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, user, proveedorCategorias, proveedorLocalidades, categorias, localidades, documentos, proveedorInsignias, insignias, portafolioFotos } = schema;
@@ -141,12 +142,12 @@ export async function verificacionDelProveedor(proveedorId: string) {
 export async function datosParaConfirmar(proveedorId: string) {
   const [cats, locs, [serv]] = await Promise.all([
     db
-      .select({ nombre: categorias.nombre, menores: categorias.exigeInsigniaMenores })
+      .select({ nombre: categorias.nombre, slug: categorias.slug, menores: categorias.exigeInsigniaMenores })
       .from(proveedorCategorias)
       .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
       .where(eq(proveedorCategorias.proveedorId, proveedorId)),
     db.select({ nombre: localidades.nombre }).from(proveedorLocalidades).innerJoin(localidades, eq(localidades.id, proveedorLocalidades.localidadId)).where(eq(proveedorLocalidades.proveedorId, proveedorId)),
     db.select({ n: sql<number>`count(*)::int` }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, proveedorId)),
   ]);
-  return { categorias: cats.map((c) => c.nombre), localidades: locs.map((l) => l.nombre), servicios: serv?.n ?? 0, exigeLey1918: cats.some((c) => c.menores) };
+  return { categorias: cats.map((c) => c.nombre), localidades: locs.map((l) => l.nombre), servicios: serv?.n ?? 0, exigeLey1918: cats.some((c) => c.menores), exigeAvisoSalud: cats.some((c) => esOficioConAvisoSalud(c.slug)) };
 }

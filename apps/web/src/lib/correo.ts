@@ -3,9 +3,10 @@
  * Si existe RESEND_API_KEY, usa la API de Resend (https://resend.com).
  * Mientras tanto, el enlace sale en la consola del servidor (desarrollo/local).
  */
-type Correo = { para: string; asunto: string; texto: string; /** Versión con diseño; el texto plano va siempre como respaldo. */ html?: string };
+type Correo = { para: string; /** Remitente; por defecto LasTresB <noreply@lastresb.com.co>. */ de?: string; asunto: string; texto: string; /** Versión con diseño; el texto plano va siempre como respaldo. */ html?: string };
 
-export async function enviarCorreo({ para, asunto, texto, html }: Correo) {
+/** Devuelve true si el proveedor de correo lo aceptó; false si falló o si solo se mostró en consola. */
+export async function enviarCorreo({ para, de, asunto, texto, html }: Correo): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey) {
     try {
@@ -16,7 +17,7 @@ export async function enviarCorreo({ para, asunto, texto, html }: Correo) {
           Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          from: "LasTresB <noreply@lastresb.com.co>",
+          from: de ?? "LasTresB <noreply@lastresb.com.co>",
           to: [para],
           subject: asunto,
           text: texto,
@@ -27,13 +28,14 @@ export async function enviarCorreo({ para, asunto, texto, html }: Correo) {
         const err = await res.text();
         console.error("[correo] Resend error:", err);
         console.info(`[correo] Para: ${para}\n[correo] Asunto: ${asunto}\n${texto}\n`);
-        return;
+        return false;
       }
       console.info(`[correo] Enviado via Resend a ${para}: ${asunto}`);
-      return;
+      return true;
     } catch (e) {
       console.error("[correo] Error Resend:", e);
     }
   }
   console.info(`[correo] Para: ${para}\n[correo] Asunto: ${asunto}\n${texto}\n`);
+  return false;
 }

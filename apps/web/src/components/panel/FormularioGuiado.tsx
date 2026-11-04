@@ -6,15 +6,45 @@
  * Reconoce: campos con `required`/`pattern`/`minLength`, grupos de radios requeridos y `fieldset[data-minimo]`
  * (mínimo de casillas marcadas). La etiqueta sale de `label[for]` o de la `legend` del grupo.
  */
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 type Falta = { id: string; etiqueta: string; detalle: string };
+
+/** Campos de texto que se autoguardan en el borrador (lib/borrador.ts). */
+const AUTOGUARDADOS = ["nombrePublico", "whatsapp", "presentacion", "direccionNotificaciones", "numeroMatricula"];
 
 const textoDe = (el: Element | null) => (el?.textContent ?? "").replace(/\(.*?\)/g, "").replace(/\s+/g, " ").trim();
 
 export function FormularioGuiado({ action, id, className, children }: { action: (f: FormData) => void | Promise<void>; id?: string; className?: string; children: ReactNode }) {
   const ref = useRef<HTMLFormElement>(null);
   const [faltas, setFaltas] = useState<Falta[]>([]);
+  const [guardado, setGuardado] = useState(false);
+
+  // Autoguardado: tras 1,5 s sin escribir (y al salir de la pantalla) se guardan los campos de texto ya válidos.
+  useEffect(() => {
+    const form = ref.current;
+    if (!form || !AUTOGUARDADOS.some((n) => form.elements.namedItem(n))) return;
+    let temporizador: ReturnType<typeof setTimeout> | undefined;
+    const cuerpo = () => {
+      const datos: Record<string, string> = {};
+      for (const n of AUTOGUARDADOS) {
+        const el = form.elements.namedItem(n);
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) datos[n] = el.value;
+      }
+      return JSON.stringify(datos);
+    };
+    const guardar = () => {
+      fetch("/api/v1/yo/borrador", { method: "POST", headers: { "Content-Type": "application/json" }, body: cuerpo(), keepalive: true })
+        .then((r) => r.json())
+        .then((j: { guardados?: string[] }) => { if (j.guardados?.length) { setGuardado(true); setTimeout(() => setGuardado(false), 2500); } })
+        .catch(() => {});
+    };
+    const programar = () => { clearTimeout(temporizador); temporizador = setTimeout(guardar, 1500); };
+    const alSalir = () => { if (document.visibilityState === "hidden" && temporizador) { clearTimeout(temporizador); temporizador = undefined; navigator.sendBeacon("/api/v1/yo/borrador", new Blob([cuerpo()], { type: "application/json" })); } };
+    form.addEventListener("input", programar);
+    document.addEventListener("visibilitychange", alSalir);
+    return () => { clearTimeout(temporizador); form.removeEventListener("input", programar); document.removeEventListener("visibilitychange", alSalir); };
+  }, []);
 
   function revisar(e: React.FormEvent<HTMLFormElement>) {
     const form = ref.current;
@@ -73,6 +103,7 @@ export function FormularioGuiado({ action, id, className, children }: { action: 
         </div>
       )}
       {children}
+      <p aria-live="polite" className="min-h-4 text-xs text-gris">{guardado ? "Borrador guardado" : ""}</p>
     </form>
   );
 }

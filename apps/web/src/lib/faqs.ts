@@ -243,7 +243,7 @@ export const FAQ_NOSOTROS: Pregunta[] = [
   { pregunta: "¿LasTresB presta los servicios?", respuesta: "No. Es un portal de contacto: muestra proveedores verificados y te deja escribirles por WhatsApp. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor." },
   GENERALES.costo,
   { pregunta: "¿En qué ciudades funciona?", respuesta: "Por ahora solo en Bogotá, en sus 20 localidades." },
-  { pregunta: "¿Qué servicios no ofrece LasTresB?", respuesta: "Por su nivel de riesgo, LasTresB no ofrece transporte de personas ni servicios de salud o cuidado de personas. Los fletes y trasteos transportan solo carga." },
+  { pregunta: "¿Qué servicios no ofrece LasTresB?", respuesta: "Por su nivel de riesgo, LasTresB no ofrece transporte de personas, cuidado de personas, enfermería ni otros servicios de salud, salvo veterinaria y fisioterapia (con aviso reforzado). Los fletes y trasteos transportan solo carga." },
 ];
 
 export const FAQ_CONTACTO: Pregunta[] = [

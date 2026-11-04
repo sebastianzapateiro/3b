@@ -14,7 +14,7 @@ export default function Terminos() {
     <>
     <main className="mx-auto max-w-3xl px-5 py-16">
       <h1 className="font-display text-4xl font-extrabold">Términos de uso</h1>
-      <p className="mt-4 text-sm text-gris">Versión 1.1 — Vigencia: 27 de octubre de 2026. Última actualización: 30 de octubre de 2026.</p>
+      <p className="mt-4 text-sm text-gris">Versión 1.2 — Vigencia: 27 de octubre de 2026. Última actualización: 4 de noviembre de 2026.</p>
 
       <section className="mt-8 flex flex-col gap-3">
         <h2 className="font-display text-2xl font-bold">1. Objeto</h2>
@@ -52,6 +52,11 @@ export default function Terminos() {
           con LasTresB. Los proveedores son responsables de sus propias obligaciones legales, tributarias y de
           seguridad social. LasTresB puede suspender perfiles que ofrezcan servicios no permitidos o incumplan estos
           términos.
+        </p>
+
+        <h2 className="font-display text-2xl font-bold">5. Servicios veterinarios, de salud y de bienestar</h2>
+        <p className="leading-relaxed">
+          Cuando un proveedor ofrezca servicios veterinarios, de fisioterapia, de salud o de bienestar, LasTresB no presta, supervisa ni avala esos servicios, no garantiza su calidad ni su resultado, y no responde por los daños, perjuicios o reclamaciones que se deriven de ellos. El proveedor declara contar con los títulos, permisos, habilitaciones y seguros que exige la ley para prestarlos y responde de manera exclusiva por la atención que brinda. El cliente entiende que contrata y paga directamente al proveedor, y que cualquier reclamación se dirige al proveedor y no a LasTresB. Este texto no limita los derechos irrenunciables del consumidor que la ley colombiana no permite excluir.
         </p>
       </section>
     </main>

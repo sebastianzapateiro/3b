@@ -119,15 +119,16 @@ export const TRATAMIENTO_DATOS: TextoLegal = {
 
 export const TERMINOS_PROVEEDORES: TextoLegal = {
   tipo: "terminos_proveedores",
-  version: "1.2",
-  vigenteDesde: "2026-10-30",
+  version: "1.3",
+  vigenteDesde: "2026-11-04",
   titulo: "Términos de uso para proveedores",
   introduccion: "Estos términos aplican a quien publica su portafolio en LasTresB para ofrecer servicios u oficios. Al registrarte los aceptas; complementan los términos de uso generales y la política de tratamiento de datos.",
   pendientes: ["Razón social y datos del titular del portal.", "Revisión de un abogado (licencia de contenido, exoneración de responsabilidad y régimen de suspensión).", "Confirmar el plazo para presentar el RUT y los descargos antes de una suspensión."],
   secciones: [
     { titulo: "1. Qué es LasTresB", parrafos: ["LasTresB es un portal de contacto: muestra tu portafolio y permite que las personas te escriban por WhatsApp. No es tu empleador, mandatario, agente ni socio, no presta los servicios, no interviene en los pagos y no garantiza el resultado de ningún trabajo."] },
     { titulo: "2. Quién puede registrarse", lista: ["Personas mayores de 18 años con capacidad legal, o empresas legalmente constituidas.", "Una persona o empresa, un perfil.", "La información que entregas debe ser veraz y estar actualizada. Responderás por suplantación o datos falsos."] },
-    { titulo: "2A. Servicios que no se ofrecen en LasTresB", parrafos: ["Por su nivel de riesgo, LasTresB no ofrece transporte de personas (en carro, moto ni ningún otro vehículo) ni servicios de salud o cuidado de personas. No puedes publicar ni ofrecer esos servicios, ni en tu categoría ni registrándote en otra. Los fletes, trasteos y mudanzas transportan solo carga, nunca pasajeros.", "Si un perfil los ofrece, puede ser ocultado y la cuenta suspendida: normalmente con aviso y 5 días hábiles para dar tu versión, o de inmediato y de forma provisional cuando haya riesgo para las personas."] },
+    { titulo: "2A. Servicios que no se ofrecen en LasTresB", parrafos: ["Por su nivel de riesgo, LasTresB no ofrece transporte de personas (en carro, moto ni ningún otro vehículo) ni cuidado de personas, enfermería ni otros servicios de salud (salvo veterinaria y fisioterapia). No puedes publicar ni ofrecer esos servicios, ni en tu categoría ni registrándote en otra. Los fletes, trasteos y mudanzas transportan solo carga, nunca pasajeros.", "Si un perfil los ofrece, puede ser ocultado y la cuenta suspendida: normalmente con aviso y 5 días hábiles para dar tu versión, o de inmediato y de forma provisional cuando haya riesgo para las personas."] },
+    { titulo: "2B. Servicios veterinarios, de salud y de bienestar", parrafos: ["Cuando un proveedor ofrezca servicios veterinarios, de fisioterapia, de salud o de bienestar, LasTresB no presta, supervisa ni avala esos servicios, no garantiza su calidad ni su resultado, y no responde por los daños, perjuicios o reclamaciones que se deriven de ellos. El proveedor declara contar con los títulos, permisos, habilitaciones y seguros que exige la ley para prestarlos y responde de manera exclusiva por la atención que brinda. El cliente entiende que contrata y paga directamente al proveedor, y que cualquier reclamación se dirige al proveedor y no a LasTresB. Este texto no limita los derechos irrenunciables del consumidor que la ley colombiana no permite excluir."] },
     { titulo: "3. Verificación e insignias", parrafos: ["Revisamos tu documento, tu mayoría de edad y tu WhatsApp antes de publicarte. Algunos servicios exigen RUT desde el alta; en otros tienes un plazo para presentarlo y, si vence, el perfil se pausa. Para servicios con menores se exige la autorización y verificación de la Ley 1918. Las insignias indican qué se revisó; no son una garantía de calidad ni de idoneidad de tu trabajo."] },
     { titulo: "4. Tu contenido y la licencia que nos das", parrafos: ["Tus fotos, textos y precios siguen siendo tuyos. Nos autorizas, de forma no exclusiva, gratuita y mientras tengas perfil, a mostrarlos en el portal y a compartirlos en redes sociales y buscadores para promocionar tu perfil. Declaras que tienes los derechos sobre lo que subes y que no infringe derechos de terceros, no muestra a menores ni incluye datos personales ajenos."], lista: ["Si crees que un contenido infringe tus derechos, usa el procedimiento de retiro de contenido.", "Podemos ocultar contenido que incumpla estos términos."] },
     { titulo: "5. Conducta prohibida", lista: ["Suplantar a otra persona o empresa.", "Publicar precios o servicios engañosos o ilegales.", "Pedir, ofrecer o comprar reseñas, o intentar borrarlas o alterarlas.", "Acosar, discriminar o amenazar a clientes o a otros proveedores.", "Usar los datos de contacto de los clientes para fines distintos a prestar el servicio solicitado."] },
@@ -162,14 +163,14 @@ export const AUTORIZACION_LEY_1918: TextoLegal = {
 
 export const DECLARACION_SERVICIOS_NO_PERMITIDOS: TextoLegal = {
   tipo: "declaracion_servicios_no_permitidos",
-  version: "1.0",
-  vigenteDesde: "2026-10-28",
+  version: "1.1",
+  vigenteDesde: "2026-11-04",
   titulo: "Declaración sobre servicios que no se ofrecen",
   pendientes: ["Revisión de un abogado: alcance de la prohibición y consecuencias de su incumplimiento."],
   secciones: [
     {
       titulo: "Declaración",
-      parrafos: ["Declaro que no ofreceré transporte de personas ni servicios de salud o cuidado de personas, ni en mi categoría ni registrándome en otra, y entiendo que ofrecerlos puede llevar a ocultar mi perfil y a suspender mi cuenta."],
+      parrafos: ["Declaro que no ofreceré transporte de personas, cuidado de personas, enfermería ni otros servicios de salud (salvo veterinaria y fisioterapia), ni en mi categoría ni registrándome en otra, y entiendo que ofrecerlos puede llevar a ocultar mi perfil y a suspender mi cuenta."],
     },
   ],
 };

@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { OFICIOS_PENDIENTES_REVISION } from "@las3b/shared";
 import Link from "next/link";
 import { guardarCategoria } from "@/app/admin/actions";
 import { Modal } from "@/components/admin/Modal";
@@ -73,7 +74,7 @@ export default async function Catalogo({ searchParams }: { searchParams: Promise
                       <tr className="border-t border-borde-suave bg-crema"><td colSpan={5} className="px-[18px] py-3 font-bold">{p.nombre} · {p.hijas.length} subcategorías</td></tr>
                       {p.hijas.map((h) => (
                         <tr key={h.id} className={`border-t border-borde-suave ${editando?.id === h.id ? "bg-verde-claro" : ""}`}>
-                          <td className="py-3 pl-[34px] pr-3"><Link href={`/admin/catalogo?c=${h.id}`} className={editando?.id === h.id ? "font-bold" : ""}>{h.nombre}{!h.activa && " (inactiva)"}</Link></td>
+                          <td className="py-3 pl-[34px] pr-3"><Link href={`/admin/catalogo?c=${h.id}`} className={editando?.id === h.id ? "font-bold" : ""}>{h.nombre}{!h.activa && " (inactiva)"}</Link>{OFICIOS_PENDIENTES_REVISION.includes(h.slug) && <span className="ml-2 rounded-full bg-amarillo-suave px-2 py-0.5 text-xs font-semibold text-amarillo-oscuro">Pendiente de revisión</span>}</td>
                           <td className="p-3">{h.exigeInsigniaMenores ? <span className="font-semibold text-amarillo-oscuro">Insignia obligatoria</span> : "—"}</td>
                           <td className="p-3">{h.exigeRutDesdeAlta ? <span className={si}>Sí</span> : "—"}</td>
                           <td className="p-3">{h.exigeMatricula ? <span className={si}>Sí</span> : "—"}</td>

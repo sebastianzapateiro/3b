@@ -4,7 +4,7 @@ import { Aviso } from "@/components/cuenta";
 import { CargaDocumento } from "@/components/CargaDocumento";
 import { pendientesAlta } from "@/lib/alta-proveedor";
 import { guardarIdentidadPanel } from "../actions";
-import { estadoDocumentos } from "@/lib/documentos";
+import { estadoDocumentos, pideNumeroMatricula } from "@/lib/documentos";
 import { exigirProveedor, verificacionDelProveedor } from "@/lib/panel";
 
 /**
@@ -17,7 +17,7 @@ const tarjeta = "flex scroll-mt-24 flex-col gap-3 rounded-[22px] border border-b
 const INSIGNIAS = [
   { clave: "verificado", nombre: "Verificado", como: "Se otorga cuando el equipo aprueba tu perfil." },
   { clave: "formalizado", nombre: "Formalizado", como: "Se otorga cuando tu RUT está verificado." },
-  { clave: "certificado", nombre: "Certificado en su oficio", como: "Sube tu matrícula o certificación para solicitarla." },
+  { clave: "certificado", nombre: "Certificado en su oficio", como: "Escribe el número de tu matrícula o tarjeta profesional para que el equipo la verifique." },
   { clave: "apto_menores", nombre: "Apto para menores", como: "Para clases y recreacionistas, que trabajan con menores: firmas la autorización (Ley 1918) y el equipo consulta el registro. Dura 6 meses." },
 ];
 /** En qué paso va la solicitud, según el estado del perfil. */
@@ -40,8 +40,9 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
   const borrador = p.estado === "borrador";
   const [v, docs, alta] = await Promise.all([verificacionDelProveedor(p.id), estadoDocumentos(p.id), borrador ? pendientesAlta(p.id) : null]);
   // Solo se explican las insignias que corresponden a su oficio y tipo de trabajo (a una aseadora no se le habla de matrícula ni de RUT).
+  const pideMatricula = await pideNumeroMatricula(p.id);
   const aplica = (tipo: string) => docs.lista.some((d) => d.tipo === tipo && d.exigido);
-  const insigniasQueAplican = INSIGNIAS.filter((i) => i.clave === "verificado" || (i.clave === "formalizado" && aplica("rut")) || (i.clave === "certificado" && aplica("matricula")) || (i.clave === "apto_menores" && aplica("autorizacion_ley_1918")));
+  const insigniasQueAplican = INSIGNIAS.filter((i) => i.clave === "verificado" || (i.clave === "formalizado" && aplica("rut")) || (i.clave === "certificado" && pideMatricula) || (i.clave === "apto_menores" && aplica("autorizacion_ley_1918")));
   const identidadLista = alta?.tareas.find((t) => t.clave === "identidad")?.ok ?? false;
 
   return (
@@ -80,6 +81,13 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
             <label htmlFor="fechaNacimiento" className="text-sm font-semibold">Fecha de nacimiento</label>
             <input id="fechaNacimiento" name="fechaNacimiento" type="date" required autoComplete="bday" className={`${campo} sm:max-w-56`} />
           </div>
+          {pideMatricula && (
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="numeroMatricula" className="text-sm font-semibold">Número de matrícula o tarjeta profesional <span className="font-normal text-gris">(opcional)</span></label>
+              <input id="numeroMatricula" name="numeroMatricula" maxLength={30} autoComplete="off" placeholder="Solo el número, no hace falta subir foto" className={`${campo} sm:max-w-80`} />
+              <span className="text-xs text-gris">Tu oficio la usa para verificar tu insignia. Solo la ve el equipo.</span>
+            </div>
+          )}
           <button type="submit" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-tinta px-8 text-[17px] font-semibold text-white">Guardar datos de identidad</button>
         </FormularioGuiado>
       )}

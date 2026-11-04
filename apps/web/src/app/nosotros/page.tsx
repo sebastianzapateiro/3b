@@ -55,7 +55,7 @@ export default function Nosotros() {
           <div className="flex flex-col gap-3 rounded-[22px] bg-tinta p-6 text-white">
             <h2 className="font-display text-2xl font-bold">Qué no somos</h2>
             <p className="text-[15px] leading-relaxed text-[#D5DCDA]">No somos intermediarios de pagos, ni empleadores, ni garantes del servicio. No fijamos precios ni asignamos trabajos: el servicio, el precio y la garantía se acuerdan entre el proveedor y tú.</p>
-            <p className="text-[15px] leading-relaxed text-[#D5DCDA]">Por su nivel de riesgo, no ofrecemos transporte de personas ni servicios de salud o cuidado de personas.</p>
+            <p className="text-[15px] leading-relaxed text-[#D5DCDA]">Por su nivel de riesgo, no ofrecemos transporte de personas ni cuidado de personas, enfermería u otros servicios de salud, salvo veterinaria y fisioterapia.</p>
           </div>
         </section>
 

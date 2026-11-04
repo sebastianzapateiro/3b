@@ -10,7 +10,7 @@ const GARANTIA = [
   ...URGENCIAS.filter((s) => s !== "veterinario"),
   "maestro-de-obra", "pintor", "impermeabilizacion", "instalador-de-pisos", "ornamentador", "carpintero", "tapicero", "todero",
   "cortinas-y-persianas", "instalador-de-tv-y-antenas", "instalador-de-camaras", "tecnico-de-computadores", "zapatero", "costurera",
-  "lavado-de-carros", "fumigador", "lavado-de-tanques", "jardinero", "mecanico-automotriz", "mecanico-de-motos", "latoneria-y-pintura", "llantas-y-alineacion", "electricista-automotriz", "mecanico-de-bicicletas",
+  "lavado-de-carros", "fumigador", "lavado-de-tanques", "jardinero", "mecanico-automotriz", "mecanico-de-motos", "latoneria-y-pintura", "llantas-y-alineacion", "electricista-automotriz", "mecanico-de-bicicletas", "mallas-de-seguridad", "purificadores-y-filtros-de-agua", "domotica", "letreros-y-publicidad",
 ];
 
 export function opcionesComoTrabaja(slugsOficios: string[]): Set<OpcionComoTrabaja> {

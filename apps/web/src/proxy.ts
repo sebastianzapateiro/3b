@@ -65,7 +65,15 @@ export async function proxy(request: Request) {
   if (destinoPermanente) return NextResponse.redirect(destinoPermanente, 301);
 
   if (esRutaPublica(pathname)) {
-    return NextResponse.next();
+    const respuesta = NextResponse.next();
+    // Primer ingreso con parámetros utm_*: se recuerda 30 días para saber de dónde llegó el proveedor (no se pisa).
+    const p = url.searchParams;
+    const hayUtm = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"].some((k) => p.get(k));
+    if (hayUtm && !request.headers.get("cookie")?.includes("las3b_origen=")) {
+      const corto = (k: string) => p.get(k)?.slice(0, 120) || undefined;
+      respuesta.cookies.set("las3b_origen", JSON.stringify({ source: corto("utm_source"), medium: corto("utm_medium"), campaign: corto("utm_campaign"), content: corto("utm_content"), term: corto("utm_term") }), { path: "/", maxAge: 60 * 60 * 24 * 30, sameSite: "lax" });
+    }
+    return respuesta;
   }
 
   const session = await auth.api.getSession({ headers: await headers() });

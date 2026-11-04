@@ -2,10 +2,17 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { appleHabilitado, auth, googleHabilitado } from "@/lib/auth";
 import { destinoSeguro } from "@/lib/destino";
+import { meta } from "@/lib/seo";
 import { IngresoClient } from "./IngresoClient";
 
 /** A0 · Único ingreso del sitio: el usuario dice si es cliente o proveedor y la visual se ajusta. */
-export const metadata = { title: "Ingresar", robots: { index: false } };
+/** Es el enlace que se comparte en grupos de WhatsApp: lleva título, descripción e imagen de vista previa (Open Graph). Sin indexar. */
+export const metadata = meta({
+  titulo: "Inscríbete gratis en LasTresB",
+  descripcion: "Date a conocer en Bogotá sin costo ni comisión: los clientes te contactan directo por WhatsApp. Crea tu perfil o busca servicios de confianza.",
+  ruta: "/ingreso",
+  noindex: true,
+});
 
 type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 

@@ -3,6 +3,7 @@
  * entra directo a /panel, donde completa las tareas pendientes y envía a revisión.
  * Para el proveedor con sesión. Los datos de identidad nunca salen en público (regla 1).
  */
+import { guardarOrigen, origenDeCabeceras, registrarEvento } from "@/lib/actividad";
 import { cache } from "react";
 import { and, count, eq, inArray, isNotNull, asc } from "drizzle-orm";
 import { z } from "zod";
@@ -28,7 +29,7 @@ async function slugLibre(base: string): Promise<string> {
 }
 
 /** Crea el borrador del proveedor (idempotente). Nombre y dirección salen de la cuenta; se editan en el panel. */
-export async function crearBorrador(usuario: { id: string; name?: string | null; email: string; telefono?: string | null }) {
+export async function crearBorrador(usuario: { id: string; name?: string | null; email: string; telefono?: string | null }, cabeceras?: Headers) {
   const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   if (existe) return existe.id;
   const nombre = usuario.name?.trim() || usuario.email.split("@")[0]!;
@@ -39,6 +40,9 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
     .returning({ id: proveedores.id });
   if (p) {
     await guardarCompletitud(p.id);
+    // Origen (UTM) del primer ingreso y aviso al fundador (B1). Ninguno de los dos puede frenar el registro.
+    await guardarOrigen(p.id, origenDeCabeceras(cabeceras));
+    await registrarEvento(p.id, "creado", { campos: ["registro"], clave: `creado:${p.id}` });
     return p.id;
   }
   // Otra petición lo creó al mismo tiempo.
@@ -113,7 +117,7 @@ export async function rutaSiguientePaso(proveedorId: string, aviso: string): Pro
 
 /** Oficios que puede elegir el proveedor (subcategorías activas). */
 export async function oficiosDisponibles() {
-  return db.select({ id: categorias.id, nombre: categorias.nombre }).from(categorias).where(and(isNotNull(categorias.padreId), eq(categorias.activa, true))).orderBy(asc(categorias.nombre));
+  return db.select({ id: categorias.id, nombre: categorias.nombre, slug: categorias.slug }).from(categorias).where(and(isNotNull(categorias.padreId), eq(categorias.activa, true))).orderBy(asc(categorias.nombre));
 }
 
 /** Oficios disponibles y los que ya eligió el proveedor, para el formulario del negocio. */
@@ -142,6 +146,7 @@ export async function guardarContacto(proveedor: { id: string; estado: string },
   if (!r.success) return { error: r.error.issues[0]?.message ?? "Revisa los datos." };
   await db.update(proveedores).set({ nombrePublico: r.data.nombrePublico, whatsapp: r.data.whatsapp, updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
   await guardarCompletitud(proveedor.id);
+  await registrarEvento(proveedor.id, "cambios", { campos: ["nombre", "WhatsApp"] });
   return { ok: true };
 }
 
@@ -168,6 +173,7 @@ export async function guardarNegocio(proveedor: { id: string; estado: string }, 
     await tx.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: proveedor.id, categoriaId })));
   });
   await guardarCompletitud(proveedor.id);
+  await registrarEvento(proveedor.id, "cambios", { campos: ["oficios", "tipo de trabajo", "dirección de la página"] });
   return { ok: true };
 }
 
@@ -176,6 +182,7 @@ const esquemaIdentidad = z.object({
   documento: z.string().trim().regex(/^[0-9A-Za-z-]{4,20}$/, "Escribe el número de documento sin puntos ni espacios."),
   direccionNotificaciones: z.string().trim().min(6, "Escribe tu dirección de notificaciones.").max(160),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Escribe tu fecha de nacimiento."),
+  numeroMatricula: z.string().trim().max(30, "El número de matrícula admite hasta 30 caracteres.").optional(),
 });
 
 /** Mayor de edad a la fecha de hoy (Colombia: 18 años). */
@@ -198,9 +205,11 @@ export async function guardarIdentidad(proveedor: { id: string; estado: string }
       ...protegerDocumento(r.data.documento),
       direccionNotificaciones: r.data.direccionNotificaciones,
       fechaNacimiento: r.data.fechaNacimiento,
+      ...(r.data.numeroMatricula !== undefined ? { numeroMatricula: r.data.numeroMatricula || null } : {}),
       updatedAt: new Date(),
     })
     .where(eq(proveedores.id, proveedor.id));
+  await registrarEvento(proveedor.id, "cambios", { campos: ["documento de identidad", "dirección", "fecha de nacimiento", ...(r.data.numeroMatricula ? ["n.º de matrícula"] : [])] });
   return { ok: true };
 }
 

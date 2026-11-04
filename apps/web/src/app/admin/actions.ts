@@ -4,6 +4,7 @@
  * B1, B2, B4, B5 · Acciones del backoffice (Server Actions). Cada una exige sesión + rol + 2FA,
  * valida la entrada con zod y deja registro en `auditoria` (regla 3).
  */
+import { registrarEvento } from "@/lib/actividad";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -53,6 +54,7 @@ export async function aprobarProveedor(formData: FormData) {
     .set({ estado: "aprobado", aprobadoEn: new Date(), updatedAt: new Date(), motivoRechazo: null, ...(limite ? { rutFechaLimite: limite } : {}) })
     .where(eq(proveedores.id, id));
 
+  await registrarEvento(id, "estado", { detalle: "Aprobado por el equipo" });
   // Insignia «Verificado» automática al aprobar.
   const [verificado] = await db.select({ id: insignias.id }).from(insignias).where(eq(insignias.clave, "verificado")).limit(1);
   if (verificado) {
@@ -79,6 +81,7 @@ export async function rechazarProveedor(formData: FormData) {
     .set({ estado: "rechazado", motivoRechazo: mensaje ? `${motivo}: ${mensaje}` : motivo, updatedAt: new Date() })
     .where(eq(proveedores.id, id));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "proveedor_rechazado", objetoTipo: "proveedor", objetoId: id, motivo: `${motivo}${mensaje ? `: ${mensaje}` : ""}` });
+  await registrarEvento(id, "estado", { detalle: "Rechazado por el equipo" });
   await avisarProveedorRechazado(id, mensaje ? `${motivo}: ${mensaje}` : motivo);
   revalidatePath("/admin", "layout");
   volver("/admin/aprobaciones", { ok: "Proveedor rechazado. Quedó el motivo registrado." });
@@ -160,6 +163,7 @@ export async function crearProveedorAsistido(formData: FormData) {
     })
     .returning({ id: proveedores.id });
   const id = nuevo!.id;
+  await registrarEvento(id, "creado", { campos: ["creado por el equipo"], clave: `creado:${id}` });
 
   await db.insert(usuarioRoles).values({ usuarioId, rol: "proveedor", asignadoPor: actor.user.id });
   await db.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: id, categoriaId })));

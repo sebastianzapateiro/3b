@@ -6,6 +6,7 @@
  * Lectura: solo el equipo, con URL firmada (minutos en `configuracion`) y registro en `auditoria`.
  * Para el proveedor (alta y panel), la API /api/v1/yo/documentos y el backoffice.
  */
+import { registrarEvento } from "@/lib/actividad";
 import { randomUUID } from "node:crypto";
 import { headers } from "next/headers";
 import { and, eq, inArray } from "drizzle-orm";
@@ -60,7 +61,7 @@ export function documentosExigidos(segmento: string | null, cats: { rut: boolean
       : r("rut", false, false, "Puedes cargarlo hasta 30 días después de tu aprobación."),
   ];
   if (segmento === "empresa") lista.push(r("camara_comercio", true, false, "Certificado de existencia y representación legal."));
-  if (cats.some((c) => c.matricula)) lista.push(r("matricula", true, false, "Certificado vigente de tu oficio."));
+  // La matrícula ya no se sube como foto: solo se pide el número (en «Tus datos de identidad»).
   if (cats.some((c) => c.menores)) lista.push(r("autorizacion_ley_1918", true, false, "Solo si prefieres firmar el formato en papel y subirlo escaneado."));
   return lista;
 }
@@ -92,6 +93,16 @@ export async function documentosCargados(proveedorId: string) {
     .select({ id: documentos.id, tipo: documentos.tipo, mime: documentos.mime, bytes: documentos.bytes, creado: documentos.createdAt })
     .from(documentos)
     .where(eq(documentos.proveedorId, proveedorId));
+}
+
+/** ¿Alguno de sus oficios exige matrícula o tarjeta profesional? Entonces se le pide solo el número. */
+export async function pideNumeroMatricula(proveedorId: string): Promise<boolean> {
+  const filas = await db
+    .select({ m: categorias.exigeMatricula })
+    .from(proveedorCategorias)
+    .innerJoin(categorias, eq(categorias.id, proveedorCategorias.categoriaId))
+    .where(eq(proveedorCategorias.proveedorId, proveedorId));
+  return filas.some((f) => f.m);
 }
 
 /** Requisitos con su estado; `faltan` son los que impiden enviar el alta. */
@@ -151,6 +162,8 @@ export async function confirmarSubida(proveedorId: string, a: { tipo: string; ca
     await db.delete(documentos).where(inArray(documentos.id, anteriores.map((d) => d.id)));
     await borrarObjetos("privado", anteriores.map((d) => d.ruta));
   }
+  // Solo el tipo de archivo: el contenido (RUT, documento) se ve únicamente dentro del backoffice.
+  await registrarEvento(proveedorId, "archivo", { campos: [`documento: ${NOMBRE_DOCUMENTO[tipo]}`] });
   return { id: nuevo!.id, tipo, mime: real, bytes: info.bytes };
 }
 

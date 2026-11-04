@@ -2,12 +2,14 @@
 
 /** Oficios del proveedor en listas desplegables: empieza con uno y se agregan hasta 3 con «Agregar otro oficio». */
 import { useState } from "react";
+import { AVISO_SERVICIOS_SALUD, esOficioConAvisoSalud } from "@las3b/shared";
 
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-4 text-base";
 
-export function SelectorOficios({ oficios, elegidos, maximo = 3 }: { oficios: { id: number; nombre: string }[]; elegidos: number[]; maximo?: number }) {
+export function SelectorOficios({ oficios, elegidos, maximo = 3 }: { oficios: { id: number; nombre: string; slug?: string }[]; elegidos: number[]; maximo?: number }) {
   const [filas, setFilas] = useState<(number | "")[]>(elegidos.length > 0 ? elegidos.slice(0, maximo) : [""]);
   const cambiar = (i: number, v: string) => setFilas((f) => f.map((x, j) => (j === i ? (v ? Number(v) : "") : x)));
+  const conAviso = filas.some((id) => oficios.some((o) => o.id === id && o.slug && esOficioConAvisoSalud(o.slug)));
   return (
     <fieldset className="flex flex-col gap-3">
       <legend className="mb-1 text-sm font-semibold">¿Qué oficios ofreces? <span className="font-normal text-gris">(hasta {maximo})</span></legend>
@@ -23,6 +25,7 @@ export function SelectorOficios({ oficios, elegidos, maximo = 3 }: { oficios: { 
           </div>
         </div>
       ))}
+      {conAviso && <p role="note" className="rounded-[14px] border-2 border-amarillo-oscuro bg-amarillo-suave p-3 text-sm leading-snug text-amarillo-oscuro"><b>Aviso importante.</b> {AVISO_SERVICIOS_SALUD} Al publicar tendrás que aceptarlo.</p>}
       {filas.length < maximo && (
         <button type="button" onClick={() => setFilas((f) => [...f, ""])} className="inline-flex min-h-11 items-center self-start text-sm font-semibold text-verde">+ Agregar otro oficio</button>
       )}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { enviarARevision } from "@/app/panel/actions";
+import { AVISO_SERVICIOS_SALUD } from "@las3b/shared";
 import { Aviso } from "@/components/cuenta";
 import { CargaDocumento } from "@/components/CargaDocumento";
 import { pendientesAlta, whatsappParaCampo } from "@/lib/alta-proveedor";
@@ -70,7 +71,10 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
           <legend className="sr-only">Autorizaciones</legend>
           <label className="flex items-start gap-2"><input type="checkbox" name="aceptaTerminosProveedor" required className={casilla} /><span>Acepto los <Link href="/terminos-proveedores" target="_blank" className="font-semibold text-verde underline">términos de uso para proveedores</Link> y entiendo que el servicio, el precio y la garantía los acuerdo con cada cliente.</span></label>
           <label className="flex items-start gap-2"><input type="checkbox" name="aceptaDatos" required className={casilla} /><span>Autorizo el tratamiento de mis datos personales (documento, fecha de nacimiento, dirección) y, si decido subirla, la foto de mi documento, para verificar mi identidad. Entiendo que es privada y que subirla es voluntario, según la <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">política de tratamiento de datos</Link>.</span></label>
-          <label className="flex items-start gap-2"><input type="checkbox" name="declaraNoPermitidos" required className={casilla} /><span>Declaro que no ofreceré transporte de personas ni servicios de salud o cuidado de personas.</span></label>
+          <label className="flex items-start gap-2"><input type="checkbox" name="declaraNoPermitidos" required className={casilla} /><span>Declaro que no ofreceré transporte de personas, cuidado de personas, enfermería ni otros servicios de salud (salvo veterinaria y fisioterapia).</span></label>
+          {datos.exigeAvisoSalud && (
+            <label className="flex items-start gap-2 rounded-[14px] border-2 border-amarillo-oscuro bg-amarillo-suave p-3"><input type="checkbox" name="aceptaAvisoSalud" required className={casilla} /><span><b>Aviso importante.</b> {AVISO_SERVICIOS_SALUD}</span></label>
+          )}
           {datos.exigeLey1918 && (
             <label className="flex items-start gap-2"><input type="checkbox" name="autorizaLey1918" required className={casilla} /><span>Mi categoría trabaja con menores. Autorizo la consulta de antecedentes en el registro de inhabilidades (Ley 1918 de 2018) para recibir la insignia «Apto para menores».</span></label>
           )}

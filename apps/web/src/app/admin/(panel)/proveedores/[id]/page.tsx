@@ -145,6 +145,7 @@ export default async function Revision({ params, searchParams }: { params: Promi
               <dt className="text-gris">Fecha de nacimiento</dt>
               <dd>{p.fechaNacimiento ?? "—"}{p.mayorDeEdad !== null && <> · <b className={p.mayorDeEdad ? "text-verde-oscuro" : "text-ladrillo-oscuro"}>{p.mayorDeEdad ? "mayor de edad" : "menor de edad"}</b></>}</dd>
               <dt className="text-gris">Dirección de notificaciones</dt><dd>{p.direccion ?? "—"}</dd>
+              <dt className="text-gris">N.º de matrícula</dt><dd>{p.numeroMatricula ?? "—"}</dd>
               <dt className="text-gris">WhatsApp</dt><dd>{p.whatsappMascara}</dd>
               <dt className="text-gris">Correo</dt>
               <dd>{p.correo && !p.correo.endsWith(".invalid") ? p.correo : "Sin correo"} {p.correoVerificado && <span className="font-semibold text-verde-oscuro">· verificado</span>}</dd>

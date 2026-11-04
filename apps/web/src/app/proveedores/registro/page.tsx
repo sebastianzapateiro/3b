@@ -16,6 +16,6 @@ export const metadata = { title: "Registro de proveedor", robots: { index: false
 export default async function RegistroProveedor() {
   const sesion = await auth.api.getSession({ headers: await headers() });
   if (!sesion?.user) redirect(`/ingreso?${new URLSearchParams({ destino: "/proveedores/registro" })}`);
-  await crearBorrador(sesion.user);
+  await crearBorrador(sesion.user, await headers());
   redirect("/panel?bienvenida=1");
 }

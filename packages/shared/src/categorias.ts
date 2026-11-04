@@ -4,8 +4,9 @@ import { sugerirSlug } from "./slug";
  * Taxonomía de categorías y oficios (P2, CU-03). Fuente única: la leen la semilla de la base, el Home,
  * /categorias y las páginas SEO /servicios/[oficio]. Fuente de negocio: casos de uso, sección 5.7.
  *
- * REGLA DE NEGOCIO: LasTresB NO ofrece transporte de personas ni servicios de salud o cuidado de personas.
- * Ningún oficio, palabra clave o sinónimo de ese tipo puede existir aquí (ver `contieneServicioProhibido`).
+ * REGLA DE NEGOCIO (CU-30, CU-71): LasTresB NO ofrece transporte de personas, cuidado de personas, enfermería ni otros servicios de salud.
+ * Excepciones decididas el 4 de noviembre de 2026: Veterinaria y Fisioterapia (con aviso reforzado y casilla de aceptación en el alta).
+ * Ningún otro oficio, palabra clave o sinónimo de ese tipo puede existir aquí (ver `contieneServicioProhibido`).
  * «Fletes» y «Trasteos» transportan solo carga.
  */
 
@@ -37,6 +38,10 @@ export type Subcategoria = {
   seo: Seo;
   /** Palabras clave y sinónimos para la búsqueda (terminos_busqueda). */
   claves: string;
+  /** Servicio de salud exceptuado (Veterinaria, Fisioterapia): exige el aviso reforzado y su casilla en el alta y en el perfil. */
+  avisoSalud: boolean;
+  /** «Pendiente de revisión» en el backoffice (B5), sin bloquear el oficio. */
+  pendienteRevision: boolean;
 };
 
 export type CategoriaPadre = {
@@ -58,6 +63,8 @@ type Fuente = {
   menores?: boolean;
   rut?: boolean;
   matricula?: boolean;
+  salud?: boolean;
+  revision?: boolean;
   principal: string;
   relacionadas: string[];
   problemas?: string[];
@@ -79,6 +86,8 @@ function oficio(f: Fuente): Subcategoria {
     exigeMatricula: f.matricula ?? false,
     seo,
     claves: [f.nombre, base, ...f.relacionadas].join(", "),
+    avisoSalud: f.salud ?? false,
+    pendienteRevision: f.revision ?? false,
   };
 }
 
@@ -127,6 +136,9 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Cortinas y persianas", slug: "cortinas-y-persianas", subgrupo: INSTALACIONES, principal: "instalación de cortinas y persianas en Bogotá", relacionadas: ["rieles", "enrollables", "blackout", "toldos"], problemas: ["Rieles", "Persianas enrollables", "Blackout", "Toldos"], intro: "Instalación de cortinas, rieles, persianas y toldos. Ten las medidas de las ventanas para agilizar la cotización." },
       { nombre: "Instalación de TV y antenas", slug: "instalador-de-tv-y-antenas", subgrupo: INSTALACIONES, principal: "instalación de TV y antenas en Bogotá", relacionadas: ["soporte de TV", "antena parabólica", "TV por cable", "barra de sonido"], problemas: ["Soporte de TV", "Antena parabólica", "Barra de sonido"], intro: "Montaje de televisores en pared, antenas y barras de sonido. Pregunta si llevan el soporte o debes tenerlo listo." },
       { nombre: "Seguridad", slug: "instalador-de-camaras", subgrupo: INSTALACIONES, detalle: "Cámaras, citófonos, alarmas", principal: "instalación de cámaras de seguridad en Bogotá", relacionadas: ["cámaras", "citófonos", "alarmas", "CCTV", "cerca eléctrica"], problemas: ["Cámaras de seguridad", "Citófonos", "Alarmas"], intro: "Instalación de cámaras, citófonos y alarmas para casas y apartamentos. Compara las propuestas y pregunta por el soporte posterior." },
+      { nombre: "Mallas de seguridad y balcón", slug: "mallas-de-seguridad", subgrupo: INSTALACIONES, principal: "mallas de seguridad para balcón en Bogotá", relacionadas: ["mallas para balcón", "malla de protección", "red para gatos", "protección de ventanas", "mallas para niños"], problemas: ["Balcón", "Ventanas", "Protección para gatos", "Protección para niños"], intro: "Instalación de mallas de seguridad y de protección en balcones y ventanas, para gatos y para niños. Pide que te expliquen el material y cómo se ancla, y revisa la instalación antes de pagar el saldo." },
+      { nombre: "Purificadores y filtros de agua", slug: "purificadores-y-filtros-de-agua", subgrupo: INSTALACIONES, principal: "instalación de filtros de agua en Bogotá", relacionadas: ["purificador de agua", "filtro de agua", "ósmosis inversa", "cambio de filtros", "instalación de filtros"], problemas: ["Instalación de purificador", "Cambio de filtros", "Ósmosis inversa"], intro: "Instalación y mantenimiento de purificadores y filtros de agua, y cambio periódico de filtros. Pregunta cada cuánto se cambian y qué incluye el precio de los repuestos." },
+      { nombre: "Domótica y automatización", slug: "domotica", subgrupo: INSTALACIONES, rut: true, principal: "domótica y casa inteligente en Bogotá", relacionadas: ["domótica", "casa inteligente", "automatización del hogar", "cerradura inteligente", "sensores", "control por voz"], problemas: ["Cerradura inteligente", "Sensores", "Control por voz", "Automatizar luces"], intro: "Instalación de domótica y automatización del hogar: cerraduras inteligentes, sensores, luces y control por voz. Aparecen con RUT verificado." },
 
       { nombre: "Aseo y limpieza", slug: "aseo", subgrupo: LIMPIEZA, principal: "aseo y limpieza de hogar en Bogotá", relacionadas: ["aseo", "limpieza", "aseadora", "señora del aseo", "limpieza de hogar", "lavado de muebles", "alfombras", "colchones"], problemas: ["Aseo de apartamento", "Limpieza profunda", "Lavado de muebles", "Alfombras y colchones"], intro: "Aseo y limpieza de casas y apartamentos, y lavado de muebles, alfombras y colchones. Acuerda con la persona las tareas y el valor, y déjalo por escrito en el chat." },
       { nombre: "Fumigación", slug: "fumigador", subgrupo: LIMPIEZA, rut: true, principal: "fumigación en Bogotá", relacionadas: ["cucarachas", "ratones", "chinches", "control de plagas"], problemas: ["Cucarachas", "Ratones", "Chinches", "Control de plagas"], intro: "Control de plagas en casas, apartamentos y locales. Por el manejo de productos, aparecen fumigadores con RUT verificado." },
@@ -149,6 +161,8 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Arte y dibujo", slug: "clases-de-dibujo", menores: true, principal: "clases de dibujo en Bogotá", relacionadas: ["pintura", "acuarela", "manualidades", "arte para niños"], problemas: ["Dibujo", "Acuarela", "Manualidades"], intro: "Clases de dibujo, pintura y manualidades para niños y adultos." },
       { nombre: "Baile", slug: "clases-de-baile", menores: true, principal: "clases de baile en Bogotá", relacionadas: ["salsa", "bachata", "danza", "baile para niños"], problemas: ["Salsa", "Bachata", "Danza"], intro: "Clases de salsa, bachata y otros ritmos, individuales o en grupo." },
       { nombre: "Computador y celular para adultos", slug: "clases-de-computador", principal: "clases de computador y celular para adultos en Bogotá", relacionadas: ["aprender a usar el celular", "WhatsApp", "correo", "ofimática"], problemas: ["Usar el celular", "WhatsApp", "Correo electrónico", "Ofimática"], intro: "Clases pacientes para aprender a usar el computador y el celular: WhatsApp, correo, trámites en línea y ofimática." },
+      { nombre: "Natación y patinaje", slug: "clases-de-natacion-y-patinaje", menores: true, principal: "clases de natación y patinaje en Bogotá", relacionadas: ["natación", "patinaje", "piscina", "patines", "clases de natación"], problemas: ["Natación para niños", "Natación para adultos", "Patinaje"], intro: "Clases de natación y patinaje para niños y adultos. Quienes trabajan con menores tienen verificación de antecedentes. Pregunta dónde se dan las clases y qué implementos necesitas." },
+      { nombre: "Educación inicial", slug: "educacion-inicial", menores: true, revision: true, principal: "educación inicial en Bogotá", relacionadas: ["preescolar", "estimulación", "Montessori", "niños pequeños", "jardín infantil"], problemas: ["Preescolar", "Estimulación", "Montessori"], intro: "Docentes de educación inicial para niños pequeños: preescolar, estimulación y método Montessori. Quienes trabajan con menores tienen verificación de antecedentes." },
     ],
   }),
   padre({
@@ -161,6 +175,7 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Fletes y acarreos pequeños", slug: "fletes", principal: "fletes en Bogotá", relacionadas: ["fletes baratos", "acarreos pequeños", "carry", "camioneta", "moto carga", "llevar un mueble", "transporte de electrodomésticos"], problemas: ["Llevar un mueble", "Electrodomésticos", "Carga pequeña"], intro: "Fletes y acarreos pequeños de carga: muebles, electrodomésticos y paquetes grandes, en carry, camioneta o moto de carga. Solo transportan carga." },
       { nombre: "Retiro de escombros y trastos viejos", slug: "retiro-de-escombros", rut: true, principal: "retiro de escombros en Bogotá", relacionadas: ["botar colchón", "sacar muebles viejos", "trastos", "volqueta", "recolección de voluminosos"], problemas: ["Botar un colchón", "Sacar muebles viejos", "Escombros de obra"], intro: "Retiro de escombros, colchones y muebles viejos con disposición adecuada. Aparecen con RUT verificado." },
       { nombre: "Embalaje y guardamuebles", slug: "embalaje-y-guardamuebles", principal: "embalaje y guardamuebles en Bogotá", relacionadas: ["empacar", "cajas de trasteo", "bodega", "almacenamiento temporal"], problemas: ["Empacar para un trasteo", "Cajas", "Bodega temporal"], intro: "Embalaje de menaje y almacenamiento temporal en bodegas para tu mudanza." },
+      { nombre: "Mensajería", slug: "mensajeria", principal: "mensajería y domicilios en Bogotá", relacionadas: ["mensajero", "mensajería", "domicilios", "envíos", "documentos", "paquetes", "diligencias", "moto mensajero"], problemas: ["Documentos", "Paquetes", "Diligencias", "Envíos"], intro: "Mensajeros para llevar documentos y paquetes, hacer diligencias y domicilios, en moto o a pie. Transporta solo documentos y paquetes, nunca personas." },
     ],
   }),
   padre({
@@ -180,6 +195,9 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Eventos", slug: "eventos", detalle: "Meseros, decoración", principal: "meseros y decoración para eventos en Bogotá", relacionadas: ["globos", "mesa de dulces", "montaje de eventos", "fiestas"], problemas: ["Meseros", "Decoración con globos", "Mesa de dulces"], intro: "Meseros, decoración y montaje para fiestas y eventos en casa." },
       { nombre: "Entrenador personal", slug: "entrenador-personal", detalle: "Yoga, pilates, rutinas", principal: "entrenador personal a domicilio en Bogotá", relacionadas: ["gimnasio en casa", "yoga a domicilio", "yoga", "pilates", "rutinas de ejercicio", "acondicionamiento físico"], problemas: ["Yoga", "Pilates", "Rutinas de ejercicio", "Acondicionamiento físico"], intro: "Entrenadores para yoga, pilates, rutinas y acondicionamiento físico en tu casa. Son clases de ejercicio, no atención de salud." },
       { nombre: "Recreacionistas", slug: "recreacionistas", menores: true, principal: "recreacionistas para fiestas infantiles en Bogotá", relacionadas: ["show infantil", "payasos", "magos", "juegos"], problemas: ["Show infantil", "Payasos", "Juegos y dinámicas"], intro: "Recreacionistas para fiestas infantiles: shows, juegos y dinámicas. Quienes trabajan con menores tienen verificación de antecedentes." },
+      { nombre: "Letreros y publicidad", slug: "letreros-y-publicidad", principal: "letreros y avisos en Bogotá", relacionadas: ["letrero", "aviso", "luminoso", "valla", "pendón", "stand", "publicidad gran formato"], problemas: ["Letrero para local", "Aviso luminoso", "Pendones", "Stands"], intro: "Letreros, avisos luminosos, vallas, pendones, stands y publicidad de gran formato. Pide la cotización con medidas y material, y acuerda quién tramita los permisos del aviso." },
+      { nombre: "Trámites de pasaporte y visa", slug: "tramites-de-pasaporte-y-visa", principal: "trámite de pasaporte y visa en Bogotá", relacionadas: ["pasaporte", "visa", "cita consular", "formularios", "trámite de pasaporte"], problemas: ["Pasaporte", "Visa", "Cita consular", "Formularios"], intro: "Ayuda para tramitar el pasaporte y la visa: formularios, citas consulares y documentos. Los trámites ante las entidades los hace el solicitante; confirma siempre los requisitos en la página oficial." },
+      { nombre: "Fisioterapia", slug: "fisioterapia", rut: true, matricula: true, salud: true, detalle: "Terapia física, rehabilitación", principal: "fisioterapeuta en Bogotá", relacionadas: ["fisioterapeuta", "terapia física", "rehabilitación", "masaje terapéutico"], problemas: ["Terapia física", "Rehabilitación", "Masaje terapéutico"], intro: "Fisioterapeutas para terapia física, rehabilitación y masaje terapéutico. LasTresB solo conecta a clientes y proveedores: no presta ni supervisa este servicio ni responde por su resultado, que se acuerda directamente con el cliente. Aparecen con RUT verificado." },
     ],
   }),
   padre({
@@ -188,7 +206,7 @@ export const CATEGORIAS: CategoriaPadre[] = [
     corto: "Veterinarios, paseos, peluquería",
     descripcion: "Veterinarios, paseadores, peluquería canina y guardería",
     oficios: [
-      { nombre: "Veterinarios", slug: "veterinario", popular: true, urgencias: true, matricula: true, detalle: "Consulta, vacunas, urgencias 24 horas", principal: "veterinario en Bogotá", relacionadas: ["veterinario a domicilio", "veterinario 24 horas", "urgencias veterinarias", "clínica veterinaria", "vacunas para perros", "vacunas para gatos", "desparasitación", "esterilización", "consulta veterinaria", "médico veterinario"], problemas: ["Vacunas", "Consulta a domicilio", "Urgencia veterinaria", "Desparasitación", "Esterilización"], intro: "Médicos veterinarios para consulta, vacunas y urgencias de perros, gatos y otras mascotas. Algunos declaran atender urgencias o las 24 horas: míralo en sus etiquetas y confirma la disponibilidad por WhatsApp. Pedimos la tarjeta profesional o matrícula antes de aprobar el perfil. LasTresB no presta el servicio ni garantiza tiempos de llegada." },
+      { nombre: "Veterinarios", slug: "veterinario", popular: true, urgencias: true, matricula: true, rut: true, salud: true, detalle: "Consulta, vacunas, urgencias 24 horas", principal: "veterinario en Bogotá", relacionadas: ["veterinaria", "veterinaria a domicilio", "vacunación", "dermatología veterinaria", "veterinario a domicilio", "veterinario 24 horas", "urgencias veterinarias", "clínica veterinaria", "vacunas para perros", "vacunas para gatos", "desparasitación", "esterilización", "consulta veterinaria", "médico veterinario"], problemas: ["Vacunas", "Consulta a domicilio", "Urgencia veterinaria", "Desparasitación", "Esterilización"], intro: "Médicos veterinarios para consulta, vacunas y urgencias de perros, gatos y otras mascotas. Algunos declaran atender urgencias o las 24 horas: míralo en sus etiquetas y confirma la disponibilidad por WhatsApp. Pedimos la tarjeta profesional o matrícula antes de aprobar el perfil. LasTresB no presta el servicio ni garantiza tiempos de llegada." },
       { nombre: "Paseo de perros", slug: "paseador-de-perros", popular: true, principal: "paseador de perros en Bogotá", relacionadas: ["paseo de perros", "paseador", "caminata para perros"], problemas: ["Paseo diario", "Paseo ocasional", "Perros grandes"], intro: "Paseadores de perros para el día a día o para cuando no estás. Antes de empezar, conoce a la persona y acuerda horarios, rutas y qué hacer ante cualquier imprevisto." },
       { nombre: "Peluquería canina", slug: "peluqueria-canina", principal: "peluquería canina en Bogotá", relacionadas: ["baño de perros", "corte de pelo para perros", "estética canina", "peluquería de mascotas a domicilio", "grooming"], problemas: ["Baño y corte", "Estética canina", "A domicilio"], intro: "Baño, corte y estética para perros y gatos, en el local o en tu casa. Cuéntale al peluquero la raza, el tamaño y si tu mascota es nerviosa." },
       { nombre: "Adiestramiento canino", slug: "adiestrador-canino", principal: "adiestrador de perros en Bogotá", relacionadas: ["entrenador de perros", "educación canina", "cachorros", "obediencia", "corrección de conducta"], problemas: ["Cachorros", "Obediencia", "Conducta"], intro: "Adiestradores para enseñar obediencia a cachorros y perros adultos. Pregunta por el método que usan y pide ver su trabajo con otros perros." },
@@ -277,4 +295,16 @@ export const OFICIOS_ELIMINADOS = ["cuidado-de-personas"];
  * Sirve para filtrar solicitudes de usuarios y para vigilar que nunca existan en los datos.
  */
 const PROHIBIDOS = /(conductor|chofer|chófer|taxi|mototaxi|pasajer|ni[ñn]er[oa]|cuidador|cuidado de personas|enfermer|adultos? mayor|terap(ia|eut)|masaje terap|fisioterap|dislexia)/i;
-export const contieneServicioProhibido = (texto: string) => PROHIBIDOS.test(texto);
+/** Frases de las excepciones (Fisioterapia): no cuentan como servicio no permitido. Veterinaria nunca estuvo en la lista. */
+const EXCEPCIONES = /(fisioterap\w*|terapia f[ií]sica|masaje terap[eé]utico|rehabilitaci[oó]n)/gi;
+export const contieneServicioProhibido = (texto: string) => PROHIBIDOS.test(texto.replace(EXCEPCIONES, " "));
+
+/** Oficios exceptuados con aviso reforzado (veterinaria y fisioterapia). */
+export const OFICIOS_CON_AVISO_SALUD: string[] = TODAS_LAS_SUBCATEGORIAS.filter(({ sub }) => sub.avisoSalud).map(({ sub }) => sub.slug);
+export const esOficioConAvisoSalud = (slug: string) => OFICIOS_CON_AVISO_SALUD.includes(slug);
+
+/** Oficios «pendientes de revisión» en el backoffice (B5): visibles, sin bloqueo. */
+export const OFICIOS_PENDIENTES_REVISION: string[] = TODAS_LAS_SUBCATEGORIAS.filter(({ sub }) => sub.pendienteRevision).map(({ sub }) => sub.slug);
+
+/** Aviso reforzado que se acepta con casilla en el alta (CU-30) y se muestra en el perfil de estos oficios. */
+export const AVISO_SERVICIOS_SALUD = "LasTresB solo conecta a clientes y proveedores. No presta ni supervisa este servicio ni responde por su resultado, que se acuerda directamente con el cliente.";

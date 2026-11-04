@@ -295,6 +295,7 @@ export async function obtenerRevision(id: string) {
     fechaNacimiento: nacimiento ? nacimiento.toLocaleDateString("es-CO", { timeZone: "UTC" }) : null,
     mayorDeEdad: edad !== null ? edad >= 18 : null,
     direccion: p.direccionNotificaciones,
+    numeroMatricula: p.numeroMatricula,
     whatsappMascara: tel ? `+${tel.slice(0, 2)} ${tel.slice(2, 5)} ••• ••${tel.slice(-2)}` : "—",
     // Solo para armar el enlace de invitación por WhatsApp; en pantalla se muestra la máscara.
     whatsapp: p.whatsapp,

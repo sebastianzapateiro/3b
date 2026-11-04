@@ -5,6 +5,7 @@
  * y publica solo el resultado en el bucket `publico`. El original se borra siempre.
  * Para el panel del proveedor y la API /api/v1/yo/fotos.
  */
+import { registrarEvento } from "@/lib/actividad";
 import { randomUUID } from "node:crypto";
 import { and, count, eq } from "drizzle-orm";
 import sharp from "sharp";
@@ -81,6 +82,7 @@ export async function confirmarFoto(proveedorId: string, a: { camino: string; de
       .values({ proveedorId, ruta: `${base}.webp`, rutaMiniatura: `${base}-m.webp`, descripcion: a.descripcion?.trim().slice(0, 140) || null, declaraAutoria: true, orden })
       .returning({ id: portafolioFotos.id });
     await guardarCompletitud(proveedorId);
+    await registrarEvento(proveedorId, "archivo", { campos: ["foto de trabajo"] });
     return { id: nueva!.id };
   } catch (e) {
     console.error("[fotos] No se pudo procesar la foto:", e instanceof Error ? e.message : e);
@@ -125,6 +127,7 @@ export async function confirmarFotoPerfil(proveedorId: string, a: { camino: stri
     const [antes] = await db.select({ ruta: schema.proveedores.fotoPerfil }).from(schema.proveedores).where(eq(schema.proveedores.id, proveedorId)).limit(1);
     await db.update(schema.proveedores).set({ fotoPerfil: ruta, updatedAt: new Date() }).where(eq(schema.proveedores.id, proveedorId));
     if (antes?.ruta) await borrarObjetos("publico", [antes.ruta]);
+    await registrarEvento(proveedorId, "archivo", { campos: ["foto de perfil"] });
     return { ok: true as const };
   } catch (e) {
     console.error("[fotos] No se pudo procesar la foto de perfil:", e instanceof Error ? e.message : e);

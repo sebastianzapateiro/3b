@@ -131,7 +131,7 @@ export const auth = betterAuth({
           if (tipo === "proveedor") {
             // Import dinámico: alta-proveedor → documentos → auth formaría un ciclo.
             const { crearBorrador } = await import("./alta-proveedor");
-            await crearBorrador(user);
+            await crearBorrador(user, ctx.headers);
           }
         },
       },

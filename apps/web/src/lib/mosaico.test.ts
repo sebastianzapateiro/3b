@@ -24,7 +24,7 @@ describe("mosaico de categorías", () => {
     expect(tiles.filter((t) => t.etiqueta === "Hogar").map((t) => [t.nombre, t.total])).toEqual([
       ["Reparaciones", 9],
       ["Obra y acabados", 7],
-      ["Instalaciones", 4],
+      ["Instalaciones", 7],
       ["Limpieza y jardín", 3],
     ]);
     expect(tiles).toHaveLength(CATEGORIAS.length - 1 + 4);

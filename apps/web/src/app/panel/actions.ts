@@ -1,6 +1,7 @@
 "use server";
 
 /** P8 · Acciones del panel del proveedor. Todas verifican que el recurso sea del proveedor con sesión. */
+import { registrarEvento } from "@/lib/actividad";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
@@ -31,6 +32,7 @@ export async function quitarFotoTrabajo(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
   const id = z.string().uuid().parse(formData.get("id"));
   await quitarFoto(proveedor.id, id);
+  await registrarEvento(proveedor.id, "cambios", { campos: ["fotos de trabajos"] });
   pagina("/panel/fotos");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/fotos", { ok: "Foto quitada." });
@@ -69,6 +71,7 @@ export async function guardarPerfil(formData: FormData) {
   await db.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: proveedor.id, localidadId })));
 
   await guardarCompletitud(proveedor.id);
+  await registrarEvento(proveedor.id, "cambios", { campos: ["presentación", "experiencia", "cómo trabaja", "zonas"] });
   revalidatePath("/panel", "layout");
   revalidatePath(`/${proveedor.slug}`);
   if (proveedor.estado === "borrador") redirect(await rutaSiguientePaso(proveedor.id, "Perfil guardado."));
@@ -83,6 +86,7 @@ export async function cambiarPausa(formData: FormData) {
   if (!pausar && proveedor.estado !== "pausado") return volver("/panel", { error: "Tu perfil no está pausado." });
 
   await db.update(proveedores).set({ estado: pausar ? "pausado" : "aprobado", updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  await registrarEvento(proveedor.id, "estado", { detalle: pausar ? "Perfil en pausa" : "Perfil reactivado" });
   pagina("/panel");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel", { ok: pausar ? "Tu perfil quedó en pausa: muestra «no disponible»." : "Tu perfil volvió a estar visible." });
@@ -110,6 +114,7 @@ export async function agregarServicio(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
   const d = await datosServicio(formData, proveedor.id);
   await db.insert(serviciosProveedor).values({ proveedorId: proveedor.id, ...d });
+  await registrarEvento(proveedor.id, "cambios", { campos: ["servicios y precios"] });
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/servicios", { ok: "Servicio agregado." });
@@ -120,6 +125,7 @@ export async function actualizarServicio(formData: FormData) {
   const id = z.coerce.number().int().parse(formData.get("id"));
   const d = await datosServicio(formData, proveedor.id);
   await db.update(serviciosProveedor).set(d).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
+  await registrarEvento(proveedor.id, "cambios", { campos: ["servicios y precios"] });
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
   return volver("/panel/servicios", { ok: "Servicio actualizado." });
@@ -220,11 +226,12 @@ export async function enviarARevision(formData: FormData) {
   const pendientes = await pendientesAlta(proveedor.id);
   const falta = pendientes.tareas.find((t) => !t.ok && !t.opcional);
   if (falta) return volver("/panel/confirmar", { error: `Antes de enviar, completa: ${falta.titulo.toLowerCase()}.` });
-  const { exigeLey1918 } = await datosParaConfirmar(proveedor.id);
+  const { exigeLey1918, exigeAvisoSalud } = await datosParaConfirmar(proveedor.id);
   // Casillas no premarcadas (regla 5): las marca el proveedor, nunca el equipo.
   if (formData.get("aceptaTerminosProveedor") !== "on") return volver("/panel/confirmar", { error: "Debes aceptar los términos para proveedores." });
   if (formData.get("aceptaDatos") !== "on") return volver("/panel/confirmar", { error: "Debes autorizar el tratamiento de tus datos personales para verificar tu identidad." });
-  if (formData.get("declaraNoPermitidos") !== "on") return volver("/panel/confirmar", { error: "Debes declarar que no ofrecerás transporte de personas ni servicios de salud o cuidado de personas." });
+  if (formData.get("declaraNoPermitidos") !== "on") return volver("/panel/confirmar", { error: "Debes declarar que no ofrecerás transporte de personas, cuidado de personas, enfermería ni otros servicios de salud (salvo veterinaria y fisioterapia)." });
+  if (exigeAvisoSalud && formData.get("aceptaAvisoSalud") !== "on") return volver("/panel/confirmar", { error: "Debes aceptar el aviso sobre servicios veterinarios o de salud." });
   if (exigeLey1918 && formData.get("autorizaLey1918") !== "on") return volver("/panel/confirmar", { error: "Tu categoría trabaja con menores: debes autorizar la consulta de antecedentes (Ley 1918)." });
 
   const h = await headers();
@@ -234,6 +241,8 @@ export async function enviarARevision(formData: FormData) {
     { ip: ipDeLaPeticion(h), userAgent: h.get("user-agent") },
   );
   await db.update(proveedores).set({ estado: "pendiente", updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  await registrarEvento(proveedor.id, "registro_completado", { campos: ["aceptó términos y autorizaciones"], clave: `completado:${proveedor.id}` });
+  await registrarEvento(proveedor.id, "estado", { detalle: "Borrador → publicado para revisión" });
   await avisarRegistroRecibido(proveedor.id);
   revalidatePath("/panel", "layout");
   revalidatePath("/admin", "layout");
