@@ -92,6 +92,13 @@
       "when": 1793752601460,
       "tag": "0012_auditoria_revision_llaves",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1793802093405,
+      "tag": "0013_simple_paper_doll",
+      "breakpoints": true
     }
   ]
 }
