@@ -6,7 +6,7 @@ import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
 
-export function FormRegistro({ alIngresar }: { alIngresar: () => void }) {
+export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; alIngresar: () => void }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [enviadoA, setEnviadoA] = useState("");
@@ -35,7 +35,7 @@ export function FormRegistro({ alIngresar }: { alIngresar: () => void }) {
     return (
       <div className="flex flex-col gap-4">
         <Aviso tono="exito">
-          Te enviamos un enlace a <b>{enviadoA}</b>. Ábrelo para confirmar tu correo y luego ingresa.
+          Te enviamos un enlace a <b>{enviadoA}</b>. Ábrelo para confirmar tu correo y luego ingresa{proveedor ? " como proveedor para completar tu perfil" : ""}.
         </Aviso>
         <p className="text-[15px] leading-normal text-tinta-2">¿No te llegó? Revisa la carpeta de spam o intenta ingresar: te lo enviamos de nuevo.</p>
         <button type="button" onClick={alIngresar} className={botonPrincipal}>Ir a ingresar</button>
@@ -67,7 +67,7 @@ export function FormRegistro({ alIngresar }: { alIngresar: () => void }) {
         <input type="checkbox" name="politicas" required className={casilla} />
         <span>
           Acepto los{" "}
-          <Link href="/terminos" target="_blank" className="font-semibold text-verde underline">términos de uso</Link> y autorizo el{" "}
+          <Link href={proveedor ? "/terminos-proveedores" : "/terminos"} target="_blank" className="font-semibold text-verde underline">{proveedor ? "términos para proveedores" : "términos de uso"}</Link> y autorizo el{" "}
           <Link href="/privacidad" target="_blank" className="font-semibold text-verde underline">tratamiento de mis datos personales</Link>.
         </span>
       </label>

@@ -17,6 +17,12 @@ export async function guardarTipo(tipo: TipoUsuario) {
   (await cookies()).set(COOKIE_TIPO, tipo, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 });
 }
 
+/** Tipo elegido, leído de la cabecera Cookie de una petición (hooks de Better Auth, donde no hay cookies()). */
+export function tipoDeCabeceras(h: Headers | null | undefined): TipoUsuario {
+  const v = h?.get("cookie")?.match(new RegExp(`(?:^|;\\s*)${COOKIE_TIPO}=([^;]+)`))?.[1];
+  return esTipoUsuario(v) ? v : "cliente";
+}
+
 export async function leerTipo(): Promise<TipoUsuario> {
   const v = (await cookies()).get(COOKIE_TIPO)?.value;
   return esTipoUsuario(v) ? v : "cliente";

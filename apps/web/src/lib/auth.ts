@@ -8,7 +8,8 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor } from "better-auth/plugins";
 import { db, schema } from "@las3b/db";
-import { ipDeLaPeticion, POLITICAS_REGISTRO_COMPRADOR, registrarConsentimientos } from "./consentimientos";
+import { ipDeLaPeticion, registrarConsentimientos } from "./consentimientos";
+import { POLITICAS_POR_TIPO, tipoDeCabeceras } from "./ingreso";
 import { eq } from "drizzle-orm";
 import { enviarCorreo } from "./correo";
 import { bienvenidaCliente, bienvenidaProveedor, confirmarCorreo, recuperarClave } from "./plantillas";
@@ -106,14 +107,32 @@ export const auth = betterAuth({
     }),
   },
   databaseHooks: {
+    // Cuenta eliminada (CU-27) o suspendida: no se crea sesión, sea con clave, Google o enlace de invitación.
+    session: {
+      create: {
+        before: async (s) => {
+          const [u] = await db.select({ eliminadoEn: schema.user.eliminadoEn, suspendidoHasta: schema.user.suspendidoHasta }).from(schema.user).where(eq(schema.user.id, s.userId)).limit(1);
+          if (u?.eliminadoEn) throw new APIError("FORBIDDEN", { code: "CUENTA_ELIMINADA", message: "Esta cuenta fue eliminada." });
+          if (u?.suspendidoHasta && u.suspendidoHasta > new Date()) throw new APIError("FORBIDDEN", { code: "CUENTA_SUSPENDIDA", message: "Tu cuenta está suspendida. Escríbenos si crees que es un error." });
+        },
+      },
+    },
     user: {
       create: {
         after: async (user, ctx) => {
           if (ctx?.path !== "/sign-up/email") return;
-          await registrarConsentimientos(user.id, POLITICAS_REGISTRO_COMPRADOR, {
+          // El tipo elegido en /ingreso (cookie): el proveedor acepta sus términos y queda con el borrador del alta
+          // (CU-30), así al confirmar el correo e ingresar entra directo a /panel.
+          const tipo = tipoDeCabeceras(ctx.headers);
+          await registrarConsentimientos(user.id, [...POLITICAS_POR_TIPO[tipo]], {
             ip: ipDeLaPeticion(ctx.headers),
             userAgent: ctx.headers?.get("user-agent") ?? null,
           });
+          if (tipo === "proveedor") {
+            // Import dinámico: alta-proveedor → documentos → auth formaría un ciclo.
+            const { crearBorrador } = await import("./alta-proveedor");
+            await crearBorrador(user);
+          }
         },
       },
     },

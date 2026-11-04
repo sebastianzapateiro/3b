@@ -99,7 +99,7 @@ export async function resenasDelProveedor(proveedorId: string) {
     .select({
       id: resenas.id,
       fecha: resenas.createdAt,
-      cliente: user.name,
+      cliente: sql<string>`CASE WHEN ${user.eliminadoEn} IS NULL THEN ${user.name} ELSE 'Cliente de LasTresB' END`, // CU-27: anónima
       comentario: resenas.comentario,
       puntualidad: resenas.puntualidad,
       calidad: resenas.calidad,

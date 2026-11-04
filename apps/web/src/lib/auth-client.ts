@@ -16,6 +16,8 @@ const MENSAJES: Record<string, string> = {
   PASSWORD_TOO_SHORT: "La clave debe tener al menos 8 caracteres.",
   INVALID_EMAIL: "Revisa el correo, parece que tiene un error.",
   INVALID_TOKEN: "El enlace venció o ya se usó. Pide uno nuevo.",
+  CUENTA_ELIMINADA: "Esta cuenta fue eliminada.",
+  CUENTA_SUSPENDIDA: "Tu cuenta está suspendida. Escríbenos si crees que es un error.",
   FALTA_CONSENTIMIENTO: "Debes declarar que eres mayor de edad y aceptar los términos y la política de datos.",
 };
 
