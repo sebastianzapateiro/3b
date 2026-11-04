@@ -37,10 +37,13 @@ export function FormIngresoAdmin({ aviso }: { aviso?: string }) {
       await authClient.signOut();
       return setError("Esta cuenta no tiene acceso al backoffice.");
     }
-    if (!yo.exige2fa) return entrar();
+    // Con 2FA ya activo y equipo de confianza, Better Auth no pide el código: se entra directo.
+    if (!yo.exige2fa || yo.tiene2fa) return entrar();
     setCargando(true);
     const { data: config, error: errorConfig } = await authClient.twoFactor.enable({ password: clave });
     setCargando(false);
+    // La sesión en caché (cookieCache, 5 min) puede no saber aún que ya lo activó.
+    if (errorConfig?.code === "TOTP_ALREADY_ENABLED") return entrar();
     if (errorConfig || !config || !("totpURI" in config)) {
       await authClient.signOut();
       return setError("No pudimos iniciar la configuración del segundo factor. Intenta de nuevo.");
