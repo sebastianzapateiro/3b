@@ -29,6 +29,7 @@ export const TEMAS: Record<ClaveTile, Tema> = {
   "servicios-varios": { desde: "#4B4636", hasta: "#A99A78", foto: { src: "/fotos/servicios-varios.jpg", alt: "Dos personas arreglando plantas en una canasta" }, textoSinFoto: "blanco", pildora: "#4B4636" },
   "mascotas-y-veterinaria": { desde: "#6B4E00", hasta: "#D9A62E", textoSinFoto: "blanco", pildora: "#6B4E00" },
   "servicios-profesionales": { desde: "#1B2623", hasta: "#5C6B66", textoSinFoto: "blanco", pildora: "#1B2623" },
+  "mecanica-y-talleres": { desde: "#2E3A59", hasta: "#7C8DB5", textoSinFoto: "blanco", pildora: "#2E3A59" },
 };
 
 /** Si aparece una categoría nueva sin tema, se ve con este degradado neutro hasta que se le asigne uno. */
@@ -47,7 +48,8 @@ const DISPOSICION: Record<ClaveTile, Disposicion> = {
   "obra-y-acabados": { columnas: 3, fila: 1 },
   instalaciones: { columnas: 3, fila: 1 },
   "mascotas-y-veterinaria": { columnas: 6, fila: 3 },
-  "servicios-profesionales": { columnas: 6, fila: 3 },
+  "servicios-profesionales": { columnas: 3, fila: 3 },
+  "mecanica-y-talleres": { columnas: 3, fila: 3 },
 };
 const DISPOSICION_BASE: Disposicion = { columnas: 3, fila: 2 };
 

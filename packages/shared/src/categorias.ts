@@ -42,7 +42,7 @@ export type Subcategoria = {
 export type CategoriaPadre = {
   nombre: string;
   slug: string;
-  icono: "casa" | "libro" | "camion" | "herramienta" | "huella" | "maletin";
+  icono: "casa" | "libro" | "camion" | "herramienta" | "huella" | "maletin" | "carro";
   corto: string;
   descripcion: string;
   subcategorias: Subcategoria[];
@@ -82,9 +82,15 @@ function oficio(f: Fuente): Subcategoria {
   };
 }
 
+/** Todo lo de educación se busca también con estas palabras (maestro, profe, docente, taller…). */
+export const CLAVES_EDUCACION = ["maestro", "maestra", "profesor", "profesora", "profe", "prof", "docente", "tutor", "tutora", "instructor", "instructora", "clases", "clase", "taller", "talleres", "curso", "cursos", "enseñanza", "educación"];
+
 function padre(p: Omit<CategoriaPadre, "slug" | "subcategorias"> & { oficios: Fuente[] }): CategoriaPadre {
   const { oficios, ...resto } = p;
-  return { ...resto, slug: sugerirSlug(p.nombre), subcategorias: oficios.map(oficio) };
+  const subcategorias = oficios.map(oficio);
+  // «Clases y refuerzo» es la categoría de educación: cada oficio hereda las palabras clave del sector.
+  if (p.nombre === "Clases y refuerzo") for (const s of subcategorias) s.claves = [s.claves, ...CLAVES_EDUCACION].join(", ");
+  return { ...resto, slug: sugerirSlug(p.nombre), subcategorias };
 }
 
 const REPARACIONES = "Reparaciones";
@@ -200,7 +206,23 @@ export const CATEGORIAS: CategoriaPadre[] = [
       { nombre: "Diseño gráfico y marketing", slug: "diseno-grafico", principal: "diseñador gráfico en Bogotá", relacionadas: ["logos", "diseño de logo", "redes sociales", "community manager", "flyers", "páginas web", "marketing digital", "branding"], problemas: ["Logo", "Redes sociales", "Página web", "Piezas para tu negocio"], intro: "Diseñadores y creadores de contenido para tu logo, tus redes sociales, tu página web y las piezas de tu negocio. Revisa sus portafolios y acuerda por escrito qué entrega y cuántos ajustes incluye." },
       { nombre: "Traducciones", slug: "traductor", principal: "traductor en Bogotá", relacionadas: ["traducción de documentos", "traductor de inglés", "traducción oficial", "intérprete", "subtítulos"], problemas: ["Documentos", "Inglés", "Traducción oficial", "Subtítulos"], intro: "Traductores de documentos, textos y subtítulos. Si necesitas una traducción oficial para un trámite, confirma con el traductor y con la entidad que la pide qué requisitos debe cumplir." },
     ],
-  }),];
+  }),
+  padre({
+    nombre: "Mecánica y talleres",
+    icono: "carro",
+    corto: "Mecánico, motos, latonería",
+    descripcion: "Mecánicos de carros y motos, latonería y pintura, llantas y auxilio vial",
+    oficios: [
+      { nombre: "Mecánica de carros", slug: "mecanico-automotriz", popular: true, detalle: "Frenos, aceite, suspensión, diagnóstico", principal: "mecánico de carros en Bogotá", relacionadas: ["mecánico de confianza", "taller mecánico", "taller de carros", "mecánico a domicilio", "mecánico automotriz", "cambio de aceite", "frenos", "suspensión", "scanner", "diagnóstico del carro", "revisión antes de viajar", "sincronización", "mantenimiento del carro", "se me dañó el carro"], problemas: ["Cambio de aceite", "Frenos", "Suspensión", "Luz de motor encendida", "Revisión antes de viajar"], intro: "Mecánicos y talleres de carros para mantenimiento, frenos, suspensión y diagnóstico con scanner, en tu casa o en el taller. Pide un diagnóstico por escrito, que te cotice los repuestos por separado y que te devuelva las piezas cambiadas. Lee las reseñas: en mecánica pesa mucho la recomendación de otros clientes." },
+      { nombre: "Mecánica de motos", slug: "mecanico-de-motos", popular: true, detalle: "Mantenimiento, frenos, kit de arrastre", principal: "mecánico de motos en Bogotá", relacionadas: ["taller de motos", "mecánico de moto a domicilio", "mantenimiento de moto", "cambio de aceite de moto", "kit de arrastre", "frenos de moto", "sincronización de moto", "revisión tecnomecánica de moto"], problemas: ["Mantenimiento general", "Kit de arrastre", "Frenos", "Moto que no enciende"], intro: "Mecánicos y talleres de motos para el mantenimiento, el kit de arrastre, los frenos y las fallas de arranque. Cuéntale la marca, el modelo y el síntoma para que te dé un estimado antes de abrir la moto." },
+      { nombre: "Latonería y pintura", slug: "latoneria-y-pintura", principal: "latonería y pintura de carros en Bogotá", relacionadas: ["latonero", "pintura de carros", "reparar un golpe", "abolladuras", "rayones", "polichado", "pintura automotriz", "taller de latonería"], problemas: ["Golpes y abolladuras", "Rayones", "Pintura de una pieza", "Pintura completa"], intro: "Latonería y pintura para golpes, abolladuras y rayones. Pide la cotización con fotos, acuerda cuántos días tomará y revisa el trabajo con buena luz antes de pagar el saldo." },
+      { nombre: "Llantas y alineación", slug: "llantas-y-alineacion", principal: "alineación y balanceo en Bogotá", relacionadas: ["montallantas", "cambio de llantas", "balanceo", "alineación de carro", "parchar llanta", "llanta pinchada", "rines"], problemas: ["Alineación y balanceo", "Llanta pinchada", "Cambio de llantas", "Rines"], intro: "Montallantas para alineación, balanceo, cambio y parches de llantas de carros y motos. Pregunta si el precio incluye válvulas y balanceo." },
+      { nombre: "Electricidad y diagnóstico automotriz", slug: "electricista-automotriz", principal: "electricista automotriz en Bogotá", relacionadas: ["electricidad del carro", "scanner automotriz", "batería del carro", "alternador", "motor de arranque", "luces del carro", "alarma de carro", "instalación de radio"], problemas: ["Batería", "Alternador", "Luces", "Alarma y radio"], intro: "Electricistas automotrices para baterías, alternadores, luces, alarmas y diagnóstico con scanner. Pide que te muestren la falla y el repuesto que cambiaron." },
+      { nombre: "Auxilio vial", slug: "auxilio-vial", urgencias: true, detalle: "Pasar corriente, cambio de llanta", principal: "auxilio vial en Bogotá", relacionadas: ["pasar corriente", "se quedó sin batería", "cambio de llanta en la vía", "carro varado", "moto varada", "mecánico de emergencia"], problemas: ["Pasar corriente", "Cambio de llanta", "Carro que no enciende", "Moto varada"], intro: "Auxilio vial para pasar corriente, cambiar una llanta o diagnosticar por qué no enciende tu vehículo. Algunos declaran atender urgencias: míralo en sus etiquetas y confirma la disponibilidad y el tiempo de llegada por WhatsApp. LasTresB no presta el servicio ni garantiza tiempos de llegada." },
+      { nombre: "Bicicletas", slug: "mecanico-de-bicicletas", principal: "mecánico de bicicletas en Bogotá", relacionadas: ["taller de bicicletas", "arreglo de bicicleta", "ajuste de frenos de bicicleta", "cambios de bicicleta", "mantenimiento de bicicleta", "parchar llanta de bicicleta"], problemas: ["Ajuste de frenos y cambios", "Mantenimiento general", "Llanta pinchada"], intro: "Mecánicos de bicicletas para ajustes, frenos, cambios y mantenimiento general, en el taller o a domicilio." },
+    ],
+  }),
+];
 
 export const categoriaPorSlug = (slug: string) => CATEGORIAS.find((c) => c.slug === slug);
 

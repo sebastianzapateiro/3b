@@ -106,8 +106,52 @@ export function faqGuia(slug: string): Pregunta[] {
       { pregunta: "¿Qué debo decirle al proveedor para que me cotice bien?", respuesta: "Inventario aproximado, direcciones de origen y destino, pisos, acceso con ascensor o escaleras y fotos." },
       { pregunta: "¿Quién responde si se daña algo?", respuesta: "Debe quedar acordado antes con el proveedor. Documenta con fotos el estado de tus cosas." },
     ],
+    "como-elegir-un-mecanico-de-confianza": [
+      { pregunta: "¿Cómo encuentro un mecánico de confianza?", respuesta: "Revisa las reseñas de otros clientes, mira las fotos de sus trabajos y pide un diagnóstico y una cotización por escrito antes de autorizar la reparación." },
+      { pregunta: "¿Es normal que cobren la revisión?", respuesta: "Algunos talleres cobran el diagnóstico y lo descuentan si haces la reparación con ellos. Pregúntalo antes de llevar el vehículo." },
+    ],
     "que-hacer-si-el-servicio-quedo-mal": [
       { pregunta: "¿Puedo dejar una reseña si tuve un mal servicio?", respuesta: "Sí, si contactaste al proveedor desde LasTresB. Cuenta los hechos sin insultos." },
+    ],
+    "humedad-en-paredes": [
+      { pregunta: "¿Por qué vuelve la mancha de humedad aunque la pinte?", respuesta: "Porque la causa sigue activa: una filtración, condensación o humedad del piso. Hay que repararla y dejar secar el muro antes de pintar." },
+      { pregunta: "¿Qué profesional debo llamar por humedad en la pared?", respuesta: "Depende del origen: un plomero si hay una tubería, un impermeabilizador si es techo o fachada y un pintor para el acabado final." },
+    ],
+    "manchas-de-desodorante-en-la-ropa": [
+      { pregunta: "¿Por qué se amarillean las camisas en las axilas?", respuesta: "Por la mezcla de sudor y residuos de algunos desodorantes con la tela. Lavar pronto ayuda a evitar que se fije." },
+      { pregunta: "¿Puedo secar la prenda si la mancha no salió?", respuesta: "Mejor no. El calor puede fijar la mancha; repite el tratamiento y deja secar al aire." },
+    ],
+    "manchas-de-grasa-y-aceite-en-la-ropa": [
+      { pregunta: "¿El jabón lavaplatos sirve para quitar aceite de la ropa?", respuesta: "Sí, por ser desengrasante ayuda a disolver la grasa. Pruébalo primero en una zona escondida de la prenda." },
+      { pregunta: "¿Qué hago si la mancha de grasa es vieja?", respuesta: "Repite el tratamiento con talco y jabón. Si persiste, una lavandería puede tratarla con productos específicos." },
+    ],
+    "errores-plantas-de-interior": [
+      { pregunta: "¿Cada cuánto debo regar mis plantas de interior?", respuesta: "No hay una frecuencia única. Mete el dedo en la tierra: si está seca, riega; si está húmeda, espera." },
+      { pregunta: "¿Por qué se ponen amarillas las hojas?", respuesta: "Suele ser exceso de riego, poca luz o mal drenaje. Revisa esas tres cosas primero." },
+    ],
+    "destapar-canerias-sin-quimicos": [
+      { pregunta: "¿El bicarbonato con vinagre destapa cualquier cañería?", respuesta: "No. Sirve en obstrucciones leves de grasa o residuos. Si el agua se devuelve, necesitas un plomero." },
+      { pregunta: "¿Es seguro echar agua hirviendo al desagüe?", respuesta: "No siempre: puede dañar tuberías de plástico. Es mejor agua caliente." },
+    ],
+    "limpieza-del-bano-sarro-y-azulejos": [
+      { pregunta: "¿Puedo usar vinagre en el mármol del baño?", respuesta: "No. El vinagre puede opacar o dañar el mármol y la piedra natural." },
+      { pregunta: "¿Cómo evito que vuelva el moho en las juntas?", respuesta: "Ventila, seca y limpia seguido. Si el moho se repite, puede haber humedad en la pared." },
+    ],
+    "mezclas-de-limpieza-caseras": [
+      { pregunta: "¿Se puede mezclar cloro con vinagre para limpiar mejor?", respuesta: "No. Esa mezcla es peligrosa porque libera gases tóxicos. Usa cada producto por separado." },
+      { pregunta: "¿Qué hago si respiré una mezcla de productos?", respuesta: "Sal a un lugar con aire fresco y busca atención médica si hay tos, ardor o dificultad para respirar." },
+    ],
+    "plagas-en-casa": [
+      { pregunta: "¿Por qué tengo cucarachas aunque mi casa esté limpia?", respuesta: "Pueden entrar por desagües y grietas buscando agua y refugio. Sellar y ventilar ayuda." },
+      { pregunta: "¿Cuándo debo fumigar?", respuesta: "Cuando la plaga crece o hay nidos. Un fumigador puede indicar el tratamiento y los cuidados." },
+    ],
+    "limpieza-de-cocina-horno-y-microondas": [
+      { pregunta: "¿Cómo limpio el microondas sin productos fuertes?", respuesta: "Calienta agua con limón, deja que el vapor ablande la suciedad y limpia con paño suave." },
+      { pregunta: "¿Cómo quito el olor a fritura de la casa?", respuesta: "Ventila, usa la campana extractora y limpia las superficies con grasa." },
+    ],
+    "ropa-blanca-y-de-cama": [
+      { pregunta: "¿Cada cuánto debo lavar las sábanas?", respuesta: "Cada una o dos semanas es una pauta común. Aumenta la frecuencia si hay alergias." },
+      { pregunta: "¿Cómo blanqueo la ropa blanca sin cloro?", respuesta: "Con lavados frecuentes, separando colores y usando blanqueadores suaves tras probar en una zona escondida." },
     ],
   };
   return [...(porGuia[slug] ?? []), GENERALES.contacto];

@@ -8,6 +8,7 @@ export const TONO_CATEGORIA: Record<CategoriaPadre["icono"], string> = {
   herramienta: "bg-piedra text-tinta",
   huella: "bg-amarillo-suave text-amarillo-oscuro",
   maletin: "bg-verde-claro text-verde-oscuro",
+  carro: "bg-piedra text-tinta",
 };
 
 const TRAZOS: Record<CategoriaPadre["icono"], React.ReactNode> = {
@@ -40,6 +41,13 @@ const TRAZOS: Record<CategoriaPadre["icono"], React.ReactNode> = {
       <circle cx="15" cy="6.5" r="1.8" />
       <circle cx="19" cy="11" r="1.8" />
       <path d="M12 12c-3 0-5.5 3-5.5 5.2 0 1.6 1.4 2.3 2.9 2.3 1 0 1.6-.4 2.6-.4s1.6.4 2.6.4c1.5 0 2.9-.7 2.9-2.3C17.5 15 15 12 12 12z" />
+    </>
+  ),
+  carro: (
+    <>
+      <path d="M5 16V11l2-5h10l2 5v5" />
+      <path d="M3 16h18v3H3z" />
+      <path d="M7 11h10" />
     </>
   ),
   maletin: (

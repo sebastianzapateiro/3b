@@ -8,7 +8,7 @@ const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-wh
 const etiqueta = "text-[13px] font-semibold text-gris";
 
 const sinTildes = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-const OFICIOS = TODAS_LAS_SUBCATEGORIAS.map(({ sub }) => ({ nombre: sub.nombre, clave: sinTildes(sub.nombre) }));
+const OFICIOS = TODAS_LAS_SUBCATEGORIAS.map(({ sub }) => ({ nombre: sub.nombre, clave: sinTildes(sub.nombre), palabras: sinTildes(sub.claves).split(/[\s,]+/).filter(Boolean) }));
 const MAX_SUGERENCIAS = 6;
 
 /** Sugerencias de oficios desde la 2.ª letra: primero los que empiezan por lo escrito, luego los que tienen una palabra que empieza así. */
@@ -16,7 +16,7 @@ function sugerir(texto: string) {
   const t = sinTildes(texto);
   if (t.length < 2) return [];
   const empieza = OFICIOS.filter((o) => o.clave.startsWith(t));
-  const palabra = OFICIOS.filter((o) => !o.clave.startsWith(t) && o.clave.split(/\s+/).some((w) => w.startsWith(t)));
+  const palabra = OFICIOS.filter((o) => !o.clave.startsWith(t) && (o.clave.split(/\s+/).some((w) => w.startsWith(t)) || o.palabras.some((w) => w.startsWith(t))));
   return [...empieza, ...palabra].slice(0, MAX_SUGERENCIAS).map((o) => o.nombre);
 }
 
