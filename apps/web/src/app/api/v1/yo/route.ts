@@ -20,5 +20,7 @@ export async function GET() {
     backoffice: roles.some((r) => ["verificador", "moderador", "admin"].includes(r)),
     // Si sus roles exigen segundo factor (admin siempre; verificador y moderador según el backoffice).
     exige2fa: await rolesExigen2fa(roles),
+    // Ya tiene 2FA (p. ej. entró sin código por «confiar en este equipo»): no hay que configurarlo otra vez.
+    tiene2fa: Boolean((session.user as { twoFactorEnabled?: boolean | null }).twoFactorEnabled),
   });
 }
