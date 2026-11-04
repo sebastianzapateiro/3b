@@ -17,6 +17,16 @@ Copia de lo que vive en el servidor (sin secretos). Si cambias algo allá, tráe
 Solo en el servidor (permiso 600, nunca en git): `/opt/lastresb/.env` (claves de Postgres), `web.env` (variables de la app,
 `DATABASE_URL` → `postgres:5432`) y `build.env` (igual, con `127.0.0.1:5432` para el build).
 
+### Agregar o cambiar una variable
+
+1. `ssh lastresb-root` y edita `/opt/lastresb/web.env` **y** `/opt/lastresb/build.env` (`nano`, guardar con `Ctrl+O`).
+2. Las `NEXT_PUBLIC_*` quedan fijas al compilar: hay que **reconstruir la imagen** (merge a `main` o despliegue a mano,
+   ver abajo). Las demás basta con `cd /opt/lastresb && docker compose up -d web`.
+3. En el repo: nombre en `.env.example` (sin valor) y en `globalEnv` de `turbo.json`.
+
+Ejemplo: `NEXT_PUBLIC_WHATSAPP_AYUDA=57XXXXXXXXXX` (WhatsApp del equipo para el botón de ayuda en `/ingreso`;
+sin ella el botón no aparece).
+
 ## Acceso
 
 ```bash
@@ -77,6 +87,7 @@ Antes de cambiar la imagen, verifica que tenga el dominio correcto:
 ## Pendiente
 
 - Respaldos fuera del VPS (hoy solo locales) y snapshots de Hostinger.
+- `NEXT_PUBLIC_WHATSAPP_AYUDA` en `web.env` y `build.env` (botón de ayuda del ingreso).
 - `RESEND_API_KEY`, `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION` si producción los usaba en Vercel.
 - Quitar el dominio del proyecto en Vercel; dejar de usar la base de Supabase (conservarla un tiempo como respaldo).
 - Usuario `desarrollo`: decidir sudo/grupo docker y cerrar la entrada de root.
