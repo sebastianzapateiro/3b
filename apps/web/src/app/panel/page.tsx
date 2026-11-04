@@ -18,7 +18,6 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
   const borrador = p.estado === "borrador";
   const [r, alta] = await Promise.all([resumenPanel(p.id), pendientesAlta(p.id)]);
   const visible = p.estado === "aprobado" || p.estado === "en_revision";
-  const fotosListas = alta.tareas.find((t) => t.clave === "documentos")?.ok ?? false;
 
   return (
     <div className="flex flex-col gap-5">
@@ -30,16 +29,6 @@ export default async function Resumen({ searchParams }: { searchParams: Promise<
       )}
       {p.estado === "pendiente" && (
         <div className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">Tu perfil está en revisión. Te avisamos cuando quede publicado.</div>
-      )}
-      {!borrador && p.estado !== "rechazado" && !fotosListas && (
-        <div role="status" className="flex flex-col gap-2 rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">
-          <p>
-            {visible
-              ? <><b>Ya tenemos tus datos y ya eres visible para nuestros clientes</b>, pero no te podrán contactar hasta que tengamos la foto de tu documento y tu selfie.</>
-              : <><b>Ya tenemos tus datos.</b> Cuando el equipo apruebe tu perfil, los clientes no podrán contactarte hasta que subas la foto de tu documento y tu selfie.</>}
-          </p>
-          <Link href="/panel/verificacion#documentos" className="flex h-11 items-center justify-center self-start rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Subir mis fotos</Link>
-        </div>
       )}
       {p.rutFechaLimite && p.segmento === "independiente_sin_rut" && (
         <div className="rounded-[18px] bg-amarillo-suave p-4 text-[15px] leading-normal text-amarillo-oscuro">Tienes hasta el <b>{p.rutFechaLimite}</b> para cargar tu RUT. Si no, el perfil se pausa. <Link href="/panel/verificacion" className="font-semibold underline">Ir a verificación</Link></div>
@@ -97,7 +86,7 @@ function Avance({ alta, bienvenida }: { alta: AltaProveedor; bienvenida: boolean
         </span>
       </div>
       {alta.listo ? (
-        <Link href="/panel/confirmar" className="flex h-12 items-center justify-center rounded-campo bg-tinta px-6 text-base font-semibold text-white sm:self-start">Revisar y enviar a revisión</Link>
+        <Link href="/panel/confirmar" className="flex h-12 items-center justify-center rounded-campo bg-tinta px-6 text-base font-semibold text-white sm:self-start">Revisar y publicar</Link>
       ) : (
         s && (
           <div className="flex items-center justify-between gap-3 rounded-[14px] bg-amarillo-suave px-4 py-3">
@@ -142,7 +131,7 @@ function Pasos({ alta }: { alta: AltaProveedor }) {
           <Link href={alta.listo ? "/panel/confirmar" : "#"} aria-disabled={!alta.listo} className={`flex items-center gap-3.5 rounded-[14px] px-3 py-3.5 ${alta.listo ? "bg-amarillo-suave/60 hover:bg-crema" : "pointer-events-none opacity-50"}`}>
             <span aria-hidden="true" className={`flex size-9 flex-none items-center justify-center rounded-full text-sm font-bold ${alta.listo ? "bg-tinta text-white" : "border-2 border-borde-campo text-gris"}`}>{alta.tareas.length + 1}</span>
             <span className="flex min-w-0 flex-1 flex-col">
-              <span className="text-[15px] font-semibold">Enviar a revisión</span>
+              <span className="text-[15px] font-semibold">Publicar</span>
               <span className="text-sm text-gris">{alta.listo ? "Aceptas los términos y el equipo revisa tu perfil." : "Se habilita cuando completes los pasos obligatorios."}</span>
             </span>
           </Link>

@@ -71,7 +71,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
   const iniciales = p.nombre.split(" ").map((x) => x[0]).join("").toUpperCase().slice(0, 2);
   const url = absoluta(`/${p.slug}`);
   // El clic se registra en `contactos` antes de abrir WhatsApp: es lo que habilita la reseña (regla 4).
-  const enlaceWA = p.esEjemplo || !p.whatsapp || !p.contactable ? null : `/api/v1/contactos/ir?p=${p.slug}&origen=perfil`;
+  const enlaceWA = p.esEjemplo || !p.whatsapp ? null : `/api/v1/contactos/ir?p=${p.slug}&origen=perfil`;
   const subtitulo = [p.categorias.join(" y "), p.localidades.join(", ")].filter(Boolean).join(" · ");
   const tiene = (clave: string) => p.insignias.some((i) => i.clave === clave);
   const desde = p.desde.toLocaleDateString("es-CO", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -108,9 +108,14 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
 
           {/* Cabecera del perfil */}
           <section className="-mx-5 flex flex-col gap-3.5 bg-[linear-gradient(#0F6B5C_0_48px,transparent_48px)] px-5 lg:mx-0 lg:flex-row lg:flex-wrap lg:items-center lg:gap-[22px] lg:rounded-[26px] lg:border lg:border-borde-suave lg:bg-white lg:bg-none lg:p-7">
-            <span aria-hidden="true" className="flex size-24 flex-none items-center justify-center rounded-[26px] border-4 border-crema bg-[#D7E8E2] font-display text-[34px] font-extrabold text-verde-oscuro lg:size-28 lg:rounded-[30px] lg:border-0 lg:text-[40px]">
+            {p.fotoPerfil ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={p.fotoPerfil} alt={`Foto de ${p.nombre}`} className="size-24 flex-none rounded-[26px] border-4 border-crema object-cover lg:size-28" />
+            ) : (
+              <span aria-hidden="true" className="flex size-24 flex-none items-center justify-center rounded-[26px] border-4 border-crema bg-[#D7E8E2] font-display text-[34px] font-extrabold text-verde-oscuro lg:size-28 lg:rounded-[30px] lg:border-0 lg:text-[40px]">
               {iniciales}
             </span>
+            )}
             <div className="flex min-w-0 flex-col gap-2 lg:flex-[1_1_300px]">
               <h1 className="text-balance font-display text-[30px] font-extrabold leading-[1.1] tracking-[-0.8px] lg:text-[38px] lg:leading-[1.05] lg:tracking-[-1px]">{p.nombre}</h1>
               {subtitulo && <span className="text-[15px] text-tinta-2 lg:text-base">{subtitulo}</span>}

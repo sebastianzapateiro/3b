@@ -8,7 +8,7 @@ import { and, count, eq, inArray, isNotNull, asc } from "drizzle-orm";
 import { z } from "zod";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { normalizarWhatsapp, slugSchema, sugerirSlug, SLUGS_RESERVADOS } from "@las3b/shared";
-import { estadoDocumentos, FOTOS_DE_IDENTIDAD } from "@/lib/documentos";
+import { estadoDocumentos } from "@/lib/documentos";
 import { FOTOS_MINIMAS, guardarCompletitud } from "@/lib/completitud";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, serviciosProveedor, categorias, portafolioFotos } = schema;
@@ -65,6 +65,7 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
         documento: proveedores.documentoCifrado,
         direccion: proveedores.direccionNotificaciones,
         nacimiento: proveedores.fechaNacimiento,
+        fotoPerfil: proveedores.fotoPerfil,
       })
       .from(proveedores)
       .where(eq(proveedores.id, proveedorId))
@@ -75,13 +76,13 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     estadoDocumentos(proveedorId),
     db.select({ n: count() }).from(portafolioFotos).where(and(eq(portafolioFotos.proveedorId, proveedorId), eq(portafolioFotos.estado, "visible"))),
   ]);
-  const fotosIdentidad = docs.lista.filter((r) => (FOTOS_DE_IDENTIDAD as readonly string[]).includes(r.tipo)).every((r) => r.cargado);
   const tareas: TareaAlta[] = [
     { clave: "negocio", titulo: "Tus datos y oficios", texto: "Nombre, WhatsApp, tus oficios y la dirección de tu página.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim() && p.segmento && (cats?.n ?? 0) > 0), iniciada: Boolean(p?.whatsapp.trim() || p?.segmento || (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
     { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
     { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
-    { clave: "documentos", titulo: "Tu documento y tu foto", texto: "Foto de tu documento y una selfie (datos sensibles y privados). Puedes hacerlo después, pero sin ellas los clientes no podrán contactarte.", ok: fotosIdentidad, iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
+    { clave: "documentos", titulo: "Tu documento", texto: "Opcional: la foto de tu documento ayuda a verificar tu perfil. Es privada, solo la ve el equipo.", ok: docs.lista.some((r) => r.tipo === "documento_frente" && r.cargado), iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
+    { clave: "foto", titulo: "Tu foto de perfil", texto: "Opcional, pero los clientes confían más en perfiles con foto. Se muestra en tu perfil.", ok: Boolean(p?.fotoPerfil), href: "/panel/perfil#foto", seccion: "perfil", opcional: true },
     { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, iniciada: (fotos?.n ?? 0) > 0, href: "/panel/fotos", seccion: "fotos", opcional: true },
     { clave: "sobre", titulo: "Sobre mí", texto: "Cuéntales a los clientes cómo trabajas. Ayuda a que te escriban.", ok: Boolean(p?.presentacion?.trim()), href: "/panel/perfil#sobre", seccion: "perfil", opcional: true },
   ];
@@ -104,7 +105,7 @@ export type AltaProveedor = Awaited<ReturnType<typeof pendientesAlta>>;
 export async function rutaSiguientePaso(proveedorId: string, aviso: string): Promise<string> {
   const alta = await pendientesAlta(proveedorId);
   const falta = alta.tareas.find((t) => !t.ok && !t.opcional);
-  if (!falta) return `/panel?${new URLSearchParams({ ok: `${aviso} Ya tienes todo: revisa y envía tu perfil.` })}`;
+  if (!falta) return `/panel?${new URLSearchParams({ ok: `${aviso} Ya tienes todo: revisa y publica tu perfil.` })}`;
   const [ruta, ancla] = falta.href.split("#");
   return `${ruta}?${new URLSearchParams({ ok: `${aviso} Sigue con: ${falta.titulo.toLowerCase()}.` })}${ancla ? `#${ancla}` : ""}`;
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "proveedores" ADD COLUMN "foto_perfil" text;

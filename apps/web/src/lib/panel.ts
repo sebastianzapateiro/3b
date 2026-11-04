@@ -38,6 +38,7 @@ export async function exigirProveedor() {
       disponible24h: proveedores.disponible24h,
       visitaAConvenir: proveedores.visitaAConvenir,
       motivoRechazo: proveedores.motivoRechazo,
+      fotoPerfil: proveedores.fotoPerfil,
       rutFechaLimite: proveedores.rutFechaLimite,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,

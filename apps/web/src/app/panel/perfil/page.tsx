@@ -3,8 +3,11 @@ import { Aviso } from "@/components/cuenta";
 import { negocioEditable, whatsappParaCampo } from "@/lib/alta-proveedor";
 import { FormularioGuiado } from "@/components/panel/FormularioGuiado";
 import { exigirProveedor, perfilEditable } from "@/lib/panel";
+import { CargaFotoPerfil } from "@/components/CargaFotoPerfil";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
-import { ajustarComoTrabaja, guardarNegocioPanel, guardarPerfil } from "../actions";
+import { urlPublica } from "@/lib/almacenamiento";
+import { parametro } from "@/lib/parametros";
+import { ajustarComoTrabaja, guardarNegocioPanel, guardarPerfil, quitarFotoPerfilAccion } from "../actions";
 
 /** P8 · Perfil del proveedor (CU-34) y, en borrador, datos del negocio del alta (CU-30). Mockup: docs/mockups/Panel_proveedor.md. */
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-4 text-base";
@@ -17,6 +20,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
   const [e, n] = await Promise.all([perfilEditable(p.id), borrador ? negocioEditable(p.id) : null]);
 
   const op = opcionesComoTrabaja(e.slugsOficios);
+  const maxMbFoto = await parametro("foto_max_mb");
   return (
     <div className="flex flex-col gap-5">
       {sp.ok && <Aviso tono="exito">{sp.ok}</Aviso>}
@@ -30,6 +34,14 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
           </form>
         </div>
       )}
+
+      <section id="foto" className={`${tarjeta} scroll-mt-24`}>
+        <div className="flex flex-col gap-1">
+          <h2 className="font-display text-2xl font-bold">Tu foto <span className="text-base font-normal text-gris">(opcional)</span></h2>
+          <p className="text-sm leading-normal text-tinta-2">Los clientes confían más en los perfiles con foto. Es opcional: si no la subes, tu perfil se publica igual.</p>
+        </div>
+        <CargaFotoPerfil actual={p.fotoPerfil ? urlPublica(p.fotoPerfil) : null} iniciales={p.nombre.split(" ").map((x) => x[0]).join("").toUpperCase().slice(0, 2)} maxMb={maxMbFoto} quitar={quitarFotoPerfilAccion} />
+      </section>
 
       {n && (
         <FormularioGuiado id="negocio" action={guardarNegocioPanel} className={tarjeta}>

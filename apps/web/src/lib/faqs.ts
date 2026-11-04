@@ -135,7 +135,7 @@ export const FAQ_TERMINOS: Pregunta[] = [
 ];
 
 export const FAQ_PRIVACIDAD: Pregunta[] = [
-  { pregunta: "¿Qué datos míos son públicos?", respuesta: "Solo lo que aparece en el portafolio del proveedor. Documento, la foto del documento y la selfie, dirección de notificaciones, RUT y fecha de nacimiento nunca se muestran." },
+  { pregunta: "¿Qué datos míos son públicos?", respuesta: "Solo lo que aparece en el portafolio del proveedor, incluida tu foto de perfil si decides subirla. Documento, la foto del documento, dirección de notificaciones, RUT y fecha de nacimiento nunca se muestran." },
   { pregunta: "¿Cómo ejerzo mis derechos sobre mis datos?", respuesta: "Puedes consultar, rectificar o pedir la supresión de tus datos conforme a la Ley 1581 de 2012, desde los canales indicados en esta política." },
   { pregunta: "¿Qué se guarda al aceptar los términos?", respuesta: "La versión de la política aceptada, la fecha y la dirección IP, como constancia de tu consentimiento." },
 ];

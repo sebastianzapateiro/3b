@@ -95,7 +95,7 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
           ))}
         </div>
         <p className="rounded-[14px] bg-piedra p-4 text-sm leading-normal text-tinta-2">
-          Tus documentos son privados: solo los ve el equipo de verificación y cada apertura queda registrada. La foto de tu documento y tu selfie son datos sensibles: las tratamos solo con tu autorización y para verificar tu identidad, y nunca se publican. Si cambias un archivo, el nuevo reemplaza al anterior.
+          Tus documentos son privados: solo los ve el equipo de verificación y cada apertura queda registrada. Subirlos es opcional: la foto de tu documento solo sirve para verificar tu identidad y nunca se publica. Si cambias un archivo, el nuevo reemplaza al anterior.
         </p>
       </section>
       {!borrador && (

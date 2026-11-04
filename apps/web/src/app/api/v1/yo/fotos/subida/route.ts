@@ -9,13 +9,13 @@ import { prepararFoto } from "@/lib/fotos";
 
 export const dynamic = "force-dynamic";
 
-const cuerpo = z.object({ mime: z.string().max(60), bytes: z.number().int() });
+const cuerpo = z.object({ mime: z.string().max(60), bytes: z.number().int(), perfil: z.boolean().optional() });
 
 export async function POST(req: Request) {
   const p = await proveedorQueCarga();
   if (!p) return NextResponse.json({ error: "Sin perfil de proveedor" }, { status: 401 });
   const datos = cuerpo.safeParse(await req.json().catch(() => null));
   if (!datos.success) return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
-  const r = await prepararFoto(p.id, datos.data);
+  const r = await prepararFoto(p.id, datos.data, datos.data.perfil === true);
   return "error" in r ? NextResponse.json(r, { status: 422 }) : NextResponse.json(r);
 }

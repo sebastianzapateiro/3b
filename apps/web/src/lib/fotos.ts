@@ -40,13 +40,13 @@ async function totalFotos(proveedorId: string) {
 }
 
 /** Paso 1: valida lo declarado y entrega la URL firmada. El camino lo elige el servidor. */
-export async function prepararFoto(proveedorId: string, a: { mime: string; bytes: number }): Promise<{ camino: string; url: string } | Error> {
+export async function prepararFoto(proveedorId: string, a: { mime: string; bytes: number }, perfil = false): Promise<{ camino: string; url: string } | Error> {
   const ext = MIME_FOTO[a.mime as MimeFoto];
   if (!ext) return { error: "Formato no permitido. Usa fotos JPG o PNG." };
   const max = await bytesMax();
   if (!(a.bytes > 0) || a.bytes > max) return { error: `La foto debe pesar menos de ${max / 1024 / 1024} MB.` };
   const tope = await parametro("fotos_max");
-  if ((await totalFotos(proveedorId)) >= tope) return { error: `Ya tienes ${tope} fotos, el máximo. Quita alguna para subir otra.` };
+  if (!perfil && (await totalFotos(proveedorId)) >= tope) return { error: `Ya tienes ${tope} fotos, el máximo. Quita alguna para subir otra.` };
   const camino = `fotos-temporales/${proveedorId}/${randomUUID()}.${ext}`;
   return { camino, url: await firmarSubida("privado", camino) };
 }
@@ -101,5 +101,44 @@ export async function quitarFoto(proveedorId: string, fotoId: string) {
   await db.delete(portafolioFotos).where(and(eq(portafolioFotos.id, fotoId), eq(portafolioFotos.proveedorId, proveedorId)));
   await borrarObjetos("publico", [f.ruta, ...(f.miniatura ? [f.miniatura] : [])]);
   await guardarCompletitud(proveedorId);
+  return true;
+}
+
+/**
+ * Foto de perfil (opcional y pública): misma subida en dos pasos, pero el resultado es un solo WebP cuadrado de 600 px
+ * que se guarda en `proveedores.foto_perfil`. Exige la autorización para mostrarla (que no viene premarcada).
+ */
+export async function confirmarFotoPerfil(proveedorId: string, a: { camino: string; autoriza: boolean }) {
+  if (!a.autoriza) return { error: "Confirma que eres tú en la foto y que autorizas mostrarla a los clientes." } satisfies Error;
+  const m = a.camino.match(new RegExp(`^fotos-temporales/${proveedorId}/([0-9a-f-]{36})\\.(jpg|png)$`));
+  if (!m) return { error: "La subida no corresponde a tu perfil." } satisfies Error;
+  try {
+    const info = await infoObjeto("privado", a.camino);
+    if (!info) return { error: "No recibimos la foto. Intenta subirla de nuevo." } satisfies Error;
+    const real = tipoReal(await leerInicio("privado", a.camino));
+    if (!real || !(real in MIME_FOTO) || MIME_FOTO[real as MimeFoto] !== m[2] || info.bytes > (await bytesMax())) {
+      return { error: "El archivo no es una foto JPG o PNG válida. Toma la foto de nuevo." } satisfies Error;
+    }
+    const chica = await sharp(await descargar("privado", a.camino)).rotate().resize({ width: 600, height: 600, fit: "cover" }).webp({ quality: 80 }).toBuffer();
+    const ruta = `proveedores/${proveedorId}/perfil-${m[1]}.webp`;
+    await subirObjeto("publico", ruta, chica, "image/webp");
+    const [antes] = await db.select({ ruta: schema.proveedores.fotoPerfil }).from(schema.proveedores).where(eq(schema.proveedores.id, proveedorId)).limit(1);
+    await db.update(schema.proveedores).set({ fotoPerfil: ruta, updatedAt: new Date() }).where(eq(schema.proveedores.id, proveedorId));
+    if (antes?.ruta) await borrarObjetos("publico", [antes.ruta]);
+    return { ok: true as const };
+  } catch (e) {
+    console.error("[fotos] No se pudo procesar la foto de perfil:", e instanceof Error ? e.message : e);
+    return { error: "No pudimos procesar la foto. Intenta con otra." } satisfies Error;
+  } finally {
+    await borrarObjetos("privado", [a.camino]);
+  }
+}
+
+/** Quita la foto de perfil (la borra del bucket público). */
+export async function quitarFotoPerfil(proveedorId: string) {
+  const [p] = await db.select({ ruta: schema.proveedores.fotoPerfil }).from(schema.proveedores).where(eq(schema.proveedores.id, proveedorId)).limit(1);
+  if (!p?.ruta) return false;
+  await db.update(schema.proveedores).set({ fotoPerfil: null, updatedAt: new Date() }).where(eq(schema.proveedores.id, proveedorId));
+  await borrarObjetos("publico", [p.ruta]);
   return true;
 }

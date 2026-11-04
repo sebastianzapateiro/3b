@@ -5,7 +5,6 @@
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { urlPublica } from "@/lib/almacenamiento";
-import { tieneFotosDeIdentidad } from "@/lib/documentos";
 import type { NivelPerfil } from "@/lib/demo";
 import { nivelDePerfil } from "@/lib/nivel";
 
@@ -77,8 +76,8 @@ export type PortafolioCompleto = {
   distribucion: number[];
   /** Enlaces internos a las páginas de servicio + localidad (SEO). */
   enlaces: { texto: string; ruta: string }[];
-  /** Subió la foto de su documento y su selfie: solo entonces los clientes pueden contactarlo. */
-  contactable: boolean;
+  /** Foto de perfil (opcional): URL pública. */
+  fotoPerfil: string | null;
   /** Perfil de muestra (no es un proveedor real). */
   esEjemplo?: boolean;
 };
@@ -102,6 +101,7 @@ export async function obtenerPortafolioCompleto(
       estado: proveedores.estado,
       nombre: proveedores.nombrePublico,
       presentacion: proveedores.presentacion,
+      fotoPerfil: proveedores.fotoPerfil,
       whatsapp: proveedores.whatsapp,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
@@ -239,7 +239,7 @@ export async function obtenerPortafolioCompleto(
       nombre: p.nombre,
       presentacion: p.presentacion,
       whatsapp: p.whatsapp,
-      contactable: await tieneFotosDeIdentidad(p.id),
+      fotoPerfil: p.fotoPerfil ? urlPublica(p.fotoPerfil) : null,
       categoriaPrincipal,
       localidadPrincipal,
       servicios: servicios.map((s) => ({

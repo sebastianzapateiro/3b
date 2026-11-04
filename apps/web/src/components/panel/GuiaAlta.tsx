@@ -16,8 +16,8 @@ export function GuiaAlta({ siguiente, total, listo }: { siguiente: Paso | null; 
   if (listo) {
     return (
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-verde-claro px-4 py-3 text-[15px] text-verde-oscuro">
-        <span><b>Ya tienes todo lo obligatorio.</b> Revisa tus datos y envía tu perfil al equipo.</span>
-        <Link href="/panel/confirmar" className="inline-flex h-10 items-center rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Revisar y enviar</Link>
+        <span><b>Ya tienes todo lo obligatorio.</b> Revisa tus datos y publícalo.</span>
+        <Link href="/panel/confirmar" className="inline-flex h-10 items-center rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Revisar y publicar</Link>
       </div>
     );
   }

@@ -34,6 +34,8 @@ export const proveedores = pgTable("proveedores", {
   atiendeUrgencias: boolean().notNull().default(false),
   /** «Atiendo 24 horas, incluidos fines de semana y festivos». Lo declara el proveedor. */
   disponible24h: boolean("disponible_24h").notNull().default(false),
+  /** Foto de perfil opcional y pública (bucket `publico`): da confianza al cliente. */
+  fotoPerfil: text("foto_perfil"),
   /** «Acuerdo el valor de la visita con el cliente (por ejemplo, si estoy cerca)». Lo declara el proveedor; no se inventa precio. */
   visitaAConvenir: boolean("visita_a_convenir").notNull().default(false),
   formasPago: text().array(),

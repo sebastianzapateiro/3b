@@ -17,13 +17,12 @@ import { parametro } from "@/lib/parametros";
 
 const { documentos, proveedores, proveedorCategorias, categorias } = schema;
 
-export const TIPOS_DOCUMENTO = ["documento_frente", "documento_reverso", "selfie", "rut", "camara_comercio", "matricula", "autorizacion_ley_1918"] as const;
+export const TIPOS_DOCUMENTO = ["documento_frente", "documento_reverso", "rut", "camara_comercio", "matricula", "autorizacion_ley_1918"] as const;
 export type TipoDocumento = (typeof TIPOS_DOCUMENTO)[number];
 
 export const NOMBRE_DOCUMENTO: Record<TipoDocumento, string> = {
   documento_frente: "Foto de tu documento",
   documento_reverso: "Documento · reverso",
-  selfie: "Tu foto (selfie)",
   rut: "RUT",
   camara_comercio: "Cámara de comercio",
   matricula: "Matrícula, tarjeta profesional o certificación del oficio",
@@ -51,11 +50,10 @@ export type Requisito = {
 export function documentosExigidos(segmento: string | null, cats: { rut: boolean; matricula: boolean; menores: boolean }[]): Requisito[] {
   const r = (tipo: TipoDocumento, exigido: boolean, antesDeEnviar: boolean, ayuda?: string): Requisito => ({ tipo, nombre: NOMBRE_DOCUMENTO[tipo], exigido, antesDeEnviar, ayuda });
   const rutDesdeAlta = segmento === "empresa" || segmento === "independiente_con_rut" || cats.some((c) => c.rut);
-  // Ninguno frena la inscripción (antesDeEnviar = false): se pueden subir después. Sin la foto del documento y la selfie
-  // el perfil no recibe contactos (ver `FOTOS_DE_IDENTIDAD`); el resto lo revisa el equipo antes de aprobar.
+  // Ninguno frena la inscripción (antesDeEnviar = false): todos son opcionales y se pueden subir después.
+  // Lo que se cargue lo revisa el equipo antes de aprobar.
   const lista = [
-    r("documento_frente", true, false, "Cédula u otro documento, por el lado de la foto. Dato sensible: privado, solo lo ve el equipo."),
-    r("selfie", true, false, "Una foto tuya, de frente y con buena luz. Dato sensible: privado, solo lo ve el equipo."),
+    r("documento_frente", true, false, "Opcional. Cédula u otro documento, por el lado de la foto. Es privada: solo la ve el equipo de verificación."),
     r("documento_reverso", false, false, "Opcional: el otro lado de tu documento."),
     rutDesdeAlta
       ? r("rut", true, false, cats.some((c) => c.rut) ? "Tu categoría lo exige." : undefined)
@@ -65,15 +63,6 @@ export function documentosExigidos(segmento: string | null, cats: { rut: boolean
   if (cats.some((c) => c.matricula)) lista.push(r("matricula", true, false, "Certificado vigente de tu oficio."));
   if (cats.some((c) => c.menores)) lista.push(r("autorizacion_ley_1918", true, false, "Solo si prefieres firmar el formato en papel y subirlo escaneado."));
   return lista;
-}
-
-/** Las dos fotos que habilitan que los clientes puedan contactar al proveedor. */
-export const FOTOS_DE_IDENTIDAD = ["documento_frente", "selfie"] as const;
-
-/** ¿Ya subió la foto de su documento y su selfie? */
-export async function tieneFotosDeIdentidad(proveedorId: string): Promise<boolean> {
-  const filas = await db.select({ tipo: documentos.tipo }).from(documentos).where(and(eq(documentos.proveedorId, proveedorId), inArray(documentos.tipo, [...FOTOS_DE_IDENTIDAD])));
-  return new Set(filas.map((f) => f.tipo)).size === FOTOS_DE_IDENTIDAD.length;
 }
 
 /** Proveedor de la sesión que puede cargar documentos (cualquier estado salvo suspendido), o null. */

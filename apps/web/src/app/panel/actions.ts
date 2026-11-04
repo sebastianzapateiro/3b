@@ -12,7 +12,7 @@ import { avisarRegistroRecibido } from "@/lib/avisos-proveedor";
 import { guardarIdentidad, guardarNegocio, pendientesAlta, rutaSiguientePaso } from "@/lib/alta-proveedor";
 import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
-import { quitarFoto } from "@/lib/fotos";
+import { quitarFoto, quitarFotoPerfil } from "@/lib/fotos";
 import { opcionesComoTrabaja } from "@las3b/shared";
 import { oficioDelServicio, oficiosDelProveedor } from "@/lib/precios";
 import { marcarServicioPrestado } from "@/lib/servicios-prestados";
@@ -230,4 +230,13 @@ export async function enviarARevision(formData: FormData) {
   revalidatePath("/panel", "layout");
   revalidatePath("/admin", "layout");
   return volver("/panel", { ok: "Listo: enviaste tu perfil a revisión. Te avisamos cuando quede publicado." });
+}
+
+/** Quita la foto de perfil (opcional). */
+export async function quitarFotoPerfilAccion() {
+  const { proveedor } = await exigirProveedorEditable();
+  await quitarFotoPerfil(proveedor.id);
+  revalidatePath("/panel", "layout");
+  revalidatePath(`/${proveedor.slug}`);
+  return volver("/panel/perfil", { ok: "Quitamos tu foto de perfil." });
 }

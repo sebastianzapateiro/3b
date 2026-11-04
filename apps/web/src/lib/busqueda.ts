@@ -3,6 +3,7 @@
  * Solo proveedores `aprobado` o `en_revision` (regla 6 de CLAUDE.md).
  * Nunca devuelve datos privados (regla 1): sin documento, dirección, RUT ni fecha de nacimiento.
  */
+import { urlPublica } from "@/lib/almacenamiento";
 import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { distanciaALocalidades, type Punto } from "@/lib/ubicacion";
@@ -89,8 +90,8 @@ export type ResultadoBusqueda = {
   /** Menor «precio desde» de un servicio con unidad visita; null si no publicó. */
   precioVisita: number | null;
   visitaAConvenir: boolean;
-  /** Ya subió la foto de su documento y su selfie: solo entonces se le puede contactar. */
-  contactable: boolean;
+  /** Foto de perfil (opcional): URL pública. */
+  fotoPerfil: string | null;
 };
 
 export type PaginaResultados = {
@@ -286,7 +287,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
     convenir: proveedores.visitaAConvenir,
     urgencias: proveedores.atiendeUrgencias,
     h24: proveedores.disponible24h,
-    contactable: sql<boolean>`(SELECT count(DISTINCT d.tipo) = 2 FROM documentos d WHERE d.proveedor_id = ${proveedores.id} AND d.tipo IN ('documento_frente', 'selfie'))`,
+    fotoPerfil: proveedores.fotoPerfil,
   };
   let filas;
   if (f.punto) {
@@ -357,7 +358,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       disponible24h: r.h24,
       precioVisita: r.precioVisita != null ? Number(r.precioVisita) : null,
       visitaAConvenir: r.convenir,
-      contactable: Boolean(r.contactable),
+      fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : null,
     })),
     total,
     pagina,

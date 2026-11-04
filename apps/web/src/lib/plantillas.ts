@@ -119,7 +119,7 @@ export function registroRecibido(d: { nombre?: string | null }): Mensaje {
 }
 
 /** Proveedor: el equipo lo aprobó y su página ya está publicada. */
-export function proveedorAprobado(d: { nombre?: string | null; nombrePublico: string; slug: string; sinFotos?: boolean }): Mensaje {
+export function proveedorAprobado(d: { nombre?: string | null; nombrePublico: string; slug: string }): Mensaje {
   return armar({
     asunto: "Tu página en LasTresB ya está publicada",
     nombre: d.nombre,
@@ -127,7 +127,6 @@ export function proveedorAprobado(d: { nombre?: string | null; nombrePublico: st
     cuerpo: [
       `Aprobamos tu registro: ${d.nombrePublico} ya aparece en LasTresB con la insignia «Verificado».`,
       `Tu página: ${sitio}/${d.slug}`,
-      ...(d.sinFotos ? ["Ya tenemos tus datos y ya eres visible para nuestros clientes, pero no te podrán contactar hasta que subas la foto de tu documento y tu selfie."] : []),
       "Para recibir más clientes:",
       { lista: ["Completa tu portafolio: fotos, servicios con «precio desde» y zonas de atención.", "Descarga tu código QR para volantes y tarjetas desde tu panel.", "Comparte tu enlace por WhatsApp y redes."] },
     ],
@@ -155,8 +154,8 @@ export function whatsappInvitacion(d: { nombre: string; url: string; horas: numb
 }
 
 /** Aviso de aprobación para proveedores sin correo (alta asistida). */
-export function whatsappProveedorAprobado(d: { nombre: string; nombrePublico: string; slug: string; sinFotos?: boolean }): string {
-  return `Hola, ${d.nombre}. Aprobamos tu registro: ${d.nombrePublico} ya está publicado en LasTresB. Tu página: ${sitio}/${d.slug}` + (d.sinFotos ? " Solo falta que subas la foto de tu documento y tu selfie desde tu panel: sin ellas los clientes no podrán contactarte." : "");
+export function whatsappProveedorAprobado(d: { nombre: string; nombrePublico: string; slug: string }): string {
+  return `Hola, ${d.nombre}. Aprobamos tu registro: ${d.nombrePublico} ya está publicado en LasTresB. Tu página: ${sitio}/${d.slug}`;
 }
 
 /** Aviso de rechazo para proveedores sin correo (alta asistida). */

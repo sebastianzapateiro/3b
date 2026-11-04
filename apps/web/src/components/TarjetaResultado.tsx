@@ -36,9 +36,14 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
   return (
     <article className="flex flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-[18px] sm:rounded-[22px] sm:p-[18px]">
       <Link href={perfil} className="flex min-w-0 flex-1 gap-3 text-tinta sm:basis-[300px] sm:gap-[18px]">
-        <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold sm:size-20 sm:rounded-[20px] sm:text-[26px] ${AVATARES[indice % AVATARES.length]}`}>
-          {iniciales}
-        </span>
+        {r.fotoPerfil ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={r.fotoPerfil} alt="" className="size-16 flex-none rounded-2xl object-cover sm:size-20 sm:rounded-[20px]" loading="lazy" />
+        ) : (
+          <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold sm:size-20 sm:rounded-[20px] sm:text-[26px] ${AVATARES[indice % AVATARES.length]}`}>
+            {iniciales}
+          </span>
+        )}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <b className="text-base sm:text-lg">{r.nombre}</b>
           {detalle && <span className="text-sm text-gris">{detalle}</span>}
@@ -70,16 +75,12 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
         <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta sm:hidden">
           Ver perfil
         </Link>
-        {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. Sin sus fotos de identidad, aún no se puede contactar. */}
-        {!r.contactable ? (
-          <span aria-disabled="true" className="flex h-[46px] flex-[1.4] items-center justify-center rounded-[14px] bg-piedra px-3 text-center text-[13px] font-semibold leading-tight text-gris">Aún no disponible para contactar</span>
-        ) : (
+        {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
         <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro sm:flex-none">
           <IconoWhatsApp />
           <span className="sm:hidden">WhatsApp</span>
           <span className="hidden sm:inline">Contactar por WA</span>
         </a>
-        )}
       </div>
     </article>
   );

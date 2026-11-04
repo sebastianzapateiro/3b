@@ -3,11 +3,11 @@
 /**
  * P8 · Menú lateral del panel del proveedor, con el mismo lenguaje del backoffice (MenuAdmin).
  * Muestra el avance del perfil y, mientras es borrador, qué secciones tienen pasos pendientes.
- * En móvil se vuelve una barra superior con el menú desplazable.
+ * En móvil es una barra superior con un botón de menú (hamburguesa) que despliega las secciones.
  */
 import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { AnilloAvance } from "./Avance";
 
@@ -51,6 +51,9 @@ export function MenuProveedor(p: PropsMenuProveedor) {
   const ruta = usePathname();
   const router = useRouter();
   const [saliendo, setSaliendo] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+  // Al elegir una sección el menú se cierra.
+  useEffect(() => setAbierto(false), [ruta]);
 
   const grupos: { titulo?: string; items: Item[] }[] = [
     { items: [{ href: "/panel", texto: "Resumen", icono: <Icono><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-3H4zM14 8h6V4h-6z" /></Icono> }] },
@@ -61,7 +64,7 @@ export function MenuProveedor(p: PropsMenuProveedor) {
         { href: "/panel/servicios", texto: "Servicios y precios", marca: p.marcas.servicios, numero: p.pendientes.servicios, icono: <Icono><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z" /></Icono> },
         { href: "/panel/fotos", texto: "Fotos de trabajos", marca: p.marcas.fotos, numero: p.pendientes.fotos, icono: <Icono><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="2" /><path d="m21 16-5-5-9 8" /></Icono> },
         { href: "/panel/verificacion", texto: "Verificación", marca: p.marcas.verificacion, numero: p.pendientes.verificacion, icono: <Icono><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z" /><path d="m9 12 2 2 4-4" /></Icono> },
-        ...(p.borrador ? [{ href: "/panel/confirmar", texto: "Enviar a revisión", marca: p.marcas.confirmar, icono: <Icono><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></Icono> }] : []),
+        ...(p.borrador ? [{ href: "/panel/confirmar", texto: "Publicar", marca: p.marcas.confirmar, icono: <Icono><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" /></Icono> }] : []),
       ],
     },
     ...(!p.borrador
@@ -84,10 +87,19 @@ export function MenuProveedor(p: PropsMenuProveedor) {
           LasTres<span className="text-ladrillo-claro">B</span>
           <span className="text-sm font-semibold text-[#C9D1CF]">Proveedor</span>
         </Link>
-        {/* En móvil el avance va arriba, junto al logo. */}
-        <span className="flex items-center gap-2 lg:hidden">
-          <span className="text-xs text-[#A9B4B1]">{p.avance.texto}</span>
-          <AnilloAvance porcentaje={p.avance.porcentaje} tamano={40} grosor={5} claro />
+        {/* En móvil: avance y botón de menú junto al logo. */}
+        <span className="flex items-center gap-2.5 lg:hidden">
+          <AnilloAvance porcentaje={p.avance.porcentaje} tamano={36} grosor={5} claro />
+          <button
+            type="button"
+            aria-expanded={abierto}
+            aria-controls="menu-proveedor"
+            onClick={() => setAbierto((a) => !a)}
+            className="flex h-11 items-center gap-2 rounded-[10px] bg-white/10 px-3 text-sm font-semibold text-white"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" {...trazo}>{abierto ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}</svg>
+            Menú
+          </button>
         </span>
       </div>
 
@@ -103,16 +115,16 @@ export function MenuProveedor(p: PropsMenuProveedor) {
         <span className={`flex h-[22px] items-center self-start rounded-full px-2 text-xs font-bold ${p.estado.clase}`}>{p.estado.texto}</span>
       </div>
 
-      <nav aria-label="Panel de proveedor" className="-mx-3.5 flex gap-1 overflow-x-auto px-3.5 pb-1 text-[15px] lg:mx-0 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:px-0 lg:pb-0">
+      <nav id="menu-proveedor" aria-label="Panel de proveedor" className={`${abierto ? "flex" : "hidden"} flex-col gap-0.5 text-[15px] lg:flex`}>
         {grupos.map((g, i) => (
-          <div key={i} className="flex gap-1 lg:flex-col lg:gap-0.5">
-            {g.titulo && <span className="hidden px-3 pb-1.5 pt-3.5 text-xs font-bold uppercase tracking-[1px] text-[#8C9A96] lg:block">{g.titulo}</span>}
+          <div key={i} className="flex flex-col gap-0.5">
+            {g.titulo && <span className="px-3 pb-1.5 pt-3 text-xs font-bold uppercase tracking-[1px] text-[#8C9A96]">{g.titulo}</span>}
             {g.items.map((it) => (
               <Link
                 key={it.href}
                 href={it.href}
                 aria-current={activo(it.href) ? "page" : undefined}
-                className={`flex h-11 flex-none items-center gap-2.5 whitespace-nowrap rounded-[10px] px-3 ${activo(it.href) ? "bg-white/12 font-semibold text-white" : "text-[#DDE3E1] hover:bg-white/6"}`}
+                className={`flex h-11 flex-none items-center gap-2.5 rounded-[10px] px-3 ${activo(it.href) ? "bg-white/12 font-semibold text-white" : "text-[#DDE3E1] hover:bg-white/6"}`}
               >
                 {it.icono}
                 {it.texto}
@@ -124,10 +136,9 @@ export function MenuProveedor(p: PropsMenuProveedor) {
             ))}
           </div>
         ))}
-        <Link href="/cuenta" className="flex h-11 flex-none items-center whitespace-nowrap rounded-[10px] px-3 text-[#DDE3E1] lg:hidden">Mi cuenta</Link>
       </nav>
 
-      <div className="mt-auto hidden flex-col gap-1 rounded-xl bg-white/6 px-3 py-3 text-[13px] lg:flex">
+      <div className={`mt-auto ${abierto ? "flex" : "hidden"} flex-col gap-1 rounded-xl bg-white/6 px-3 py-3 text-[13px] lg:flex`}>
         {p.publicado && <Link href={`/${p.slug}`} className="py-1 font-semibold text-crema">Ver mi página pública</Link>}
         <Link href="/cuenta" className="py-1 font-semibold text-crema">Mi cuenta</Link>
         <Link href="/" className="py-1 font-semibold text-crema">Ir a LasTresB</Link>
