@@ -12,6 +12,7 @@ Resúmenes para desarrollo. La fuente de verdad es la carpeta del proyecto en Go
 | [05-marca.md](05-marca.md) | Identidad Las 3B y mockups | Banco de logos + lienzo de mockups |
 | [06-plan.md](06-plan.md) | Backlog ordenado con criterios de aceptación y estado de cada tarea | LasTresB — Estado del sistema y decisiones (v0.2) |
 | [07-diagramas.md](07-diagramas.md) | Diagramas de arquitectura en Mermaid: contexto, monorepo, capas, datos, estados y flujos clave (SVG en `diagramas/`) | Generados desde el código |
+| [09-paso-a-paso-proveedor.md](09-paso-a-paso-proveedor.md) | Recorrido del proveedor: inscripción, panel, datos, documentos y envío a revisión | Generado desde el código |
 | [mockups/](mockups/README.md) | Pantallas de referencia y su ruta en la app | Lienzo "Las 3B — Mockups v0.3" |
 
 Carpeta raíz del Drive: https://drive.google.com/drive/folders/1EU7gtl4B9jtJ7yu1SEiN-hTW-npKefhA
