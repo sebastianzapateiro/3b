@@ -15,6 +15,8 @@ const ROLES = [
   { v: "admin", t: "Admin" },
 ];
 const TONO_ROL: Record<string, "gris" | "verde" | "amarillo" | "rojo"> = { comprador: "gris", proveedor: "verde", verificador: "amarillo", moderador: "rojo", admin: "amarillo" };
+const ROLES_EQUIPO = ["admin", "verificador", "moderador"];
+const ESTADO_PROVEEDOR: Record<string, string> = { borrador: "Borrador", pendiente: "Pendiente", aprobado: "Aprobado", en_revision: "En revisión", rechazado: "Rechazado", pausado: "Pausado", pausado_por_rut: "Pausado por RUT", suspendido: "Suspendido" };
 const fecha = (d: Date | null) => (d ? new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium" }) : "—");
 
 export const metadata = { title: "Usuarios" };
@@ -66,7 +68,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
           <table className="w-full min-w-[600px] border-collapse text-sm">
             <thead>
               <tr className="bg-crema text-left text-gris">
-                <th className="w-28 px-[18px] py-3 font-semibold"><span className="sr-only">Perfil</span></th><th className="p-3 font-semibold">Usuario</th><th className="p-3 font-semibold">Roles</th><th className="p-3 font-semibold">Estado</th><th className="p-3 font-semibold">Último ingreso</th>
+                <th className="px-[18px] py-3 font-semibold">Usuario</th><th className="p-3 font-semibold">Roles</th><th className="p-3 font-semibold">Estado</th><th className="p-3 font-semibold">Último ingreso</th>
               </tr>
             </thead>
             <tbody>
@@ -83,7 +85,18 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                         <b>{u.nombre}</b><span className="text-gris">{u.correo}</span>
                       </Link>
                     </td>
-                    <td className="p-3.5"><span className="flex flex-wrap gap-1">{u.roles.length ? u.roles.map((r) => <Chip key={r} tono={TONO_ROL[r] ?? "gris"}>{ROLES.find((x) => x.v === r)?.t ?? r}</Chip>) : <Chip tono="gris">Sin rol</Chip>}</span></td>
+                    <td className="p-3.5">
+                      <span className="flex flex-wrap gap-1">
+                        {u.perfilProveedor ? (
+                          <Link href={`/admin/proveedores/${u.perfilProveedor.id}`} title="Ver perfil de proveedor"><Chip tono="verde">Proveedor · {ESTADO_PROVEEDOR[u.perfilProveedor.estado] ?? u.perfilProveedor.estado}</Chip></Link>
+                        ) : u.roles.includes("proveedor") ? (
+                          <Chip tono="verde">Proveedor · sin perfil</Chip>
+                        ) : (
+                          <Chip tono="gris">Comprador</Chip>
+                        )}
+                        {u.roles.filter((r) => ROLES_EQUIPO.includes(r)).map((r) => <Chip key={r} tono={TONO_ROL[r] ?? "gris"}>{ROLES.find((x) => x.v === r)?.t ?? r}</Chip>)}
+                      </span>
+                    </td>
                     <td className="p-3.5">{u.eliminadoEn ? <span className="font-semibold text-gris">Eliminada</span> : suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
                     <td className="p-3.5 text-gris">{fecha(u.ultimoIngreso)}</td>
                   </tr>

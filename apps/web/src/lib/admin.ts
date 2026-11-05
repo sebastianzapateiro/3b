@@ -339,13 +339,12 @@ export async function listarUsuarios(q?: string, rolesFiltro: string[] = []) {
     .select({ id: usuarioRoles.usuarioId, rol: usuarioRoles.rol })
     .from(usuarioRoles)
     .where(inArray(usuarioRoles.usuarioId, lista.map((l) => l.id)));
-  const provs = await db.select({ usuarioId: proveedores.usuarioId, id: proveedores.id }).from(proveedores).where(inArray(proveedores.usuarioId, lista.map((l) => l.id)));
-  const mapaProv = new Map(provs.map((p) => [p.usuarioId, p.id]));
   const ultimo = await consultar(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
   const mapaUltimo = new Map(filas<{ id: string; ultimo: Date }>(ultimo).map((u) => [u.id, u.ultimo]));
   return lista.map((l) => ({
     ...l,
     roles: roles.filter((r) => r.id === l.id).map((r) => r.rol as string),
+    perfilProveedor: mapaPerfil.get(l.id) ?? null,
     ultimoIngreso: mapaUltimo.get(l.id) ?? null,
     proveedorId: mapaProv.get(l.id) ?? null,
   }));
