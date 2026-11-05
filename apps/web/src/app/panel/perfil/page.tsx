@@ -1,4 +1,5 @@
 import { opcionesComoTrabaja } from "@las3b/shared";
+import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { Aviso } from "@/components/cuenta";
 import { negocioEditable, whatsappParaCampo } from "@/lib/alta-proveedor";
 import { FormularioGuiado } from "@/components/panel/FormularioGuiado";
@@ -23,6 +24,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
   const [e, n] = await Promise.all([perfilEditable(p.id), borrador ? negocioEditable(p.id) : null]);
 
   const op = opcionesComoTrabaja(e.slugsOficios);
+  const rutaPublica = await rutaPublicaDe(p.id, p.slug);
   const maxMbFoto = await parametro("foto_max_mb");
   return (
     <div className="flex flex-col gap-5">
@@ -136,7 +138,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
       </fieldset>
 
       {!borrador && <div className="rounded-[14px] bg-piedra p-4 text-sm leading-normal text-tinta-2">
-        <b>Categorías:</b> {e.categorias.join(", ") || "—"}. <b>Dirección de tu página:</b> <span className="font-mono">lastresb.com.co/{p.slug}</span>. Para cambiar tus categorías o tu dirección escríbenos desde la página de reclamos: el equipo debe revisarlo.
+        <b>Categorías:</b> {e.categorias.join(", ") || "—"}. <b>Dirección de tu página:</b> <span className="font-mono">lastresb.com.co{rutaPublica}</span>. Para cambiar tus categorías o tu dirección escríbenos desde la página de reclamos: el equipo debe revisarlo.
       </div>}
 
       <button type="submit" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-tinta px-8 text-[17px] font-semibold text-white">Guardar cambios</button>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { GuiaAlta } from "@/components/panel/GuiaAlta";
 import { MenuProveedor, type MarcaSeccion } from "@/components/panel/MenuProveedor";
 import { pendientesAlta, type SeccionPanel } from "@/lib/alta-proveedor";
@@ -25,6 +26,7 @@ const ESTADO: Record<string, { texto: string; clase: string }> = {
  */
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { proveedor: p, verComo } = await exigirProveedor();
+  const rutaPublica = await rutaPublicaDe(p.id, p.slug);
   const [alta, r] = await Promise.all([pendientesAlta(p.id), resumenPanel(p.id)]);
   const estado = ESTADO[p.estado] ?? ESTADO.borrador!;
   const borrador = p.estado === "borrador";
@@ -59,7 +61,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-borde bg-crema px-5 py-5 lg:px-8">
           <div className="flex min-w-0 flex-col gap-0.5">
             <h1 className="truncate font-display text-[26px] font-extrabold tracking-[-0.8px] lg:text-[30px]">{p.nombre}</h1>
-            <span className="truncate font-mono text-sm text-gris">lastresb.com.co/{p.slug}</span>
+            <span className="truncate font-mono text-sm text-gris">lastresb.com.co{rutaPublica}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`flex h-8 items-center rounded-2xl px-3.5 text-sm font-semibold ${estado.clase}`}>{estado.texto}</span>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { redirect } from "next/navigation";
 import { enviarARevision } from "@/app/panel/actions";
 import { AVISO_SERVICIOS_SALUD } from "@las3b/shared";
@@ -23,6 +24,7 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
   const sp = await searchParams;
   const [datos, docs, alta] = await Promise.all([datosParaConfirmar(p.id), estadoDocumentos(p.id), pendientesAlta(p.id)]);
   const faltan = alta.tareas.filter((t) => !t.ok && !t.opcional);
+  const rutaPublica = await rutaPublicaDe(p.id, p.slug);
 
   return (
     <div className="flex flex-col gap-5">
@@ -44,7 +46,7 @@ export default async function Confirmar({ searchParams }: { searchParams: Promis
         <dl className="grid gap-x-4 gap-y-2 text-[15px] sm:grid-cols-[180px_minmax(0,1fr)]">
           <dt className="text-gris">Nombre público</dt><dd>{p.nombre}</dd>
           <dt className="text-gris">WhatsApp</dt><dd>{whatsappParaCampo(p.whatsapp) || "—"}</dd>
-          <dt className="text-gris">Tu página</dt><dd className="font-mono text-sm">lastresb.com.co/{p.slug}</dd>
+          <dt className="text-gris">Tu página</dt><dd className="font-mono text-sm">lastresb.com.co{rutaPublica}</dd>
           <dt className="text-gris">Qué ofreces</dt><dd>{datos.categorias.join(", ") || "—"}</dd>
           <dt className="text-gris">Dónde trabajas</dt><dd>{datos.localidades.join(", ") || "—"}</dd>
           <dt className="text-gris">Servicios con precio</dt><dd>{datos.servicios}</dd>

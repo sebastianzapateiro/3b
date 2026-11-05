@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { inArray } from "drizzle-orm";
+import { inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
-import { CATEGORIAS, LOCALIDADES_BOGOTA, subcategoriaPorSlug } from "@las3b/shared";
+import { CATEGORIAS, LOCALIDADES_BOGOTA, rutaProveedor, subcategoriaPorSlug } from "@las3b/shared";
 import { GUIAS } from "@/lib/guias";
 import { conteosPorOficio, conteosPorOficioYLocalidad, minProveedoresSeo } from "@/lib/publicacion";
 import { absoluta } from "@/lib/seo";
@@ -43,10 +43,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const proveedores = await db
-      .select({ slug: schema.proveedores.slug, actualizado: schema.proveedores.updatedAt })
+      .select({ slug: schema.proveedores.slug, actualizado: schema.proveedores.updatedAt, oficios: sql<string[]>`coalesce((SELECT array_agg(c.nombre) FROM proveedor_categorias pc JOIN categorias c ON c.id = pc.categoria_id WHERE pc.proveedor_id = ${schema.proveedores.id}), ARRAY[]::text[])` })
       .from(schema.proveedores)
       .where(inArray(schema.proveedores.estado, ["aprobado", "en_revision"]));
-    for (const p of proveedores) paginas.push(pagina(`/${p.slug}`, 0.8, "weekly", p.actualizado));
+    // URL estándar /nombre/oficio: una por cada oficio del proveedor (sin oficios, /nombre).
+    for (const p of proveedores) {
+      if (p.oficios.length === 0) paginas.push(pagina(`/${p.slug}`, 0.8, "weekly", p.actualizado));
+      for (const o of p.oficios) paginas.push(pagina(rutaProveedor(p.slug, o), 0.8, "weekly", p.actualizado));
+    }
 
     // Páginas por oficio: solo las que cumplen la regla de publicación (lib/publicacion.ts).
     const minimo = await minProveedoresSeo();

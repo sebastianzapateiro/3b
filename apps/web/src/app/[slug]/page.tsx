@@ -2,7 +2,7 @@ import { urlPublica } from "@/lib/almacenamiento";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { cache } from "react";
-import { MARCA } from "@las3b/shared";
+import { MARCA, oficioPrincipal, rutaProveedor, segmentoOficio } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { FAQ_PORTAFOLIO } from "@/lib/faqs";
@@ -15,7 +15,11 @@ import { jsonLdMigas, jsonLdProveedor, meta } from "@/lib/seo";
  * P7 · Portafolio público del proveedor en lastresb.com.co/<slug> (RF-37 a RF-43, CU-04).
  * Diseño completo según docs/mockups/Perfil_web y Perfil_movil.
  */
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string; oficio?: string }> };
+
+/** Ruta estándar /nombre/oficio: la del oficio pedido o, en /nombre, la del oficio principal. */
+const rutaEstandar = (slug: string, categorias: string[], oficio?: string) =>
+  rutaProveedor(slug, oficio ? categorias.find((c) => segmentoOficio(c) === oficio) : oficioPrincipal(categorias));
 
 const resolver = cache(async (slug: string) => {
   const demo = RECOMENDADOS_DEMO.find((p) => p.slug === slug);
@@ -24,7 +28,7 @@ const resolver = cache(async (slug: string) => {
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, oficio } = await params;
   const r = await resolver(slug);
 
   if (r.tipo === "publicado") {
@@ -34,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const titulo = `${p.nombre}: ${oficios} en ${zona}, Bogotá`;
     // `||` y no `??`: una presentación vacía no debe dejar la meta descripción en blanco.
     const descripcion = (p.presentacion?.trim() || `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`).slice(0, 155);
-    return meta({ titulo, descripcion, ruta: `/${p.slug}`, tipo: "profile" });
+    return meta({ titulo, descripcion, ruta: rutaEstandar(p.slug, p.categorias, oficio), tipo: "profile" });
   }
   if (r.tipo === "demo" || r.tipo === "no_disponible") {
     return { title: r.nombre, robots: { index: false, follow: true } };
@@ -43,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PortafolioProveedor({ params }: Props) {
-  const { slug } = await params;
+  const { slug, oficio } = await params;
   const r = await resolver(slug);
 
   if (r.tipo === "redirigir") permanentRedirect(`/${r.slug}`);
@@ -70,11 +74,15 @@ export default async function PortafolioProveedor({ params }: Props) {
   }
 
   const p = r.proveedor;
+  // Un solo modelo de URL: /nombre/oficio. /nombre y los oficios que el proveedor no tiene van (301) al estándar.
+  const estandar = rutaEstandar(p.slug, p.categorias, oficio);
+  if (estandar !== (oficio ? `/${p.slug}/${oficio}` : `/${p.slug}`)) permanentRedirect(estandar);
   return (
     <>
       <JsonLd
         datos={jsonLdProveedor({
           slug: p.slug,
+          ruta: estandar,
           nombre: p.nombre,
           descripcion: p.presentacion,
           imagen: p.fotoPerfil ?? (p.fotos[0] ? urlPublica(p.fotos[0].rutaMiniatura ?? p.fotos[0].ruta) : null),
@@ -88,7 +96,7 @@ export default async function PortafolioProveedor({ params }: Props) {
       <JsonLd
         datos={jsonLdMigas([
           { nombre: "Inicio", ruta: "/" },
-          { nombre: p.nombre, ruta: `/${p.slug}` },
+          { nombre: p.nombre, ruta: estandar },
         ])}
       />
       <PerfilProveedor proveedor={p} />

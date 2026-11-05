@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { oficioPrincipal, rutaProveedor } from "@las3b/shared";
 import { AccionesPerfil } from "@/components/AccionesPerfil";
 import { FotoTrabajo } from "@/components/FotoTrabajo";
 import { Insignia } from "@/components/Insignia";
@@ -69,7 +70,8 @@ function BotonWhatsApp({ href, clase }: { href: string | null; clase: string }) 
  */
 export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioCompleto }) {
   const iniciales = p.nombre.split(" ").map((x) => x[0]).join("").toUpperCase().slice(0, 2);
-  const url = absoluta(`/${p.slug}`);
+  const ruta = rutaProveedor(p.slug, oficioPrincipal(p.categorias));
+  const url = absoluta(ruta);
   // El clic se registra en `contactos` antes de abrir WhatsApp: es lo que habilita la reseña (regla 4).
   const enlaceWA = p.esEjemplo || !p.whatsapp ? null : `/api/v1/contactos/ir?p=${p.slug}&origen=perfil`;
   const subtitulo = [p.categorias.join(" y "), p.localidades.join(", ")].filter(Boolean).join(" · ");
@@ -91,7 +93,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
             <span className="hidden gap-1 lg:flex" aria-hidden="true">
               <span className="size-2 rounded-full bg-white" /><span className="size-2 rounded-full bg-ladrillo-claro" /><span className="size-2 rounded-full bg-amarillo" />
             </span>
-            <span className="rounded-lg bg-white/15 px-2.5 py-1.5 font-mono text-[13px] lg:text-sm">lastresb.com.co/{p.slug}</span>
+            <span className="rounded-lg bg-white/15 px-2.5 py-1.5 font-mono text-[13px] lg:text-sm">lastresb.com.co{ruta}</span>
           </span>
           <span className="lg:hidden"><AccionesPerfil url={url} titulo={p.nombre} variante="icono" /></span>
           <span className="hidden w-0 lg:block" />

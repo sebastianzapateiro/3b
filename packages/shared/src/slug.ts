@@ -31,3 +31,12 @@ export function sugerirSlug(nombre: string, localidad?: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
 }
+
+/** Segmento de URL de un oficio: «Aseo y limpieza» → «aseo-y-limpieza». */
+export const segmentoOficio = (nombreOficio: string): string => sugerirSlug(nombreOficio);
+
+/** Oficio principal de la página: el primero por orden alfabético del segmento (estable aunque cambie el orden de guardado). */
+export const oficioPrincipal = (nombresOficio: string[]): string | undefined => [...nombresOficio].sort((a, b) => segmentoOficio(a).localeCompare(segmentoOficio(b)))[0];
+
+/** URL estándar de la página de un proveedor: /nombre-del-proveedor/oficio (p. ej. /clemencia-rojas/aseo-y-limpieza). */
+export const rutaProveedor = (slug: string, nombreOficio?: string): string => (nombreOficio ? `/${slug}/${segmentoOficio(nombreOficio)}` : `/${slug}`);

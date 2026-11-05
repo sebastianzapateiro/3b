@@ -22,7 +22,12 @@ export const metadata = { title: "Usuarios" };
 export default async function Usuarios({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   await exigirBackoffice(true);
   const sp = await searchParams;
-  const [lista, exige2fa] = await Promise.all([listarUsuarios(sp.q), exigencia2fa()]);
+  // Filtro por tipo de usuario o rol: arranca con todos marcados (se ve el 100 %) y el admin desmarca los que no quiere.
+  const TODOS = [...ROLES.map((x) => x.v), "sin_rol"];
+  const filtroAplicado = sp.f === "1";
+  const filtroRoles = (filtroAplicado ? ([] as (string | undefined)[]).concat(sp.rol) : TODOS).filter((r): r is string => Boolean(r)).filter((r) => [...ROLES.map((x) => x.v), "sin_rol"].includes(r));
+  const [lista, exige2fa] = await Promise.all([filtroRoles.length > 0 ? listarUsuarios(sp.q, filtroRoles.length === TODOS.length ? [] : filtroRoles) : Promise.resolve([]), exigencia2fa()]);
+  const filtroUrl = `${sp.q ? `&q=${encodeURIComponent(sp.q)}` : ""}${filtroAplicado ? "&f=1" : ""}${filtroRoles.map((r) => `&rol=${r}`).join("")}`;
   const creando = sp.nuevo === "1";
   const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
 
@@ -37,21 +42,44 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
       </Encabezado>
 
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
-        <section className={`${tarjeta} min-w-0 flex-[3_1_520px] overflow-x-auto`}>
+        <section className="flex min-w-0 flex-[3_1_520px] flex-col gap-4">
+        <form method="get" className={`${tarjeta} flex flex-col gap-3 p-4`}>
+          {sp.q && <input type="hidden" name="q" value={sp.q} />}
+          <input type="hidden" name="f" value="1" />
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-1 text-sm font-semibold">Mostrar usuarios de tipo o rol <span className="font-normal text-gris">(desmarca los que no quieras ver)</span></legend>
+            <div className="flex flex-wrap gap-2">
+              {[...ROLES, { v: "sin_rol", t: "Sin rol" }].map((r) => (
+                <label key={r.v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-borde-campo bg-white px-3.5 text-sm font-semibold has-[:checked]:border-tinta has-[:checked]:bg-piedra">
+                  <input type="checkbox" name="rol" value={r.v} defaultChecked={filtroRoles.includes(r.v)} className="size-4 accent-verde" />
+                  {r.t}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <div className="flex flex-wrap items-center gap-3">
+            <button type="submit" className="h-11 rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Aplicar filtro</button>
+            {filtroAplicado && <Link href="/admin/usuarios" className="flex min-h-11 items-center px-2 text-sm font-semibold text-verde underline">Mostrar todos</Link>}
+          </div>
+        </form>
+        <div className={`${tarjeta} min-w-0 overflow-x-auto`}>
           <table className="w-full min-w-[600px] border-collapse text-sm">
             <thead>
               <tr className="bg-crema text-left text-gris">
-                <th className="px-[18px] py-3 font-semibold">Usuario</th><th className="p-3 font-semibold">Roles</th><th className="p-3 font-semibold">Estado</th><th className="p-3 font-semibold">Último ingreso</th>
+                <th className="w-28 px-[18px] py-3 font-semibold"><span className="sr-only">Perfil</span></th><th className="p-3 font-semibold">Usuario</th><th className="p-3 font-semibold">Roles</th><th className="p-3 font-semibold">Estado</th><th className="p-3 font-semibold">Último ingreso</th>
               </tr>
             </thead>
             <tbody>
-              {lista.length === 0 && <tr><td colSpan={4} className="px-[18px] py-8 text-center text-gris">No hay usuarios con ese criterio.</td></tr>}
+              {lista.length === 0 && <tr><td colSpan={5} className="px-[18px] py-8 text-center text-gris">{filtroRoles.length === 0 ? "No hay ningún tipo de usuario marcado. Marca al menos uno y pulsa «Aplicar filtro»." : "No hay usuarios con ese criterio."}</td></tr>}
               {lista.map((u) => {
                 const suspendido = u.suspendidoHasta && new Date(u.suspendidoHasta) > new Date();
                 return (
                   <tr key={u.id} className={`border-t border-borde-suave ${u.id === elegido?.id ? "bg-piedra" : ""}`}>
                     <td className="px-[18px] py-3.5">
-                      <Link href={`/admin/usuarios?u=${u.id}${sp.q ? `&q=${encodeURIComponent(sp.q)}` : ""}`} className="flex flex-col">
+                      <Link href={u.proveedorId ? `/admin/proveedores/${u.proveedorId}` : `/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex h-10 items-center justify-center rounded-xl border-2 border-tinta px-3 text-[13px] font-semibold text-tinta hover:bg-piedra">Ver perfil</Link>
+                    </td>
+                    <td className="p-3.5">
+                      <Link href={`/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex flex-col">
                         <b>{u.nombre}</b><span className="text-gris">{u.correo}</span>
                       </Link>
                     </td>
@@ -63,6 +91,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
               })}
             </tbody>
           </table>
+        </div>
         </section>
 
         <form action={cambiarExigencia2fa} className={`${tarjeta} order-last flex min-w-0 flex-[3_1_520px] flex-col gap-3 p-[22px]`}>

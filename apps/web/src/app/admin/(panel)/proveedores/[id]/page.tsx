@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { aprobarProveedor, editarPerfilComoEquipo, guardarServicioComoEquipo, guardarSeguimiento, quitarServicioComoEquipo, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
 import { CargaDocumentosEquipo } from "@/components/admin/CargaDocumentosEquipo";
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
@@ -277,7 +278,7 @@ export default async function Revision({ params, searchParams }: { params: Promi
           <section className={`${tarjeta} flex flex-col gap-2.5 p-[22px]`}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-display text-xl font-bold">Así se verá su página</h2>
-              <span className="font-mono text-[13px] text-verde-oscuro">lastresb.com.co/{p.slug}</span>
+              <span className="font-mono text-[13px] text-verde-oscuro">lastresb.com.co{await rutaPublicaDe(p.id, p.slug)}</span>
             </div>
             <p className="text-[15px] leading-[1.55] text-tinta-2">{p.presentacion || "Sin presentación."}</p>
             <span className="text-sm text-gris">{p.totalServicios} servicios</span>

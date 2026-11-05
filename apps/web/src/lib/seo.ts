@@ -52,6 +52,8 @@ export function jsonLdSitio() {
 
 type ProveedorSeo = {
   slug: string;
+  /** Ruta estándar /nombre/oficio; por defecto /nombre. */
+  ruta?: string;
   nombre: string;
   descripcion?: string | null;
   servicios: string[];
@@ -67,7 +69,7 @@ type ProveedorSeo = {
 
 /** Portafolio del proveedor (P7): negocio local con zona de servicio y calificación agregada. */
 export function jsonLdProveedor(p: ProveedorSeo) {
-  const url = absoluta(`/${p.slug}`);
+  const url = absoluta(p.ruta ?? `/${p.slug}`);
   return {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",

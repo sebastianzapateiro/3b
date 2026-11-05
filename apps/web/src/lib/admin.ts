@@ -315,10 +315,19 @@ export async function obtenerRevision(id: string) {
 
 /* ───────────── Usuarios (BO_Usuarios) ───────────── */
 
-export async function listarUsuarios(q?: string) {
-  const condicion = q?.trim()
+/** `roles`: solo los usuarios con alguno de esos roles; «sin_rol» incluye a quienes no tienen ninguno. */
+export async function listarUsuarios(q?: string, rolesFiltro: string[] = []) {
+  const busqueda = q?.trim()
     ? or(ilike(user.email, `%${q.trim()}%`), ilike(user.name, `%${q.trim()}%`), ilike(user.telefono, `%${q.trim()}%`))
     : undefined;
+  const reales = rolesFiltro.filter((r) => r !== "sin_rol");
+  const porRol = rolesFiltro.length
+    ? or(
+        reales.length ? sql`EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id} AND ur.rol IN (${sql.join(reales.map((r) => sql`${r}`), sql`, `)}))` : undefined,
+        rolesFiltro.includes("sin_rol") ? sql`NOT EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id})` : undefined,
+      )
+    : undefined;
+  const condicion = and(busqueda, porRol);
   const lista = await db
     .select({ id: user.id, nombre: user.name, correo: user.email, suspendidoHasta: user.suspendidoHasta, eliminadoEn: user.eliminadoEn, conservarHasta: user.conservarHasta, dosFactor: user.twoFactorEnabled, creado: user.createdAt })
     .from(user)
@@ -330,12 +339,15 @@ export async function listarUsuarios(q?: string) {
     .select({ id: usuarioRoles.usuarioId, rol: usuarioRoles.rol })
     .from(usuarioRoles)
     .where(inArray(usuarioRoles.usuarioId, lista.map((l) => l.id)));
+  const provs = await db.select({ usuarioId: proveedores.usuarioId, id: proveedores.id }).from(proveedores).where(inArray(proveedores.usuarioId, lista.map((l) => l.id)));
+  const mapaProv = new Map(provs.map((p) => [p.usuarioId, p.id]));
   const ultimo = await consultar(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
   const mapaUltimo = new Map(filas<{ id: string; ultimo: Date }>(ultimo).map((u) => [u.id, u.ultimo]));
   return lista.map((l) => ({
     ...l,
     roles: roles.filter((r) => r.id === l.id).map((r) => r.rol as string),
     ultimoIngreso: mapaUltimo.get(l.id) ?? null,
+    proveedorId: mapaProv.get(l.id) ?? null,
   }));
 }
 
