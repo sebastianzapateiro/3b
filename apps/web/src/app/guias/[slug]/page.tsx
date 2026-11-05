@@ -74,7 +74,7 @@ export default async function Guia({ params }: Props) {
                 Ver {categoria.nombre}
               </Link>
             )}
-            <Link href="/categorias" className="flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-tinta">Todas las categorías</Link>
+            <Link href="/#categorias" className="flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-tinta">Todas las categorías</Link>
             <Link href="/localidades" className="flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-tinta">Buscar por localidad</Link>
           </div>
         </aside>

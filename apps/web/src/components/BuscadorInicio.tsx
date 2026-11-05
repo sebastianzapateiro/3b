@@ -90,7 +90,7 @@ export function BuscadorInicio() {
       const params = new URLSearchParams({ q: texto, solicitud: "1" });
       if (modo === "localidad") params.set("localidad", localidad);
       else params.set("ubic", "exacta");
-      router.push(`/buscar?${params}`);
+      router.push(`/proveedores?${params}`);
     } catch {
       setError("No pudimos enviar tu solicitud. Revisa tu conexión e intenta de nuevo.");
     } finally {

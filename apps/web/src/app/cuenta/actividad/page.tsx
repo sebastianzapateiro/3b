@@ -16,7 +16,7 @@ export default async function Actividad() {
       <section className={tarjeta}>
         <h2 className="font-display text-2xl font-bold">A quién contactaste</h2>
         {contactos.length === 0 ? (
-          <p className="text-[15px] text-tinta-2">Aún no has escrito a ningún proveedor. <Link href="/categorias" className="font-semibold text-verde">Explora las categorías</Link>.</p>
+          <p className="text-[15px] text-tinta-2">Aún no has escrito a ningún proveedor. <Link href="/#categorias" className="font-semibold text-verde">Explora las categorías</Link>.</p>
         ) : (
           <ul className="flex flex-col">
             {contactos.map((c) => (

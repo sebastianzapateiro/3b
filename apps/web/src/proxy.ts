@@ -9,7 +9,7 @@ import { OFICIOS_ELIMINADOS, OFICIOS_RENOMBRADOS } from "@las3b/shared";
 
 const RUTAS_PUBLICAS = [
   "/",
-  "/buscar",
+  "/proveedores",
   "/ingreso",
   "/ingreso/listo",
   "/admin/ingresar",
@@ -39,12 +39,18 @@ function esRutaPublica(pathname: string): boolean {
 /** 301 de URLs que cambiaron de oficio o de categoría (SEO): conservan su posicionamiento. */
 function redireccionPermanente(url: URL): URL | null {
   const { pathname } = url;
+  // «Proveedores» reemplaza a /buscar y a la portada de /categorias; se conservan los parámetros.
+  if (pathname === "/buscar" || pathname === "/categorias") {
+    const destino = new URL("/proveedores", url);
+    destino.search = url.search;
+    return destino;
+  }
   if (pathname === "/categorias/acarreos") return new URL("/categorias/acarreos-y-transporte", url);
   if (pathname === "/guias/seguridad-al-contratar-clases-o-cuidado-con-menores") return new URL("/guias/seguridad-al-contratar-clases-con-menores", url);
   const m = pathname.match(/^\/servicios\/([^/]+)(\/.*)?$/);
   if (!m) return null;
   const [, oficio, resto = ""] = m;
-  if (OFICIOS_ELIMINADOS.includes(oficio!)) return new URL("/categorias", url);
+  if (OFICIOS_ELIMINADOS.includes(oficio!)) return new URL("/proveedores", url);
   const nuevo = OFICIOS_RENOMBRADOS[oficio!];
   return nuevo ? new URL(`/servicios/${nuevo}${resto}`, url) : null;
 }

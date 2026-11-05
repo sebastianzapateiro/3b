@@ -37,7 +37,7 @@ function Pantalla({ icono }: { icono: IconoPaso }) {
       );
     case "tarjeta":
       return (
-        <div className={marco}><Barra url="lastresb.com.co/buscar" />
+        <div className={marco}><Barra url="lastresb.com.co/proveedores" />
           <div className="flex flex-col gap-2 p-3">
             <span className="text-[11px] text-tinta-2">3 proveedores en Suba</span>
             {[["LM", "Laura Mendoza", "4,9", "bg-verde-claro"], ["CR", "Carlos Rojas", "4,7", "bg-amarillo-suave"]].map(([i, n, c, f]) => (

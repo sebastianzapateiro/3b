@@ -40,13 +40,13 @@ export function PaginaServicio({
   const barrios = localidad ? BARRIOS_PRINCIPALES[localidad.slug as LocalidadSlug] ?? [] : [];
   const afines = padre.subcategorias.filter((s) => s.slug !== sub.slug).slice(0, 8);
   const guias = GUIAS.filter((g) => !g.categoria || g.categoria === padre.slug).slice(0, 3);
-  const buscar = `/buscar?categoria=${sub.slug}${localidad ? `&localidad=${localidad.slug}` : ""}`;
+  const buscar = `/proveedores?categoria=${sub.slug}${localidad ? `&localidad=${localidad.slug}` : ""}`;
   const enlace = "inline-flex min-h-11 items-center text-[15px] text-verde hover:text-verde-oscuro";
   const nombres = (slugs: string[]) => slugs.map((s) => LOCALIDADES_BOGOTA.find((l) => l.slug === s)).filter((l): l is NonNullable<typeof l> => Boolean(l));
 
   const migas = [
     { nombre: "Inicio", ruta: "/" },
-    { nombre: "Categorías", ruta: "/categorias" },
+    { nombre: "Proveedores", ruta: "/proveedores" },
     { nombre: padre.nombre, ruta: `/categorias/${padre.slug}` },
     { nombre: sub.nombre, ruta: `/servicios/${sub.slug}` },
     ...(variante === "localidad" ? [{ nombre: localidad!.nombre, ruta }] : variante === "base" ? [] : [{ nombre: variante === "urgente" ? "Urgente" : "Económico", ruta }]),

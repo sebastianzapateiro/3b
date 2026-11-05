@@ -42,7 +42,7 @@ export function jsonLdSitio() {
         publisher: { "@id": absoluta("/#organizacion") },
         potentialAction: {
           "@type": "SearchAction",
-          target: { "@type": "EntryPoint", urlTemplate: `${absoluta("/buscar")}?q={q}` },
+          target: { "@type": "EntryPoint", urlTemplate: `${absoluta("/proveedores")}?q={q}` },
           "query-input": "required name=q",
         },
       },

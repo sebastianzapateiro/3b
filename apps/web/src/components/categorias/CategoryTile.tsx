@@ -13,14 +13,15 @@ const COLUMNAS_FILA3 = "min-[600px]:col-span-3 min-[900px]:col-span-6";
 const velo = `linear-gradient(to top, rgba(${VELO.rgb}, ${VELO.opacidadBase}) 0, rgba(${VELO.rgb}, ${VELO.opacidadTexto}) ${VELO.altoTexto}px, rgba(${VELO.rgb}, 0) ${VELO.altoTotal}px)`;
 
 /** Tile del mosaico: foto (o degradado con ícono gigante) de fondo, nombre, 3 oficios y «Ver todo». Todo el tile es el enlace. */
-export function CategoryTile({ tile, prioridad = false }: { tile: TileMosaico; prioridad?: boolean }) {
+export function CategoryTile({ tile, prioridad = false, carrusel = false }: { tile: TileMosaico; prioridad?: boolean; carrusel?: boolean }) {
   const { tema, disposicion } = tile;
   const foto = tema.foto;
-  const grande = disposicion.columnas === 6 && disposicion.fila === 1;
+  const grande = !carrusel && disposicion.columnas === 6 && disposicion.fila === 1;
   // Con foto el texto es blanco sobre el velo; sin foto depende del tema (Clases usa tinta y no lleva velo).
   const oscuro = !foto && tema.textoSinFoto === "tinta";
-  const columnas = disposicion.fila === 3 ? COLUMNAS_FILA3 : (COLUMNAS[disposicion.columnas] ?? COLUMNAS[3]);
-  const alto = disposicion.fila === 1 ? "h-[200px] min-[600px]:h-[300px] min-[900px]:h-[330px]" : "h-[200px] min-[600px]:h-[300px]";
+  // En el carrusel del Home todos miden lo mismo y el contenedor da el ancho; en /categorias/… usan el grid de 12 columnas.
+  const columnas = carrusel ? "snap-start" : disposicion.fila === 3 ? COLUMNAS_FILA3 : (COLUMNAS[disposicion.columnas] ?? COLUMNAS[3]);
+  const alto = carrusel ? "h-[210px] sm:h-[230px]" : disposicion.fila === 1 ? "h-[200px] min-[600px]:h-[300px] min-[900px]:h-[330px]" : "h-[200px] min-[600px]:h-[300px]";
 
   return (
     <Link
@@ -30,7 +31,7 @@ export function CategoryTile({ tile, prioridad = false }: { tile: TileMosaico; p
       style={foto ? undefined : { backgroundImage: `linear-gradient(135deg, ${tema.desde}, ${tema.hasta})` }}
     >
       {foto ? (
-        <Image src={foto.src} alt="" fill priority={prioridad} sizes={grande ? "(min-width: 900px) 510px, 100vw" : "(min-width: 900px) 250px, (min-width: 600px) 50vw, 100vw"} className="-z-20 object-cover" />
+        <Image src={foto.src} alt="" fill priority={prioridad} sizes={carrusel ? "300px" : grande ? "(min-width: 900px) 510px, 100vw" : "(min-width: 900px) 250px, (min-width: 600px) 50vw, 100vw"} className="-z-20 object-cover" />
       ) : (
         <IconoCategoria icono={tile.icono} grosor={0.7} className="absolute -right-5 -top-5 -z-10 size-[170px] opacity-[.22]" />
       )}

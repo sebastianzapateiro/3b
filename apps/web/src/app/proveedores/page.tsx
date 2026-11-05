@@ -8,17 +8,24 @@ import { SelectorOrden } from "@/components/SelectorOrden";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { cookies } from "next/headers";
 import { contieneServicioProhibido } from "@las3b/shared";
-import { buscarProveedores, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams } from "@/lib/busqueda";
+import { buscarProveedores, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados } from "@/lib/busqueda";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
-import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type Orden } from "@/lib/filtros";
+import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
 
-/** Resultados de búsqueda con filtros (P2, CU-01). Mockups: docs/mockups/Resultados_web.dc.html y Resultados_movil.dc.html. */
+/**
+ * Proveedores (P2, CU-01): todos los proveedores aprobados en cuadrícula, con filtros y búsqueda. Reemplaza a /buscar y a la portada de /categorias.
+ * Mockups: docs/mockups/Resultados_web.dc.html y Resultados_movil.dc.html.
+ */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Params> }): Promise<Metadata> {
-  const categoria = uno((await searchParams).categoria);
-  // Las búsquedas con parámetros no se indexan; apuntan a la página SEO del oficio (si lo hay).
+  const sp = await searchParams;
+  const categoria = uno(sp.categoria);
+  // La lista completa se indexa; las búsquedas con parámetros no (apuntan a la página SEO del oficio, si la hay).
+  if (Object.keys(sp).length === 0) {
+    return { title: "Proveedores de servicios en Bogotá", description: "Todos los proveedores verificados de LasTresB: filtra por servicio, localidad y verificación, y escríbeles directo por WhatsApp.", alternates: { canonical: "/proveedores" } };
+  }
   return {
-    title: "Resultados de búsqueda",
+    title: "Proveedores: resultados de búsqueda",
     robots: { index: false, follow: true },
     ...(categoria && subcategoriaPorSlug(categoria) ? { alternates: { canonical: `/servicios/${categoria}` } } : {}),
   };
@@ -26,7 +33,12 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 type Params = Record<string, string | string[] | undefined>;
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CONTEOS_VACIOS: ConteosFiltros = {
+  insignias: { verificado: 0, formalizado: 0, certificado: 0, apto_menores: 0 },
+  hoy: 0, h24: 0, visita: {}, conResenas: 0, cal4: 0, cal45: 0,
+};
+
+const UUID =/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
 const varios = (v: string | string[] | undefined) => (v === undefined ? [] : Array.isArray(v) ? v : [v]);
 
@@ -55,20 +67,27 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const punto = solicitud?.punto ?? undefined;
   const enviada = uno(sp.solicitud) === "1";
 
+  // Si la base no responde (p. ej. en local sin el túnel) la página se muestra vacía en vez de caerse.
+  let sinBase = false;
   const [resultado, conteos] = await Promise.all([
     buscarProveedores({ ...filtrosDesdeParams(params), punto }),
     conteosDeFiltros(filtrosDesdeParams(params)),
-  ]);
+  ]).catch((e) => {
+    console.error("[proveedores] no se pudo consultar la base", e);
+    sinBase = true;
+    const vacio: PaginaResultados = { items: [], total: 0, pagina, porPagina: 10, categoriaNombre: null };
+    return [vacio, CONTEOS_VACIOS] as const;
+  });
   // «Calificación» y «Mejor calificados» solo existen cuando hay proveedores con reseñas suficientes.
   const hayCalificados = conteos.conResenas > 0;
 
   const nombreLocalidad = LOCALIDADES_BOGOTA.find((l) => l.slug === localidad)?.nombre;
   const lugar = nombreLocalidad ? ` en ${nombreLocalidad}` : exacta ? " cerca de ti" : "";
   const tema = resultado.categoriaNombre ?? (q ? `«${q}»` : null);
-  const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `Servicios en ${nombreLocalidad}` : "Resultados de búsqueda";
+  const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `Proveedores en ${nombreLocalidad}` : "Proveedores";
   const totalPaginas = Math.max(1, Math.ceil(resultado.total / resultado.porPagina));
 
-  /** URL de /buscar con los parámetros actuales y los cambios indicados (null = quitar). */
+  /** URL de /proveedores con los parámetros actuales y los cambios indicados (null = quitar). */
   const href = (cambios: Record<string, string | string[] | null>) => {
     const p = new URLSearchParams();
     const actual: Record<string, string | string[] | undefined> = {
@@ -80,7 +99,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
       if (v == null) continue;
       for (const x of Array.isArray(v) ? v : [v]) p.append(k, x);
     }
-    return `/buscar?${p}`;
+    return `/proveedores?${p}`;
   };
   const limpiar = href({ insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, pagina: null });
 
@@ -110,7 +129,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   // Sin resultados: ¿el texto corresponde a un oficio del catálogo? Si menciona un servicio no permitido no se ofrece el aviso.
   const sinResultados = resultado.items.length === 0;
   const prohibido = Boolean(q) && contieneServicioProhibido(q!);
-  const oficio = sinResultados && !prohibido ? (resultado.categoriaNombre ?? (q ? (await categoriaDeTexto(q))?.nombre : null) ?? null) : null;
+  const oficio = sinResultados && !prohibido ? (resultado.categoriaNombre ?? (q && !sinBase ? (await categoriaDeTexto(q))?.nombre : null) ?? null) : null;
   const textoAviso = oficio ?? q ?? "";
 
   return (
@@ -122,7 +141,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
-          <form action="/buscar" className="flex flex-wrap gap-2" role="search">
+          <form action="/proveedores" className="flex flex-wrap gap-2" role="search">
             <div className="flex h-12 min-w-0 flex-[2_1_200px] items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3">
               <svg className="flex-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
               <input name="q" type="search" defaultValue={q} aria-label="Servicio o clase" placeholder="Ej: plomero, clases de inglés" className="min-w-0 flex-1 bg-transparent text-base outline-none" />
@@ -163,7 +182,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
           </div>
 
           {resultado.items.length > 0 ? (
-            <section aria-label="Resultados" className="flex flex-col gap-3 sm:gap-4">
+            <section aria-label="Resultados" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
               {resultado.items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
             </section>
           ) : null}
@@ -191,7 +210,9 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
           )}
 
           <section className="flex flex-col gap-3 rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
-            {sinResultados ? (
+            {sinBase ? (
+              <b className="text-[15px]">No pudimos cargar los proveedores en este momento. Intenta de nuevo en un rato.</b>
+            ) : sinResultados ? (
               <>
                 <b className="text-[15px]">
                   {hayFiltros ? "No hay proveedores con estos filtros. Prueba quitar alguno." : `Aún no tenemos proveedores para ${tema ?? "esta búsqueda"}.`}
@@ -202,7 +223,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
                 )}
                 <div className="flex flex-wrap gap-x-4">
                   {oficio && <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">¿Ofreces este servicio? Regístrate gratis</Link>}
-                  <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
+                  <Link href="/#categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
                 </div>
               </>
             ) : (
@@ -211,7 +232,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
                 <p className="text-sm leading-[1.45]">Prueba localidades vecinas o quita filtros.</p>
                 <div className="flex flex-wrap gap-x-4">
                   {hayFiltros && <Link href={limpiar} className="inline-flex min-h-11 items-center text-sm font-semibold underline">Quitar filtros</Link>}
-                  <Link href="/categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
+                  <Link href="/#categorias" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Ver categorías</Link>
                   <Link href="/ingreso" className="inline-flex min-h-11 items-center text-sm font-semibold underline">Registrar mi servicio</Link>
                 </div>
               </>

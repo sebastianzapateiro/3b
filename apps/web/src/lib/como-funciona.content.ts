@@ -33,7 +33,7 @@ export const COMO_FUNCIONA = {
         { icono: "chat", panel: "tinta", titulo: "Escríbele por WhatsApp", texto: "Pulsa el botón y cuéntale qué necesitas. Acuerden precio, fecha y garantía directamente, sin intermediarios ni comisiones. Deja lo pactado por escrito en el chat." },
         { icono: "estrella", panel: "verde", titulo: "Cuenta cómo te fue", texto: "Si lo contactaste desde LasTresB, puedes dejar una reseña con hechos. Así ayudas a tus vecinos a elegir bien." },
       ],
-      boton: { texto: "Buscar un servicio", href: "/buscar", tono: "tinta" },
+      boton: { texto: "Buscar un servicio", href: "/proveedores", tono: "tinta" },
     },
     {
       id: "proveedor",

@@ -29,7 +29,7 @@ export function Pie() {
 
         <nav aria-label="Explorar" className="flex flex-col">
           <h2 className={titulo}>Explorar</h2>
-          <Link href="/categorias" className={enlace}>Categorías</Link>
+          <Link href="/proveedores" className={enlace}>Proveedores</Link>
           <Link href="/localidades" className={enlace}>Por localidad</Link>
           <Link href="/guias" className={enlace}>Guías para contratar</Link>
           <Link href="/como-funciona#faq" className={enlace}>Preguntas frecuentes</Link>
@@ -68,7 +68,7 @@ export function Pie() {
           </nav>
           <nav aria-label="Servicios por localidad" className="flex flex-wrap items-center gap-x-5">
             <span className="text-sm font-semibold text-tinta">Servicios por localidad</span>
-            {destacadas.map((l) => <Link key={l.slug} href={`/buscar?localidad=${l.slug}`} className={enlaceCorto}>{l.nombre}</Link>)}
+            {destacadas.map((l) => <Link key={l.slug} href={`/proveedores?localidad=${l.slug}`} className={enlaceCorto}>{l.nombre}</Link>)}
           </nav>
         </div>
       </div>

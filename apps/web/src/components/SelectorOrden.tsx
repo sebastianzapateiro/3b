@@ -15,7 +15,7 @@ export function SelectorOrden({ actual, opciones, base }: { actual: string; opci
           const p = new URLSearchParams(base);
           p.delete("pagina");
           p.set("orden", e.target.value);
-          router.push(`/buscar?${p}`, { scroll: false });
+          router.push(`/proveedores?${p}`, { scroll: false });
         }}
         className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white px-2.5 text-sm font-semibold text-tinta"
       >

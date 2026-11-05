@@ -26,7 +26,7 @@ import { ORDENES, RESENAS_MINIMAS, TOPES_VISITA, valoresDesdeParams, type Conteo
 
 export const POR_PAGINA = 10;
 
-/** Convierte los parámetros de /buscar (URL) en filtros; lo comparten la página y la API de conteo. */
+/** Convierte los parámetros de /proveedores (URL) en filtros; lo comparten la página y la API de conteo. */
 export function filtrosDesdeParams(p: URLSearchParams): FiltrosBusqueda {
   const v = valoresDesdeParams(p);
   const orden = ORDENES.find((o) => o === p.get("orden"));

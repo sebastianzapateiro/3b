@@ -40,7 +40,7 @@ export default async function Localidad({ params }: Props) {
   // Solo se enlaza a la página SEO del oficio en esta localidad si ya cumple la regla de publicación; si no, a la búsqueda.
   const minimo = await minProveedoresSeo();
   const publicadas = new Set((await conteosPorOficioYLocalidad().catch(() => [])).filter((c) => c.localidad === localidad.slug && c.total >= minimo).map((c) => c.oficio));
-  const buscar = (oficio: string) => (publicadas.has(oficio) ? `/servicios/${oficio}/${localidad.slug}` : `/buscar?categoria=${oficio}&localidad=${localidad.slug}`);
+  const buscar = (oficio: string) => (publicadas.has(oficio) ? `/servicios/${oficio}/${localidad.slug}` : `/proveedores?categoria=${oficio}&localidad=${localidad.slug}`);
   const vecinas = LOCALIDADES_BOGOTA.filter((l) => l.slug !== localidad.slug);
 
   return (

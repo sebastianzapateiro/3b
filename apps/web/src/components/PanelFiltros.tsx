@@ -92,14 +92,14 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
   const cambiar = (parcial: Partial<ValoresFiltros>) => {
     const nuevo = { ...v, ...parcial };
     setV(nuevo);
-    if (modo === "escritorio") router.push(`/buscar?${paramsDesdeValores(nuevo, new URLSearchParams(base))}`, { scroll: false });
+    if (modo === "escritorio") router.push(`/proveedores?${paramsDesdeValores(nuevo, new URLSearchParams(base))}`, { scroll: false });
   };
   const alternarInsignia = (c: InsigniaFiltro) =>
     cambiar({ insignias: v.insignias.includes(c) ? v.insignias.filter((i) => i !== c) : [...v.insignias, c] });
   const alternarVecina = (s: string) => cambiar({ tambien: v.tambien.includes(s) ? v.tambien.filter((t) => t !== s) : [...v.tambien, s] });
 
   const aplicar = () => {
-    router.push(`/buscar?${paramsDesdeValores(v, new URLSearchParams(base))}`);
+    router.push(`/proveedores?${paramsDesdeValores(v, new URLSearchParams(base))}`);
     alAplicar?.();
   };
   const hayFiltros = v.insignias.length > 0 || v.cal !== "0" || v.visita !== "" || v.hoy || v.h24 || v.tambien.length > 0;

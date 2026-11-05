@@ -23,7 +23,7 @@ const pagina = (ruta: string, prioridad: number, frecuencia: Entrada["changeFreq
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const paginas: MetadataRoute.Sitemap = [
     pagina("/", 1, "daily"),
-    pagina("/categorias", 0.8, "weekly"),
+    pagina("/proveedores", 0.8, "weekly"),
     pagina("/como-funciona", 0.7, "monthly"),
     pagina("/localidades", 0.8, "weekly"),
     pagina("/guias", 0.7, "weekly"),

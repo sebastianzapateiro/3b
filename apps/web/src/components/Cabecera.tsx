@@ -17,7 +17,7 @@ export function Cabecera() {
       <div className="mx-auto hidden max-w-[1200px] items-center justify-between gap-3 px-6 py-4 md:flex">
         <Link href="/" aria-label="LasTresB, inicio" className="text-tinta"><Logo sinMonograma className="logo-normal" /><Logo sinMonograma sobreVerde className="logo-sobre-verde" /></Link>
         <nav aria-label="Principal" className="flex items-center gap-1.5">
-          <EnlaceNav href="/categorias" prefijos={["/servicios"]}>Categorías</EnlaceNav>
+          <EnlaceNav href="/proveedores" prefijos={["/servicios", "/categorias"]}>Proveedores</EnlaceNav>
           <EnlaceNav href="/como-funciona">Cómo funciona</EnlaceNav>
           <MenuUsuario />
         </nav>
@@ -31,7 +31,7 @@ export function Cabecera() {
           ancho="w-64"
           boton={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>}
         >
-          <Link role="menuitem" href="/categorias" className={itemMenu}>Categorías</Link>
+          <Link role="menuitem" href="/proveedores" className={itemMenu}>Proveedores</Link>
           <Link role="menuitem" href="/como-funciona" className={itemMenu}>Cómo funciona</Link>
           <Link role="menuitem" href="/ingreso" className={`${itemMenu} border-t border-borde-suave font-semibold`}>Iniciar sesión</Link>
         </Desplegable>

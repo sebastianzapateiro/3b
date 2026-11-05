@@ -1,11 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
-import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA, subcategoriaPorSlug } from "@las3b/shared";
+import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
 import type { Metadata } from "next";
-import { FOTO_CATEGORIA } from "@/components/categorias/Piezas";
+import { CarruselCategorias } from "@/components/categorias/CarruselCategorias";
+import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
 import { TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO } from "@/lib/demo";
+import { serviciosDisponibles } from "@/lib/servicios-disponibles";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
@@ -17,15 +18,8 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const LOCALIDAD_INICIAL = "suba";
 
-/** Fila «Explora por categoría»: solo lo que tiene foto en public/fotos. El cuarto es un oficio de Hogar con la foto de obra. */
-const maestro = subcategoriaPorSlug("maestro-de-obra")!;
-const TARJETAS_INICIO = [
-  ...["hogar", "clases-y-refuerzo", "servicios-varios"].flatMap((slug) => {
-    const c = CATEGORIAS.find((x) => x.slug === slug);
-    return c ? [{ href: `/categorias/${c.slug}`, nombre: c.nombre, corto: c.corto, descripcion: c.descripcion, foto: FOTO_CATEGORIA[c.slug] }] : [];
-  }),
-  { href: `/servicios/${maestro.sub.slug}`, nombre: maestro.sub.nombre, corto: "Obras y arreglos", descripcion: "Remodelación de cocinas, baños y espacios", foto: "/fotos/nosotros.jpg" },
-];
+/** Los servicios disponibles salen de la base: se refrescan cada 5 minutos. */
+export const revalidate = 300;
 
 const POPULARES =["Plomería", "Inglés", "Mudanzas", "Cerrajería"];
 
@@ -66,7 +60,7 @@ const CONFIANZA = [
 
 const h2 = "font-display text-[22px] font-bold sm:text-[32px] sm:tracking-[-0.8px]";
 
-const buscar = (params: Record<string, string>) => `/buscar?${new URLSearchParams(params)}`;
+const buscar = (params: Record<string, string>) => `/proveedores?${new URLSearchParams(params)}`;
 
 function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
   return (
@@ -78,7 +72,10 @@ function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  // Sin base (p. ej. en local sin el túnel) la sección simplemente no aparece.
+  const disponibles = await serviciosDisponibles().catch(() => []);
+  const simulado = disponibles.length === 0 && process.env.NODE_ENV !== "production";
 
   return (
     <>
@@ -125,42 +122,45 @@ export default function Home() {
         <section id="categorias" className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-6">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className={h2}>Explora por categoría</h2>
-            <Link href="/categorias" className="text-sm font-semibold text-ladrillo hover:text-ladrillo-oscuro sm:text-[15px]">
-              Ver todas →
+            <Link href="/proveedores" className="text-sm font-semibold text-ladrillo hover:text-ladrillo-oscuro sm:text-[15px]">
+              Ver todos los proveedores →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-6 pt-2 sm:grid-cols-4 sm:gap-4">
-            {TARJETAS_INICIO.map((c) => {
-              return (
-                <Link key={c.href} href={c.href} className="flex flex-col items-center gap-3 text-center text-tinta">
-                  <span className="relative isolate flex size-[116px] items-center justify-center overflow-hidden rounded-full bg-tinta sm:size-[150px]">
-                    {c.foto && <Image src={c.foto} alt="" fill sizes="150px" className="object-cover" />}
-                  </span>
-                  <span className="flex flex-col gap-1">
-                    <b className="text-base sm:text-lg">{c.nombre}</b>
-                    <span className="text-xs text-tinta-2 sm:hidden">{c.corto}</span>
-                    <span className="hidden text-sm leading-snug text-tinta-2 sm:inline">{c.descripcion}</span>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+          <CarruselCategorias />
         </section>
 
-        <section className="mx-auto flex max-w-[1200px] flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-0">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className={h2}>Recomendados en Suba</h2>
-            <Link href={buscar({ localidad: LOCALIDAD_INICIAL })} className="text-sm font-semibold text-verde hover:text-verde-oscuro sm:text-[15px]">
-              Ver todos<span className="hidden sm:inline"> los resultados</span>
-            </Link>
-          </div>
-          {/* Móvil muestra 2 tarjetas (Home_movil); escritorio, 3. */}
-          <div className="flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:gap-4 [&>*:nth-child(n+3)]:hidden sm:[&>*:nth-child(n+3)]:flex">
-            {RECOMENDADOS_DEMO.map((p) => (
-              <TarjetaProveedor key={p.slug} proveedor={p} />
-            ))}
-          </div>
-        </section>
+        {(disponibles.length > 0 || simulado) && (
+          <section aria-labelledby="servicios-disponibles" className="mx-auto flex max-w-[1200px] flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-0">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 id="servicios-disponibles" className={h2}>Servicios disponibles</h2>
+              <Link href="/proveedores" className="text-sm font-semibold text-verde hover:text-verde-oscuro sm:text-[15px]">
+                Ver todos los proveedores
+              </Link>
+            </div>
+            {disponibles.length === 0 ? (
+              // Simulación solo fuera de producción: reserva el espacio hasta que haya servicios reales.
+              <div className="flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:gap-4">
+                {RECOMENDADOS_DEMO.map((p) => <TarjetaProveedor key={p.slug} proveedor={p} />)}
+              </div>
+            ) : (
+            <ul className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+              {disponibles.map((s) => (
+                <li key={s.slug}>
+                  <Link href={`/proveedores?categoria=${s.slug}`} className="flex min-h-[76px] items-center gap-3.5 rounded-[20px] border border-borde-suave bg-white p-3.5 text-tinta transition-colors hover:border-tinta">
+                    <span className={`flex size-12 flex-none items-center justify-center rounded-2xl ${TONO_CATEGORIA[s.icono]}`}>
+                      <IconoCategoria icono={s.icono} className="size-6" />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <b className="text-base">{s.nombre}</b>
+                      <span className="text-sm text-gris">{s.proveedores} {s.proveedores === 1 ? "proveedor" : "proveedores"} · {s.categoria}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            )}
+          </section>
+        )}
 
         <section className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 pb-7 pt-2 sm:px-6 sm:py-14">
           <h2 className={`${h2} sm:sr-only`}>Por qué confiar</h2>

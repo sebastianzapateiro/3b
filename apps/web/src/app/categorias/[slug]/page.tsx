@@ -44,7 +44,7 @@ export default async function Categoria({ params }: Props) {
 
   return (
     <div className={FONDO_NEUTRO}>
-      <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Categorías", ruta: "/categorias" }, { nombre: categoria.nombre, ruta }])} />
+      <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Proveedores", ruta: "/proveedores" }, { nombre: categoria.nombre, ruta }])} />
       <JsonLd datos={lista} />
 
       <main className="mx-auto flex max-w-[1200px] flex-col gap-5 px-4 pb-10 pt-2 sm:px-6 md:gap-8 md:pt-8">
@@ -52,7 +52,7 @@ export default async function Categoria({ params }: Props) {
           <ol className="flex flex-wrap items-center gap-x-2">
             <li><Link href="/" className="inline-flex min-h-11 items-center hover:underline">Inicio</Link></li>
             <li aria-hidden="true">›</li>
-            <li><Link href="/categorias" className="inline-flex min-h-11 items-center hover:underline">Categorías</Link></li>
+            <li><Link href="/#categorias" className="inline-flex min-h-11 items-center hover:underline">Categorías</Link></li>
             <li aria-hidden="true">›</li>
             <li aria-current="page" className="text-tinta">{categoria.nombre}</li>
           </ol>
@@ -79,7 +79,7 @@ export default async function Categoria({ params }: Props) {
 
         <TarjetaProveedores />
 
-        <Link href="/categorias" className="flex h-12 items-center justify-center self-start rounded-lg border-2 border-tinta px-6 text-base font-semibold text-tinta max-sm:self-stretch">Volver a categorías</Link>
+        <Link href="/#categorias" className="flex h-12 items-center justify-center self-start rounded-lg border-2 border-tinta px-6 text-base font-semibold text-tinta max-sm:self-stretch">Volver a categorías</Link>
       </main>
       <Faq preguntas={faqCategoria(categoria)} lateral />
     </div>

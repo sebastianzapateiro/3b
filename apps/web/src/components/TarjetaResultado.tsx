@@ -26,7 +26,7 @@ function IconoWhatsApp() {
   );
 }
 
-/** Resultado de búsqueda (mockups Resultados_web: fila; Resultados_movil: tarjeta con «Ver perfil» y WhatsApp). */
+/** Tarjeta vertical de proveedor para la cuadrícula de /proveedores: perfil arriba, insignias y los dos botones abajo. */
 export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: number }) {
   const iniciales = r.nombre.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2);
   const detalle = [r.servicios.join(", "), r.localidades.join(", ")].filter(Boolean).join(" · ");
@@ -34,28 +34,27 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
   const textoVisita = r.precioVisita != null ? `Visita desde ${pesos.format(r.precioVisita)}` : r.visitaAConvenir ? "Visita a convenir" : null;
 
   return (
-    <article className="flex flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-3.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-[18px] sm:rounded-[22px] sm:p-[18px]">
-      <Link href={perfil} className="flex min-w-0 flex-1 gap-3 text-tinta sm:basis-[300px] sm:gap-[18px]">
+    <article className="flex h-full flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-4">
+      <Link href={perfil} className="flex min-w-0 gap-3 text-tinta">
         {r.fotoPerfil ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.fotoPerfil} alt="" className="size-16 flex-none rounded-2xl object-cover sm:size-20 sm:rounded-[20px]" loading="lazy" />
+          <img src={r.fotoPerfil} alt="" className="size-16 flex-none rounded-2xl object-cover" loading="lazy" />
         ) : (
-          <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold sm:size-20 sm:rounded-[20px] sm:text-[26px] ${AVATARES[indice % AVATARES.length]}`}>
+          <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold ${AVATARES[indice % AVATARES.length]}`}>
             {iniciales}
           </span>
         )}
         <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <b className="text-base sm:text-lg">{r.nombre}</b>
-          {detalle && <span className="text-sm text-gris">{detalle}</span>}
+          <b className="text-base">{r.nombre}</b>
+          {detalle && <span className="line-clamp-2 text-sm text-gris">{detalle}</span>}
           <span className="flex flex-wrap items-center gap-x-1 text-sm font-semibold">
             <NivelPerfilMarca nivel={r.nivel} />
-            {textoVisita && <span className="font-normal text-gris sm:hidden">· {textoVisita}</span>}
           </span>
         </span>
       </Link>
 
       {(r.insignias.length > 0 || r.atiendeUrgencias || r.disponible24h) && (
-        <div className="flex flex-wrap gap-1.5 sm:order-last sm:w-full sm:basis-full sm:pl-[98px]">
+        <div className="flex flex-wrap gap-1.5">
           {r.atiendeUrgencias && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">Atiende urgencias</span>}
           {r.disponible24h && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">24 horas</span>}
           {r.insignias.map((i) => (
@@ -66,21 +65,18 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
         </div>
       )}
 
-      <div className="flex gap-2 sm:w-[220px] sm:flex-none sm:flex-col sm:items-stretch">
-        {textoVisita && (
-          <span className="hidden text-right text-sm text-tinta-2 sm:block">
-            <b className="text-tinta">{textoVisita}</b>
-          </span>
-        )}
-        <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta sm:hidden">
-          Ver perfil
-        </Link>
-        {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
-        <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro sm:flex-none">
-          <IconoWhatsApp />
-          <span className="sm:hidden">WhatsApp</span>
-          <span className="hidden sm:inline">Contactar por WA</span>
-        </a>
+      <div className="mt-auto flex flex-col gap-2 pt-1">
+        {textoVisita && <b className="text-sm text-tinta">{textoVisita}</b>}
+        <div className="flex gap-2">
+          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta">
+            Ver perfil
+          </Link>
+          {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
+          <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro">
+            <IconoWhatsApp />
+            WhatsApp
+          </a>
+        </div>
       </div>
     </article>
   );

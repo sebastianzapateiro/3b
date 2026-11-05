@@ -32,7 +32,7 @@ export function ZonaMovil({ children }: { children: React.ReactNode }) {
         const mejor = (Object.entries(CENTROS_LOCALIDADES) as [LocalidadSlug, [number, number]][])
           .map(([slug, [lat, lng]]) => ({ slug, d: (lat - coords.latitude) ** 2 + (lng - coords.longitude) ** 2 }))
           .sort((a, b) => a.d - b.d)[0]!;
-        router.push(`/buscar?localidad=${mejor.slug}`);
+        router.push(`/proveedores?localidad=${mejor.slug}`);
       },
       () => setMensaje("No pudimos usar tu ubicación. Elige tu localidad en «Filtros»."),
       { timeout: 8000 },
@@ -46,7 +46,7 @@ export function ZonaMovil({ children }: { children: React.ReactNode }) {
     for (const k of ["categoria", "localidad"]) if (d.get(k)) p.set(k, String(d.get(k)));
     if (hojaUrgente) p.set("urgente", "1");
     hoja.current?.close();
-    router.push(`/buscar?${p}`);
+    router.push(`/proveedores?${p}`);
   }
 
   return (

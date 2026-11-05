@@ -17,7 +17,7 @@ export function BotonCercanos({ oficio }: { oficio: string }) {
         const cercana = (Object.entries(CENTROS_LOCALIDADES) as [LocalidadSlug, [number, number]][])
           .map(([slug, [lat, lng]]) => ({ slug, d: (lat - coords.latitude) ** 2 + (lng - coords.longitude) ** 2 }))
           .sort((a, b) => a.d - b.d)[0]!;
-        router.push(`/buscar?categoria=${oficio}&localidad=${cercana.slug}`);
+        router.push(`/proveedores?categoria=${oficio}&localidad=${cercana.slug}`);
       },
       () => setMensaje("No pudimos usar tu ubicación. Elige tu localidad en la búsqueda."),
       { timeout: 8000 },
