@@ -35,12 +35,17 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const rangoDemanda = (["7", "30", "mes"] as const).find((r) => r === sp.rango) ?? "30";
   const demanda = sp.demanda === "1" ? { oficioSlug: sp.d, texto: sp.dt, localidadSlug: sp.dl && sp.dl !== "-" ? sp.dl : undefined, rango: rangoDemanda } : undefined;
-  const filtro = { demanda, estado: sp.estado, sinResultado: sp.sin === "1", q: sp.q, todas: sp.todas === "1", vencidas: sp.vencidas === "1", responsableId: sp.mios === "1" ? user.id : undefined };
+  const filtro = { demanda, estado: sp.estado, sinResultado: sp.sin === "1", q: sp.q, todas: true, vencidas: sp.vencidas === "1", responsableId: sp.mios === "1" ? user.id : undefined };
   const [filas, porEnviar, conteos] = await Promise.all([listarSolicitudes(filtro), calificacionesPorEnviar(), conteosSeguimiento(user.id)]);
+  // Filtros que se aplican sobre la lista: dejó o no WhatsApp, y rango de fechas (día de Bogotá).
+  const dia0 = (iso?: string) => (iso ? new Date(`${iso}T00:00:00-05:00`).getTime() : null);
+  const desdeMs = dia0(sp.desde);
+  const hastaMs = sp.hasta ? new Date(`${sp.hasta}T23:59:59-05:00`).getTime() : null;
+  const visibles = filas.filter((x) => (sp.wa === "con" ? Boolean(x.whatsapp) : sp.wa === "sin" ? !x.whatsapp : true) && (desdeMs == null || new Date(x.creada).getTime() >= desdeMs) && (hastaMs == null || new Date(x.creada).getTime() <= hastaMs));
   const historial = await historialDe(filas.map((s) => s.id));
   const hoy = hoyBogota();
 
-  const actuales = Object.entries({ demanda: sp.demanda, rango: sp.rango, d: sp.d, dt: sp.dt, dl: sp.dl, estado: sp.estado, sin: sp.sin, q: sp.q, todas: sp.todas, vencidas: sp.vencidas, mios: sp.mios }).filter((e): e is [string, string] => Boolean(e[1]));
+  const actuales = Object.entries({ c: sp.c, demanda: sp.demanda, rango: sp.rango, d: sp.d, dt: sp.dt, dl: sp.dl, estado: sp.estado, sin: sp.sin, q: sp.q, wa: sp.wa, desde: sp.desde, hasta: sp.hasta, vencidas: sp.vencidas, mios: sp.mios }).filter((e): e is [string, string] => Boolean(e[1]));
   const ruta = (cambios: Record<string, string | null>) => {
     const p = new URLSearchParams(actuales);
     for (const [k, v] of Object.entries(cambios)) (v == null ? p.delete(k) : p.set(k, v));
@@ -48,13 +53,15 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
     return `/admin/solicitudes${q ? `?${q}` : ""}`;
   };
   const volver = ruta({});
+  const volverSinCaso = ruta({ c: null });
   const exportar = `/admin/solicitudes/exportar?${new URLSearchParams(actuales.filter(([k]) => ["estado", "sin", "q"].includes(k)))}`;
   const abiertas = ESTADOS_SOLICITUD.filter(([v]) => !ESTADOS_CERRADOS.includes(v)).reduce((n, [v]) => n + (conteos.porEstado[v] ?? 0), 0);
 
-  // Sugerencias de proveedores solo para los casos abiertos que dieron su autorización (se comparten sus datos).
-  const abiertosConDatos = filas.filter((s) => !ESTADOS_CERRADOS.includes(s.estado) && s.whatsapp && s.version);
+  // Caso abierto en el panel de gestión (?c=...): solo para ese se calculan las sugerencias de proveedores.
+  const sel = filas.find((x) => x.id === sp.c);
+  const puedeSugerir = sel && !ESTADOS_CERRADOS.includes(sel.estado) && sel.whatsapp && sel.version;
   const sugeridos = new Map(
-    await Promise.all(abiertosConDatos.map(async (s) => [s.id, await sugerirProveedores({ categoriaSlug: s.categoriaSlug, texto: s.texto, localidadSlug: s.localidadSlug, punto: !s.localidad && s.lat != null && s.lng != null ? { lat: s.lat, lng: s.lng } : null })] as const)),
+    puedeSugerir ? [[sel.id, await sugerirProveedores({ categoriaSlug: sel.categoriaSlug, texto: sel.texto, localidadSlug: sel.localidadSlug, punto: !sel.localidad && sel.lat != null && sel.lng != null ? { lat: sel.lat, lng: sel.lng } : null })] as const] : [],
   );
 
   return (
@@ -80,73 +87,88 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
           </section>
         )}
 
-        {/* Tablero: pestañas por estado y atajos */}
-        <nav aria-label="Estados" className="flex flex-wrap gap-2">
-          <Link href={ruta({ estado: null, vencidas: null, mios: null })} className={`${pestana} ${!sp.estado && sp.vencidas !== "1" && sp.mios !== "1" ? "border-tinta bg-tinta text-white" : "border-borde-campo bg-white"}`}>Abiertos <span className="opacity-70">{abiertas}</span></Link>
-          <Link href={ruta({ vencidas: "1", estado: null, mios: null })} className={`${pestana} ${sp.vencidas === "1" ? "border-ladrillo bg-ladrillo text-white" : "border-borde-campo bg-white"}`}>Vencidos <span className="opacity-70">{conteos.vencidas}</span></Link>
-          <Link href={ruta({ mios: "1", estado: null, vencidas: null })} className={`${pestana} ${sp.mios === "1" ? "border-tinta bg-tinta text-white" : "border-borde-campo bg-white"}`}>Míos <span className="opacity-70">{conteos.mios}</span></Link>
-          {ESTADOS_SOLICITUD.map(([v, etiqueta]) => (
-            <Link key={v} href={ruta({ estado: v, vencidas: null, mios: null })} className={`${pestana} ${sp.estado === v ? "border-tinta bg-tinta text-white" : "border-borde-campo bg-white"}`}>{etiqueta} <span className="opacity-70">{conteos.porEstado[v] ?? 0}</span></Link>
-          ))}
-        </nav>
-
-        <form className="flex flex-wrap gap-2.5">
-          {sp.estado && <input type="hidden" name="estado" value={sp.estado} />}
-          {sp.vencidas && <input type="hidden" name="vencidas" value={sp.vencidas} />}
-          {sp.mios && <input type="hidden" name="mios" value={sp.mios} />}
-          <label htmlFor="q" className="sr-only">Buscar</label>
-          <input id="q" name="q" type="search" defaultValue={sp.q} placeholder="Nombre, WhatsApp o texto" className={`${campoAdmin} flex-[1_1_220px]`} />
-          <label className="flex h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="sin" value="1" defaultChecked={sp.sin === "1"} className="size-[18px] accent-verde" />Sin proveedores</label>
-          <label className="flex h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" name="todas" value="1" defaultChecked={sp.todas === "1"} className="size-[18px] accent-verde" />Incluir búsquedas sin WhatsApp</label>
+        {/* Atajos y filtros */}
+        <form className="flex flex-wrap items-end gap-2">
+          <label className="flex min-w-[200px] flex-[1_1_220px] flex-col gap-1 text-xs font-semibold text-gris">Buscar<input name="q" type="search" defaultValue={sp.q} placeholder="Nombre, WhatsApp o texto" className={campoAdmin} /></label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-gris">Estado
+            <select name="estado" defaultValue={sp.estado ?? ""} className={campoAdmin}><option value="">Todos</option>{ESTADOS_SOLICITUD.map(([v, e]) => <option key={v} value={v}>{e} ({conteos.porEstado[v] ?? 0})</option>)}</select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-gris">WhatsApp
+            <select name="wa" defaultValue={sp.wa ?? ""} className={campoAdmin}><option value="">Todos</option><option value="con">Dejó WhatsApp</option><option value="sin">No dejó WhatsApp</option></select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-gris">Resultados
+            <select name="sin" defaultValue={sp.sin ?? ""} className={campoAdmin}><option value="">Todos</option><option value="1">Sin proveedores</option></select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-gris">Desde<input type="date" name="desde" defaultValue={sp.desde ?? ""} className={campoAdmin} /></label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-gris">Hasta<input type="date" name="hasta" defaultValue={sp.hasta ?? ""} className={campoAdmin} /></label>
           <button type="submit" className="h-11 rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Filtrar</button>
+          <Link href="/admin/solicitudes" className="flex h-11 items-center px-2 text-sm font-semibold text-verde underline">Ver todas</Link>
         </form>
 
         {demanda && (
-          <p className="flex flex-wrap items-center gap-3 rounded-2xl bg-amarillo-suave p-3.5 text-[15px]">
-            <span>Viene de <b>Demanda sin cubrir</b>: {filas.length} solicitud{filas.length === 1 ? "" : "es"} de «{filas[0]?.categoria ?? sp.dt ?? "Sin especificar"}» en {filas[0]?.localidad ?? "cualquier localidad"}, {rangoDemanda === "mes" ? "este mes" : `últimos ${rangoDemanda} días`}.</span>
+          <p className="flex flex-wrap items-center gap-3 rounded-2xl bg-amarillo-suave p-3 text-sm">
+            <span>Viene de <b>Demanda sin cubrir</b>: {filas.length} solicitud{filas.length === 1 ? "" : "es"} de «{filas[0]?.categoria ?? sp.dt ?? "Sin especificar"}» en {filas[0]?.localidad ?? "cualquier localidad"}.</span>
             <Link href="/admin/solicitudes" className="font-semibold text-verde underline">Quitar filtro</Link>
           </p>
         )}
 
-        {filas.length === 0 && <p className="text-[15px] text-gris">No hay solicitudes con esos filtros.</p>}
+        <p className="text-sm text-gris">
+          {visibles.length} solicitud{visibles.length === 1 ? "" : "es"} · <Link href={ruta({ vencidas: sp.vencidas === "1" ? null : "1" })} className="font-semibold text-verde underline">{sp.vencidas === "1" ? "Quitar «vencidas»" : `Solo vencidas (${conteos.vencidas})`}</Link> · <Link href={ruta({ mios: sp.mios === "1" ? null : "1" })} className="font-semibold text-verde underline">{sp.mios === "1" ? "Quitar «mías»" : `Solo mías (${conteos.mios})`}</Link>
+        </p>
 
-        {filas.map((s) => {
-          const [, etiquetaEstado, tono] = datosEstado(s.estado);
-          const cerrada = ESTADOS_CERRADOS.includes(s.estado);
-          const vencida = !cerrada && s.proximaAccion != null && s.proximaAccion <= hoy;
-          const servicio = s.categoria ?? s.texto ?? "un servicio";
-          const cliente = s.nombre ?? "";
-          const propios = sugeridos.get(s.id) ?? [];
-          const eventos = historial.get(s.id) ?? [];
-          const mia = s.responsableId === user.id;
+        <div className={`${tarjeta} overflow-x-auto`}>
+          <table className="w-full min-w-[1400px] border-collapse text-xs">
+            <thead>
+              <tr className="bg-crema text-left text-gris">
+                {["Fecha", "Cliente", "WhatsApp", "Qué busca", "Servicio", "Ubicación", "Proveedores mostrados", "Autoriz.", "Estado", "Responsable", "Próx. acción", "Contactó a", "Origen", ""].map((h) => <th key={h || "acc"} className="whitespace-nowrap px-3 py-2.5 font-semibold">{h}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {visibles.length === 0 && <tr><td colSpan={14} className="px-3 py-8 text-center text-[15px] text-gris">No hay solicitudes con esos filtros.</td></tr>}
+              {visibles.map((x) => {
+                const [, etiquetaEstado, tonoEstado] = datosEstado(x.estado);
+                const cerr = ESTADOS_CERRADOS.includes(x.estado);
+                const venc = !cerr && x.proximaAccion != null && x.proximaAccion <= hoy;
+                return (
+                  <tr key={x.id} className={`border-t border-borde-suave align-top ${x.id === sel?.id ? "bg-piedra" : ""}`}>
+                    <td className="whitespace-nowrap px-3 py-2">{fecha(x.creada)}</td>
+                    <td className="px-3 py-2 font-semibold">{x.nombre ?? "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-2">{x.whatsapp ? `+${x.whatsapp}` : <span className="text-gris">No dejó</span>}</td>
+                    <td className="max-w-[240px] px-3 py-2">{x.texto ?? "—"}</td>
+                    <td className="px-3 py-2">{x.categoria ?? "—"}{!x.demanda && <span className="block text-ladrillo-oscuro">No ofrecido</span>}</td>
+                    <td className="px-3 py-2">{x.localidad ?? x.direccion ?? (x.lat != null ? "Ubicación compartida" : "—")}</td>
+                    <td className="max-w-[200px] px-3 py-2">{x.resultados === 0 ? <span className="font-semibold text-ladrillo-oscuro">Ninguno</span> : <>{x.resultados ?? "—"}{x.mostrados && x.mostrados.length > 0 && <span className="block text-gris">{x.mostrados.map((m) => m.nombre).slice(0, 3).join(" · ")}</span>}</>}</td>
+                    <td className="whitespace-nowrap px-3 py-2">{x.version ? `Sí · v${x.version}` : "No"}</td>
+                    <td className="px-3 py-2"><Chip tono={tonoEstado}>{etiquetaEstado}</Chip></td>
+                    <td className="whitespace-nowrap px-3 py-2">{x.responsable ?? "—"}</td>
+                    <td className={`whitespace-nowrap px-3 py-2 ${venc ? "font-semibold text-ladrillo-oscuro" : ""}`}>{x.proximaAccion ? dia(x.proximaAccion) : "—"}</td>
+                    <td className="max-w-[180px] px-3 py-2">{x.contactos.length === 0 ? "—" : x.contactos.map((c) => c.proveedor).join(", ")}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-gris">{x.origen ?? "web"}</td>
+                    <td className="px-3 py-2"><Link href={`${ruta({ c: x.id })}#caso`} className="inline-flex h-9 items-center whitespace-nowrap rounded-lg border-[1.5px] border-tinta px-3 font-semibold">Gestionar</Link></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {sel && (() => {
+          const cerrada = ESTADOS_CERRADOS.includes(sel.estado);
+          const vencida = !cerrada && sel.proximaAccion != null && sel.proximaAccion <= hoy;
+          const servicio = sel.categoria ?? sel.texto ?? "un servicio";
+          const cliente = sel.nombre ?? "";
+          const propios = sugeridos.get(sel.id) ?? [];
+          const eventos = historial.get(sel.id) ?? [];
+          const mia = sel.responsableId === user.id;
+          const s = sel;
           return (
-            <article key={s.id} className={`${tarjeta} flex flex-col gap-3 p-[18px] ${vencida ? "border-2 border-ladrillo" : ""}`}>
+            <section id="caso" aria-label="Gestión del caso" className={`${tarjeta} flex scroll-mt-4 flex-col gap-3 p-[18px] ${vencida ? "border-2 border-ladrillo" : ""}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="flex flex-wrap items-center gap-2">
-                  <b className="text-base">{s.nombre ?? "Sin nombre"}</b>
-                  <Chip tono={tono}>{etiquetaEstado}</Chip>
-                  {s.resultados === 0 && <Chip tono="rojo">Sin proveedores</Chip>}
-                  {!s.demanda && <Chip tono="gris">Servicio no ofrecido</Chip>}
-                  {vencida && <Chip tono="rojo">Acción vencida</Chip>}
-                </span>
-                <span className="text-[13px] text-gris">{fecha(s.creada)} · {s.origen ?? "web"}</span>
+                <h2 className="font-display text-xl font-bold">{s.nombre ?? "Sin nombre"}{s.whatsapp ? ` · +${s.whatsapp}` : ""}</h2>
+                <Link href={volverSinCaso} className="text-sm font-semibold text-verde underline">Cerrar panel</Link>
               </div>
-              <dl className="grid gap-x-4 gap-y-1.5 text-[15px] sm:grid-cols-[170px_minmax(0,1fr)]">
-                <dt className="text-gris">WhatsApp</dt><dd>{s.whatsapp ? `+${s.whatsapp}` : "No dejó WhatsApp"}</dd>
-                <dt className="text-gris">Qué busca</dt><dd>{s.texto ? `«${s.texto}»` : "—"}{s.categoria && <span className="text-gris"> · {s.categoria}</span>}</dd>
-                <dt className="text-gris">Ubicación del servicio</dt><dd>{s.localidad ? `Por localidad: ${s.localidad}` : s.direccion ? `Exacta: ${s.direccion}` : s.lat != null ? "Exacta: ubicación compartida" : "—"}{!s.localidad && s.lat != null && <span className="text-gris"> · medida</span>}</dd>
-                <dt className="text-gris">Se le mostraron</dt><dd>{s.resultados ?? "—"} proveedores{s.mostrados && s.mostrados.length > 0 && <span className="block text-[13px] text-tinta-2">{s.mostrados.map((p) => p.nombre).join(" · ")}{(s.resultados ?? 0) > s.mostrados.length ? ` · y ${(s.resultados ?? 0) - s.mostrados.length} más` : ""}</span>}</dd>
-                <dt className="text-gris">Autorización</dt><dd>{s.version ? `Política de datos v${s.version}` : "Sin autorización: no se comparten sus datos"}</dd>
-                <dt className="text-gris">Responsable</dt><dd>{s.responsable ?? "Sin asignar"}</dd>
-                <dt className="text-gris">Próxima acción</dt><dd className={vencida ? "font-semibold text-ladrillo-oscuro" : ""}>{s.proximaAccion ? dia(s.proximaAccion) : "Sin fecha"}</dd>
-                <dt className="text-gris">Contactó a</dt>
-                <dd>
-                  {s.contactos.length === 0 ? "Aún a nadie" : (
-                    <ul className="flex flex-col gap-1.5">{s.contactos.map((c, i) => <li key={i}><b>{c.proveedor}</b> <span className="text-[13px] text-gris">· {fecha(c.cuando)}</span>{c.mensaje && <span className="block text-[13px] text-tinta-2">{c.mensaje}</span>}</li>)}</ul>
-                  )}
-                </dd>
-              </dl>
-
+              <p className="text-[15px] text-tinta-2">{s.texto ? `«${s.texto}»` : "Sin texto"}{s.categoria ? ` · ${s.categoria}` : ""}</p>
+              <div className="flex max-w-3xl flex-col gap-3">
               {/* Contactar proveedores cercanos: el botón abre WhatsApp con el mensaje listo; «Ya le escribí» deja el registro. */}
               {!cerrada && s.whatsapp && s.version && (
                 <section aria-label="Proveedores cercanos" className="flex flex-col gap-2 rounded-2xl bg-piedra p-3.5">
@@ -186,19 +208,19 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
               )}
 
               {/* Gestión del caso */}
-              <div className="flex flex-wrap items-end gap-2.5 border-t border-[#EAE3D5] pt-3">
+              <div className="flex flex-col gap-3 border-t border-[#EAE3D5] pt-3">
                 <form action={tomarSolicitud}><input type="hidden" name="id" value={s.id} /><input type="hidden" name="volver" value={volver} /><button type="submit" className={mia ? botonBorde : botonOscuro}>{mia ? "Soltar caso" : "Tomar caso"}</button></form>
                 <form action={programarAccionSolicitud} className="flex items-end gap-2">
                   <input type="hidden" name="id" value={s.id} /><input type="hidden" name="volver" value={volver} />
                   <label className="flex flex-col gap-1 text-[13px] font-semibold text-gris">Próxima acción<input type="date" name="fecha" min={hoy} defaultValue={s.proximaAccion ?? ""} className={`${campoAdmin} w-[160px]`} /></label>
                   <button type="submit" className={botonBorde}>Guardar fecha</button>
                 </form>
-                <form action={cambiarEstadoSolicitud} className="flex flex-wrap items-end gap-2">
+                <form action={cambiarEstadoSolicitud} className="flex flex-col gap-2">
                   <input type="hidden" name="id" value={s.id} /><input type="hidden" name="volver" value={volver} />
                   <label className="flex flex-col gap-1 text-[13px] font-semibold text-gris">Estado
-                    <select name="estado" defaultValue={s.estado} className={`${campoAdmin} w-[200px]`}>{ESTADOS_SOLICITUD.map(([v, e]) => <option key={v} value={v}>{e}</option>)}</select>
+                    <select name="estado" defaultValue={s.estado} className={`${campoAdmin} w-full`}>{ESTADOS_SOLICITUD.map(([v, e]) => <option key={v} value={v}>{e}</option>)}</select>
                   </label>
-                  <label className="flex flex-col gap-1 text-[13px] font-semibold text-gris">Nota (opcional)<input name="nota" maxLength={500} className={`${campoAdmin} w-[220px]`} /></label>
+                  <label className="flex flex-col gap-1 text-[13px] font-semibold text-gris">Nota (opcional)<input name="nota" maxLength={500} className={`${campoAdmin} w-full`} /></label>
                   <button type="submit" className={botonBorde}>Cambiar estado</button>
                 </form>
               </div>
@@ -223,9 +245,10 @@ export default async function Solicitudes({ searchParams }: { searchParams: Prom
                   </ol>
                 )}
               </details>
-            </article>
+              </div>
+            </section>
           );
-        })}
+        })()}
       </main>
     </>
   );

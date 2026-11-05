@@ -339,6 +339,12 @@ export async function listarUsuarios(q?: string, rolesFiltro: string[] = []) {
     .select({ id: usuarioRoles.usuarioId, rol: usuarioRoles.rol })
     .from(usuarioRoles)
     .where(inArray(usuarioRoles.usuarioId, lista.map((l) => l.id)));
+  // Ser proveedor lo define tener perfil en `proveedores`, no un rol: quien se registra solo no recibe roles.
+  const perfiles = await db
+    .select({ id: proveedores.usuarioId, proveedorId: proveedores.id, estado: proveedores.estado })
+    .from(proveedores)
+    .where(inArray(proveedores.usuarioId, lista.map((l) => l.id)));
+  const mapaPerfil = new Map(perfiles.map((p) => [p.id, { id: p.proveedorId, estado: p.estado as string }]));
   const ultimo = await consultar(sql`SELECT user_id AS id, max(updated_at) AS ultimo FROM session WHERE user_id IN (${sql.join(lista.map((l) => sql`${l.id}`), sql`, `)}) GROUP BY user_id`);
   const mapaUltimo = new Map(filas<{ id: string; ultimo: Date }>(ultimo).map((u) => [u.id, u.ultimo]));
   return lista.map((l) => ({
@@ -346,7 +352,7 @@ export async function listarUsuarios(q?: string, rolesFiltro: string[] = []) {
     roles: roles.filter((r) => r.id === l.id).map((r) => r.rol as string),
     perfilProveedor: mapaPerfil.get(l.id) ?? null,
     ultimoIngreso: mapaUltimo.get(l.id) ?? null,
-    proveedorId: mapaProv.get(l.id) ?? null,
+    proveedorId: mapaPerfil.get(l.id)?.id ?? null,
   }));
 }
 
