@@ -56,6 +56,33 @@ export const barrios = pgTable("barrios", {
  */
 export const estadoSolicitudServicioEnum = pgEnum("estado_solicitud_servicio", ["nueva", "avisada", "en_gestion", "proveedor_contactado", "atendida", "sin_proveedor", "descartada"]);
 
+export const estadoAyudaInscripcionEnum = pgEnum("estado_ayuda_inscripcion", ["nueva", "contactada"]);
+
+/**
+ * Proveedores que piden ayuda para inscribirse («Que me llamen» del botón flotante, /ingreso y el menú). Es otra audiencia y otro flujo
+ * que la demanda de clientes (`solicitudes_servicio`), por eso no comparten tabla. El celular es dato personal: solo se guarda con autorización.
+ */
+export const solicitudesAyudaInscripcion = pgTable("solicitudes_ayuda_inscripcion", {
+  id: uuid().primaryKey().defaultRandom(),
+  nombre: text().notNull(),
+  oficio: text().notNull(),
+  celular: text().notNull(),
+  estado: estadoAyudaInscripcionEnum().notNull().default("nueva"),
+  /** boton_flotante · ingreso · menu. */
+  origen: text().notNull(),
+  /** Ruta desde la que se envió. */
+  pagina: text(),
+  /** true si el oficio escrito menciona un servicio que LasTresB no ofrece: se guarda y se marca para revisión. */
+  revisar: boolean().notNull().default(false),
+  autorizaDatos: boolean().notNull().default(false),
+  consentimientoVersion: text(),
+  ip: text(),
+  userAgent: text(),
+  contactadaPor: text().references(() => user.id),
+  contactadaEn: timestamp({ withTimezone: true }),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+});
+
 /**
  * Demanda sin cubrir: alguien pidió un servicio sin proveedores suficientes y dejó su WhatsApp (opcional)
  * para que le avisemos. Se muestra en el backoffice (B7). El WhatsApp es dato personal: solo se guarda con autorización.

@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Bricolage_Grotesque, Inter } from "next/font/google";
 import { MARCA } from "@las3b/shared";
 import { Analitica } from "@/components/Analitica";
+import { AyudaProveedor } from "@/components/ayuda/AyudaProveedor";
 import { BarraCarga } from "@/components/BarraCarga";
 import { Cabecera } from "@/components/Cabecera";
 import { MarcoSitio } from "@/components/MarcoSitio";
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-dvh bg-white font-sans text-tinta antialiased">
         <BarraCarga />
         <MarcoSitio cabecera={<Cabecera />} pie={<Pie />}>{children}</MarcoSitio>
+        <AyudaProveedor />
         <Analitica />
         {/* Vercel Web Analytics: sin cookies. Solo en Vercel; en el VPS su script no existe y daría 404. */}
         {process.env.VERCEL === "1" && <Analytics />}

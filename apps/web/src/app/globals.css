@@ -64,3 +64,20 @@ body:has([data-inicio]) .cabecera .icono-cabecera { color: #fff; }
 body:has([data-inicio]) .cabecera .enlace-cabecera:hover { color: var(--color-amarillo); }
 body:has([data-inicio]) .cabecera .boton-ingresar { background: var(--color-amarillo); color: var(--color-tinta); }
 body:has([data-inicio]) .cabecera .boton-ingresar:hover { background: #ffc933; }
+
+/* Botón flotante de ayuda para proveedores (components/ayuda/AyudaProveedor.tsx). */
+/* Con otro modal abierto o el aviso de cookies visible, el botón se oculta: no tapa «Ver N proveedores» ni el aviso. */
+body:has(dialog[open]:not([data-ayuda])) .ayuda-flotante,
+body:has(#cookies-titulo) .ayuda-flotante { display: none; }
+/* En el perfil de un proveedor (html[data-perfil]) queda solo el ícono y sin animación, para no competir con «Contactar por WhatsApp». */
+html[data-perfil] .ayuda-flotante .ayuda-texto,
+html[data-perfil] .ayuda-flotante .ayuda-cerrar { display: none; }
+html[data-perfil] .ayuda-flotante .ayuda-boton { width: 3rem; padding: 0; gap: 0; animation: none; }
+/* Un solo pulso suave a los 5 segundos de cargar la página (nada en bucle; sin movimiento si se prefiere menos). */
+@keyframes ayuda-pulso {
+  0% { box-shadow: 0 6px 20px rgba(27, 38, 35, 0.28), 0 0 0 0 rgba(245, 183, 0, 0.7); }
+  70% { box-shadow: 0 6px 20px rgba(27, 38, 35, 0.28), 0 0 0 16px rgba(245, 183, 0, 0); }
+  100% { box-shadow: 0 6px 20px rgba(27, 38, 35, 0.28), 0 0 0 0 rgba(245, 183, 0, 0); }
+}
+.ayuda-pulso { animation: ayuda-pulso 1.6s ease-out 5s 1 both; }
+@media (prefers-reduced-motion: reduce) { .ayuda-pulso { animation: none; } }

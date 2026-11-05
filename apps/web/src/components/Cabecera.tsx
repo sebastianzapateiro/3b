@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ItemAyudaMenu } from "@/components/ayuda/ItemAyudaMenu";
 import { Desplegable, itemMenu } from "@/components/Desplegable";
 import { EnlaceNav } from "@/components/EnlaceNav";
 import { Logo } from "@/components/Logo";
@@ -33,6 +34,7 @@ export function Cabecera() {
         >
           <Link role="menuitem" href="/proveedores" className={itemMenu}>Proveedores</Link>
           <Link role="menuitem" href="/como-funciona" className={itemMenu}>Cómo funciona</Link>
+          <ItemAyudaMenu />
           <Link role="menuitem" href="/ingreso" className={`${itemMenu} border-t border-borde-suave font-semibold`}>Iniciar sesión</Link>
         </Desplegable>
         <Link href="/" aria-label="LasTresB, inicio" className="flex justify-center text-tinta"><Logo sinMonograma className="logo-normal" /><Logo sinMonograma sobreVerde className="logo-sobre-verde" /></Link>

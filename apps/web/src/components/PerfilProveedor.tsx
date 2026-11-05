@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { oficioPrincipal, rutaProveedor } from "@las3b/shared";
 import { AccionesPerfil } from "@/components/AccionesPerfil";
+import { MarcaPerfilPublico } from "@/components/ayuda/MarcaPerfilPublico";
 import { FotoTrabajo } from "@/components/FotoTrabajo";
 import { Insignia } from "@/components/Insignia";
 import { Resena } from "@/components/Resena";
@@ -82,6 +83,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
 
   return (
     <div className="bg-white">
+      <MarcaPerfilPublico />
       {/* Franja verde: volver, dirección propia y compartir */}
       <section className="bg-verde text-white">
         <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-3 px-2 py-2.5 lg:px-6 lg:pb-24 lg:pt-4">

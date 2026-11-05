@@ -10,7 +10,7 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-LJPS2R11K6";
 export function Analitica() {
   return (
     <>
-      <AnaliticaConsentida id={GA_ID} activa={INDEXABLE} />
+      <AnaliticaConsentida id={GA_ID} activa={INDEXABLE} gtm={process.env.NEXT_PUBLIC_GTM_ID || undefined} />
       <BannerCookies activa={INDEXABLE} />
     </>
   );

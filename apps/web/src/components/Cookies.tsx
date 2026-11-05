@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useState } from "react";
+import { ClicsAnalitica } from "@/components/ClicsAnalitica";
 
 /**
  * Consentimiento de cookies (Ley 1581 de 2012). Las cookies necesarias (sesión, contacto) no requieren permiso;
@@ -39,15 +40,25 @@ function useEleccion() {
 }
 
 /** Carga Google Analytics solo con consentimiento y solo en producción. */
-export function AnaliticaConsentida({ id, activa }: { id: string; activa: boolean }) {
+export function AnaliticaConsentida({ id, activa, gtm }: { id: string; activa: boolean; gtm?: string }) {
   const eleccion = useEleccion();
   if (!activa || eleccion !== "si") return null;
   return (
     <>
-      <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
-      <Script id="ga4" strategy="afterInteractive">
-        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}',{anonymize_ip:true});`}
-      </Script>
+      {gtm ? (
+        // Con Google Tag Manager, el contenedor es quien carga GA4 y las etiquetas: no se carga GA4 aparte (evita contar dos veces).
+        <Script id="gtm" strategy="afterInteractive">
+          {`window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=${gtm}';document.head.appendChild(s);`}
+        </Script>
+      ) : (
+        <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
+          <Script id="ga4" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}',{anonymize_ip:true});`}
+          </Script>
+        </>
+      )}
+      <ClicsAnalitica />
     </>
   );
 }

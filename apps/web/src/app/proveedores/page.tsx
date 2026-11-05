@@ -73,7 +73,8 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     buscarProveedores({ ...filtrosDesdeParams(params), punto }),
     conteosDeFiltros(filtrosDesdeParams(params)),
   ]).catch((e) => {
-    console.error("[proveedores] no se pudo consultar la base", e);
+    // Aviso corto (no console.error): en desarrollo Next lo convertiría en una pantalla de error.
+    console.warn("[proveedores] sin base de datos:", (e as { cause?: { code?: string } }).cause?.code ?? (e instanceof Error ? e.message.slice(0, 80) : e));
     sinBase = true;
     const vacio: PaginaResultados = { items: [], total: 0, pagina, porPagina: 10, categoriaNombre: null };
     return [vacio, CONTEOS_VACIOS] as const;
