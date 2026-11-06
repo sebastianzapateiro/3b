@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 /** Piezas compartidas de los formularios de cuenta (Login_movil). */
 import { useState } from "react";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
@@ -112,10 +112,10 @@ export function BotonSocial({ proveedor, destino, alElegir }: { proveedor: "goog
   );
 }
 
-export function Separador() {
+export function Separador({ texto = "o con tu correo" }: { texto?: string }) {
   return (
     <div className="mb-5 mt-6 flex items-center gap-3 text-sm text-gris">
-      <span className="h-px flex-1 bg-borde" />o con tu correo<span className="h-px flex-1 bg-borde" />
+      <span className="h-px flex-1 bg-borde" />{texto}<span className="h-px flex-1 bg-borde" />
     </div>
   );
 }

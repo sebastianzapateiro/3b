@@ -2,7 +2,7 @@
 
 /**
  * A0 · Botón flotante «¿Ofreces un servicio? Te ayudamos a inscribirte» (CU-30), solo para proveedores. Va en el layout global.
- * - No se muestra en /admin ni en el panel; en /ingreso el botón se oculta pero el panel sigue disponible (lo abre la tarjeta de ayuda).
+ * - No se muestra en /admin ni en el panel. En /ingreso es la única ayuda (ya no hay tarjeta) y su texto es corto: «Te ayudamos a inscribirte».
  * - En el perfil de un proveedor queda solo como ícono y sin animación (CSS: html[data-perfil], ver MarcaPerfilPublico), para no competir con «Contactar por WhatsApp».
  * - Se oculta con cualquier otro modal abierto o con el aviso de cookies (CSS en globals.css) y sube sobre el pie de página.
  * - Con sesión: un proveedor inscrito no lo ve; un cliente sí, sin animación.
@@ -122,7 +122,8 @@ export function AyudaProveedor() {
 
   return (
     <>
-      {!enIngreso && (
+      {(
+
         <div
           className="ayuda-flotante fixed z-30 right-[max(1rem,env(safe-area-inset-right))]"
           style={{ bottom: `calc(max(1rem, env(safe-area-inset-bottom)) + ${sube}px)` }}
@@ -130,7 +131,7 @@ export function AyudaProveedor() {
           <button
             ref={boton}
             type="button"
-            onClick={() => abrir("boton_flotante")}
+            onClick={() => abrir(enIngreso ? "ingreso" : "boton_flotante")}
             aria-label="Ayuda para inscribirte como proveedor"
             aria-haspopup="dialog"
             className={`ayuda-boton flex min-h-12 items-center justify-center rounded-full bg-amarillo font-semibold text-tinta shadow-[0_6px_20px_rgba(27,38,35,0.28)] hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tinta ${compacto ? "size-12" : "gap-2 pl-4 pr-11"} ${conSesion ? "" : "ayuda-pulso"}`}
@@ -138,8 +139,8 @@ export function AyudaProveedor() {
             <IconoLlave />
             {!compacto && (
               <span className="ayuda-texto text-sm leading-tight">
-                <span className="hidden lg:inline">¿Ofreces un servicio? Te ayudamos a inscribirte</span>
-                <span className="lg:hidden">Te ayudamos a inscribirte</span>
+                <span className={enIngreso ? "hidden" : "hidden lg:inline"}>¿Ofreces un servicio? Te ayudamos a inscribirte</span>
+                <span className={enIngreso ? "" : "lg:hidden"}>Te ayudamos a inscribirte</span>
               </span>
             )}
           </button>

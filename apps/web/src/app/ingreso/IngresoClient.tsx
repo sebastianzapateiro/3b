@@ -47,7 +47,7 @@ const AVISOS: Record<Exclude<Aviso_, null>, { tono: "exito" | "error"; texto: st
 };
 
 export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: { destino: string; google: boolean; apple: boolean; aviso: Aviso_; oficios: { id: string; nombre: string; slug: string; grupo: string }[]; tipo: Tipo }) {
-  const [modo, setModo] = useState<"ingresar" | "crear">("ingresar");
+  const [modo, setModo] = useState<"ingresar" | "crear">(aviso ? "ingresar" : "crear") // tras confirmar el correo o cambiar la clave toca ingresar;
 
   // El servidor guarda el tipo en una cookie: así sobrevive al ir y volver de Google o Apple y lo leen los hooks del registro.
   useEffect(() => {
@@ -59,19 +59,20 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
     `flex h-11 flex-1 items-center justify-center rounded-xl text-[15px] font-semibold ${activo ? "bg-white text-tinta shadow-sm" : "text-tinta-2"}`;
 
   return (
-    <main className="grid min-h-[calc(100dvh-4.5rem)] grid-rows-[auto_1fr] lg:grid-cols-[minmax(340px,1fr)_minmax(560px,1060px)] lg:grid-rows-1 lg:gap-4 lg:p-4">
-      {/* Visual: franja baja en celular, panel completo en escritorio. */}
-      <aside className="relative h-32 overflow-hidden bg-tinta text-white sm:h-40 lg:h-auto lg:rounded-[28px]" aria-label="Por qué LasTresB">
+    // `minmax(0, 1fr)`: en pantallas muy angostas la columna no crece con el contenido (evita que el formulario se salga por los lados).
+    <main className="grid min-h-[calc(100dvh-4.5rem)] grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1 lg:gap-4 lg:p-4">
+      {/* Visual: franja baja en celular, panel completo en escritorio. Altura fija: no hay saltos al cambiar de tipo. */}
+      <aside className="relative h-32 min-w-0 overflow-hidden bg-tinta text-white sm:h-56 lg:h-auto lg:rounded-[28px]" aria-label="Por qué LasTresB">
         <Image key={tipo} src={v.foto} alt={v.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
         <div className={`absolute inset-0 bg-gradient-to-t ${v.tono} to-tinta/20`} />
-        <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:justify-between lg:p-8">
+        <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:justify-between lg:p-12">
           <span className="hidden gap-2.5 lg:flex" aria-hidden="true">
             <span className="h-2.5 flex-1 rounded-full bg-verde-vivo" />
             <span className="h-2.5 flex-1 rounded-full bg-ladrillo-claro" />
             <span className="h-2.5 flex-1 rounded-full bg-amarillo" />
           </span>
           <div className="flex max-w-[480px] flex-col gap-3 lg:gap-6">
-            <p className="text-balance font-display text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px] sm:text-[28px] lg:text-[32px] lg:tracking-[-1px]">{v.titulo}</p>
+            <p className="text-balance font-display text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px] sm:text-[28px] lg:text-[44px] lg:tracking-[-1.2px]">{v.titulo}</p>
             <ul className="hidden flex-col gap-2 text-base sm:flex lg:gap-3">
               {v.puntos.map((p) => (
                 <li key={p} className="flex items-center gap-2.5">
@@ -89,42 +90,44 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
         </div>
       </aside>
 
-      <section className="flex flex-col px-6 pb-8 pt-5 lg:items-start lg:justify-center lg:px-10 lg:py-8 xl:flex-row xl:gap-10">
-        <div className="flex w-full max-w-[540px] flex-col gap-3.5 self-center xl:flex-1 xl:self-start">
+      <section className="flex min-w-0 flex-col px-6 pb-8 pt-6 lg:items-center lg:justify-center lg:px-12 lg:py-10">
+        <div className="flex w-full min-w-0 max-w-[420px] flex-col gap-5 self-center">
           {aviso && <Aviso tono={AVISOS[aviso].tono}>{AVISOS[aviso].texto}</Aviso>}
 
           <div className="flex flex-col gap-2">
-            {tipo === "proveedor" && <span className="inline-flex h-8 items-center self-start rounded-full bg-amarillo px-3.5 text-sm font-bold uppercase tracking-wide text-tinta">Solo para proveedores</span>}
-            <h1 className="font-display text-[36px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[44px] lg:text-[44px] lg:tracking-[-1.5px]">
-              {tipo === "cliente" ? (modo === "ingresar" ? "Hola de nuevo" : "Crea tu cuenta") : modo === "ingresar" ? "Ingreso para proveedores" : "Crea tu cuenta de proveedor"}
+            <span className={`inline-flex h-8 items-center self-start rounded-full px-3 text-sm font-semibold ${tipo === "cliente" ? "bg-verde-claro text-verde-oscuro" : "bg-amarillo-suave text-amarillo-oscuro"}`}>
+              {tipo === "cliente" ? "Soy cliente" : "Soy proveedor"}
+            </span>
+            <h1 className="font-display text-[30px] font-extrabold leading-[1.1] tracking-[-1px]">
+              {modo === "ingresar" ? "Hola de nuevo" : tipo === "cliente" ? "Crea tu cuenta" : "Crea tu cuenta como Proveedor de Servicios"}
             </h1>
-            <p className="text-base leading-normal text-tinta-2">
+            {/* En celular no hace falta el texto: quien llega aquí ya sabe a qué vino. */}
+            <p className="hidden text-base leading-normal text-tinta-2 sm:block">
               {tipo === "cliente"
                 ? "La necesitas para calificar a quienes contactaste por LasTresB."
                 : modo === "ingresar"
-                  ? "Ingresa a tu perfil de proveedor."
+                  ? "Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp. Después completas tus datos y el equipo revisa tu perfil antes de publicarlo."
                   : "Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp. Con tu nombre, WhatsApp y oficios creamos tu perfil; después creas tus servicios y completas tus datos."}
             </p>
           </div>
 
-          <div className="flex flex-col gap-2.5">
-            {google && <BotonSocial proveedor="google" destino={destino} />}
-            {apple && <BotonSocial proveedor="apple" destino={destino} />}
-            {/* TODO: Apple Sign-In: falta APPLE_CLIENT_ID y APPLE_CLIENT_SECRET (cuenta de Apple Developer). */}
-          </div>
-          {(google || apple) && <div className="-my-1"><Separador /></div>}
 
           <div role="tablist" aria-label="Continuar con correo" className="flex rounded-2xl bg-piedra p-1">
-            <button type="button" role="tab" aria-selected={modo === "ingresar"} onClick={() => setModo("ingresar")} className={pestana(modo === "ingresar")}>Ya tengo cuenta</button>
             <button type="button" role="tab" aria-selected={modo === "crear"} onClick={() => setModo("crear")} className={pestana(modo === "crear")}>Crear cuenta</button>
+            <button type="button" role="tab" aria-selected={modo === "ingresar"} onClick={() => setModo("ingresar")} className={pestana(modo === "ingresar")}>Ya tengo cuenta</button>
           </div>
           {modo === "ingresar" ? <FormIngresar destino={destino} /> : <FormRegistro proveedor={tipo === "proveedor"} oficios={oficios} alIngresar={() => setModo("ingresar")} />}
-          <p className="text-center text-sm leading-snug text-gris">
+          {(google || apple) && (
+            <div className="flex flex-col gap-2.5">
+              <div className="-mb-3 -mt-1"><Separador texto={modo === "crear" ? "o crea tu cuenta con Google" : "o ingresa con Google"} /></div>
+              {google && <BotonSocial proveedor="google" destino={destino} />}
+              {apple && <BotonSocial proveedor="apple" destino={destino} />}
+              {/* TODO: Apple Sign-In: falta APPLE_CLIENT_ID y APPLE_CLIENT_SECRET (cuenta de Apple Developer). */}
+            </div>
+          )}          <p className="text-center text-sm leading-snug text-gris">
             Con Google o Apple solo usamos tu nombre, correo y foto para crear la cuenta, y antes te pedimos confirmación.{" "}
             <Link href="/privacidad" className="font-semibold text-verde underline">Datos personales</Link>
           </p>
-        </div>
-        <div className="mx-auto mt-5 w-full max-w-[540px] xl:sticky xl:top-24 xl:mx-0 xl:mt-0 xl:w-[400px] xl:flex-none">
           <AyudaInscripcion tipo={tipo} />
         </div>
       </section>
