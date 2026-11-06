@@ -47,7 +47,7 @@ function oficiosDelRegistro(cuerpo: unknown): string[] {
   return [...new Set(ids)].slice(0, 3);
 }
 
-export const auth =betterAuth({
+export const auth = betterAuth({
   appName: "LasTresB",
   trustedOrigins: origenesConfiables(),
   advanced: {
