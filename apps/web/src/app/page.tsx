@@ -6,14 +6,18 @@ import { JsonLd } from "@/components/JsonLd";
 import { TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO } from "@/lib/demo";
 import { proveedoresDestacados } from "@/lib/destacados";
-import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
+import { jsonLdLista, jsonLdSitio, meta } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
 import { Faq } from "@/components/Faq";
 import { FAQ_HOME } from "@/lib/faqs";
 
 /** Home (CU-01, CU-03). Diseño de referencia: docs/mockups/Home_web.dc.html y Home_movil.dc.html. */
-export const metadata: Metadata = { alternates: { canonical: "/" } };
+export const metadata: Metadata = meta({
+  titulo: "LasTresB: servicios y oficios de confianza en Bogotá",
+  descripcion: "Plomeros, electricistas, profesores, instaladores y más oficios de confianza en tu localidad de Bogotá. Reseñas reales y WhatsApp directo, sin comisiones.",
+  ruta: "/",
+});
 
 const LOCALIDAD_INICIAL = "suba";
 

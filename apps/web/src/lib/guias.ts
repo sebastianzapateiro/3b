@@ -617,6 +617,96 @@ export const GUIAS: Guia[] = [
       },
     ],
   },
-];
+  {
+    slug: "mallas-de-seguridad-para-balcon-que-revisar-antes-de-contratar",
+    titulo: "Mallas de seguridad para el balcón: qué revisar antes de contratar la instalación",
+    resumen: "Qué medir, qué preguntarle a quien instala y cómo revisar el trabajo cuando termina, si quieres proteger el balcón o las ventanas para gatos o niños.",
+    fecha: "2026-11-06",
+    minutos: 4,
+    categoria: "hogar",
+    secciones: [
+      {
+        titulo: "Antes de pedir la cotización",
+        lista: [
+          "Define para qué la quieres: gatos, niños o ambos. De eso depende el material y qué tan cerrada debe ser la malla.",
+          "Ten a la mano las medidas del balcón o de la ventana (ancho y alto) y fotos de cómo está hoy.",
+          "Si vives en propiedad horizontal, pregunta en la administración si hay reglas para la fachada antes de instalar.",
+        ],
+      },
+      {
+        titulo: "Qué preguntarle a quien instala",
+        lista: [
+          "¿Hace una visita para medir o cotiza solo con las fotos?",
+          "¿De qué material es la malla y por qué sirve para tu caso?",
+          "¿Cómo se ancla y a qué superficie (pared, marco, reja)? Que te lo explique con palabras sencillas.",
+          "¿Qué incluye el precio: materiales, mano de obra, desplazamiento?",
+          "¿Da garantía del trabajo y por cuánto tiempo?",
+        ],
+      },
+      {
+        titulo: "Cuando termine, revisa",
+        lista: [
+          "Que la malla quede tensa y firme en todo el borde, sin huecos por donde pueda pasar una mascota o un niño.",
+          "Que los anclajes estén bien apretados y las esquinas rematadas.",
+          "Que te digan cada cuánto conviene revisarla y cómo limpiarla.",
+        ],
+      },
+      {
+        titulo: "Recuerda",
+        parrafos: [
+          "Una malla ayuda, pero no reemplaza la supervisión de una persona adulta. Deja por escrito en el chat de WhatsApp lo que acordaron: medidas, material, precio y fecha. LasTresB es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con el proveedor.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "instalacion-de-cortinas-que-medir-y-que-preguntar",
+    titulo: "Instalación de cortinas: qué medir y qué preguntar antes de contratar",
+    resumen: "Cómo tomar las medidas de tus ventanas, qué diferencia hay entre cortina, persiana y blackout, y qué preguntarle a quien las instala en cuartos y salas.",
+    fecha: "2026-11-06",
+    minutos: 4,
+    categoria: "hogar",
+    secciones: [
+      {
+        titulo: "Qué medir",
+        lista: [
+          "El ancho de la ventana y también el de la pared: una cortina se ve mejor cuando el riel o la barra sobrepasa un poco la ventana a cada lado.",
+          "El alto: hasta el borde de la ventana, hasta el piso o hasta donde prefieras que llegue la cortina.",
+          "La altura a la que quedará el riel o la barra, y si hay algo que estorbe (aire acondicionado, muebles, tomacorrientes).",
+        ],
+      },
+      {
+        titulo: "Cortina, persiana o blackout",
+        lista: [
+          "Cortinas de tela con riel o barra: dan calidez y se combinan con visillos.",
+          "Persianas enrollables: se ven más limpias y son prácticas en cocinas y estudios.",
+          "Blackout: bloquea la luz y suele elegirse para los cuartos. Pregunta si va en cortina o en persiana.",
+        ],
+      },
+      {
+        titulo: "Qué preguntarle a quien instala",
+        lista: [
+          "¿Instala lo que ya compraste o también consigue el riel, la barra y los accesorios?",
+          "¿En qué tipo de pared va a perforar (ladrillo, drywall, madera) y qué anclajes usa?",
+          "¿Lleva su propio taladro y herramientas? ¿Deja limpio al terminar?",
+          "¿Cuánto cobra por ventana o por el trabajo completo, y qué incluye?",
+        ],
+      },
+      {
+        titulo: "Antes de pagar el saldo",
+        lista: [
+          "Corre la cortina de lado a lado: debe deslizarse sin trabarse.",
+          "Mira que el riel o la barra queden nivelados y firmes.",
+          "Pregunta cómo lavarla o limpiarla para que dure.",
+        ],
+      },
+      {
+        titulo: "Recuerda",
+        parrafos: [
+          "LasTresB es un directorio de contacto: el servicio, el precio y la garantía se acuerdan directamente con el proveedor. Deja por escrito en el chat de WhatsApp las medidas, el material y el valor que acordaron.",
+        ],
+      },
+    ],
+  },];
 
 export const guiaPorSlug = (slug: string) => GUIAS.find((g) => g.slug === slug);

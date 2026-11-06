@@ -13,6 +13,8 @@ import { buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros,
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
+import { JsonLd } from "@/components/JsonLd";
+import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
 
 /**
  * Proveedores (P2, CU-01): todos los proveedores aprobados en cuadrícula, con filtros y búsqueda. Reemplaza a /buscar y a la portada de /categorias.
@@ -23,7 +25,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const categoria = uno(sp.categoria);
   // La lista completa se indexa; las búsquedas con parámetros no (apuntan a la página SEO del oficio, si la hay).
   if (Object.keys(sp).length === 0) {
-    return { title: "Proveedores de servicios en Bogotá", description: "Todos los proveedores verificados de LasTresB: filtra por servicio, localidad y verificación, y escríbeles directo por WhatsApp.", alternates: { canonical: "/proveedores" } };
+    return meta({
+      titulo: "Proveedores y servicios de confianza en Bogotá",
+      descripcion: "Plomeros, electricistas, profesores, instaladores y más: compara servicios, precios y reseñas reales, y escríbeles directo por WhatsApp. Sin comisiones.",
+      ruta: "/proveedores",
+    });
   }
   return {
     title: "Proveedores: resultados de búsqueda",
@@ -139,7 +145,20 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
 
   return (
     <>
-      <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
+      {/* Datos estructurados solo en la lista completa (las búsquedas con parámetros no se indexan). */}
+      {Object.keys(sp).length === 0 && resultado.items.length > 0 && (
+        <>
+          <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Proveedores", ruta: "/proveedores" }])} />
+          <JsonLd
+            datos={jsonLdLista(
+              "Proveedores y servicios en Bogotá",
+              porServicios
+                ? (resultado as PaginaServicios).items.map((s) => ({ nombre: `${s.nombre} · ${s.proveedor.nombre}`, ruta: `/${s.proveedor.slug}` }))
+                : (resultado as PaginaResultados).items.map((r) => ({ nombre: r.nombre, ruta: `/${r.slug}` })),
+            )}
+          />
+        </>
+      )}      <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
         {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
         <aside className="hidden min-w-0 lg:block lg:flex-[0_0_300px]">
           <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} modo="escritorio" /></div>

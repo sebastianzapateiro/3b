@@ -2,7 +2,7 @@
  * /llms.txt · Resumen del sitio para buscadores con IA (ChatGPT, Perplexity, Gemini, Claude…).
  * Estándar propuesto en llmstxt.org: describe qué es el sitio y enlaza lo más útil, en Markdown.
  */
-import { CATEGORIAS } from "@las3b/shared";
+import { CATEGORIAS, MARCA } from "@las3b/shared";
 import { GUIAS } from "@/lib/guias";
 import { absoluta } from "@/lib/seo";
 
@@ -20,11 +20,15 @@ export function GET() {
     "## Categorías y servicios",
     ...CATEGORIAS.flatMap((c) => [l(c.nombre, `/categorias/${c.slug}`, c.descripcion), ...c.subcategorias.map((s) => `  ${l(`${s.nombre} en Bogotá`, `/servicios/${s.slug}`)}`)]),
     "",
+    "## Proveedores",
+    l("Proveedores y servicios en Bogotá", "/proveedores", "todos los proveedores verificados y sus servicios, con filtros por verificación, precio de la visita y localidad"),
+    "Cada proveedor tiene su página pública en lastresb.com.co/nombre/oficio, con servicios, fotos de trabajos, reseñas verificadas y enlaces a sus redes.",
+    "",
     "## Cómo funciona",
     l("¿Cómo funciona LasTresB?", "/como-funciona", "paso a paso para buscar y para ofrecer servicios"),
     l("Servicios por localidad", "/localidades"),
     l("Nosotros", "/nosotros", "qué es LasTresB y qué no es"),
-    l("Contacto", "/contacto"),
+    l("Contacto", "/contacto", `escríbenos a ${MARCA.correo} o en Instagram @${MARCA.instagram}`),
     "",
     "## Guías para contratar con confianza",
     ...GUIAS.map((g) => l(g.titulo, `/guias/${g.slug}`, g.resumen)),
