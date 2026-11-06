@@ -32,9 +32,10 @@ export function ClicsAnalitica() {
         boton_destino: destino(el.getAttribute("href")),
         pagina: window.location.pathname,
       };
-      const w = window as unknown as { dataLayer?: unknown[]; gtag?: Gtag };
+      const w = window as unknown as { dataLayer?: unknown[]; gtag?: Gtag; conTagManager?: boolean };
       (w.dataLayer ??= []).push({ event: "clic_boton", ...datos }); // Tag Manager
-      w.gtag?.("event", "clic_boton", datos); // GA4 directo (si no hay Tag Manager)
+      // GA4 directo solo sin Tag Manager: con él, gtag() también dispara el activador y el evento llegaría dos veces.
+      if (!w.conTagManager) w.gtag?.("event", "clic_boton", datos);
     };
     document.addEventListener("click", alClic, { capture: true });
     return () => document.removeEventListener("click", alClic, { capture: true });

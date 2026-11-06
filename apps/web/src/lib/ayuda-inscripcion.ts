@@ -31,7 +31,7 @@ export function enlaceAyuda(mensaje: string = MENSAJE_WHATSAPP_AYUDA): string | 
  * Sin consentimiento no se carga ninguno de los dos, así que no sale nada del navegador.
  */
 export function eventoAyuda(nombre: "ayuda_abrir_panel" | "ayuda_clic_whatsapp" | "ayuda_enviar_llamada" | "ayuda_inscribirme_solo", origen: OrigenAyuda) {
-  const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...a: unknown[]) => void };
+  const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...a: unknown[]) => void; conTagManager?: boolean };
   (w.dataLayer ??= []).push({ event: nombre, origen }); // Tag Manager
-  w.gtag?.("event", nombre, { origen }); // GA4 directo
+  if (!w.conTagManager) w.gtag?.("event", nombre, { origen }); // GA4 directo (con Tag Manager llegaría dos veces)
 }

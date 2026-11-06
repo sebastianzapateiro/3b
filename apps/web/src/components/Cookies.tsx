@@ -64,7 +64,7 @@ export function AnaliticaConsentida({ id, activa, gtm }: { id: string; activa: b
       {gtm ? (
         // Con Google Tag Manager, el contenedor es quien carga GA4 y las etiquetas: no se carga GA4 aparte (evita contar dos veces).
         <Script id="gtm" strategy="afterInteractive">
-          {`${base}dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=${gtm}';document.head.appendChild(s);`}
+          {`${base}window.conTagManager=true;dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=${gtm}';document.head.appendChild(s);`}
         </Script>
       ) : (
         <>
