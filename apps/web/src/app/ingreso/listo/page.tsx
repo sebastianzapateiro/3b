@@ -3,6 +3,7 @@ import Image from "next/image";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { rutaInicialProveedor } from "@/lib/alta-proveedor";
 import { destinoSeguro } from "@/lib/destino";
 import { leerTipo, tieneConsentimiento, tieneProveedor } from "@/lib/ingreso";
 import { cancelarCuenta, confirmarCuenta } from "../actions";
@@ -76,7 +77,8 @@ export default async function Listo({ searchParams }: Props) {
   const esProveedor = await tieneProveedor(id);
   // Quien ya tiene perfil de proveedor entra a su panel si eligió «proveedor» o si no venía de otra página
   // (la cookie del tipo dura 1 h y puede vencer antes de confirmar el correo).
-  if (esProveedor && (tipo === "proveedor" || destino === "/")) redirect("/panel");
+  // Perfil recién creado y sin servicios: lo siguiente es crearlos.
+  if (esProveedor && (tipo === "proveedor" || destino === "/")) redirect(await rutaInicialProveedor(id));
   if (tipo === "proveedor") {
     return (
       <main className="flex min-h-[calc(100dvh-4.5rem)] items-center px-4 py-10">

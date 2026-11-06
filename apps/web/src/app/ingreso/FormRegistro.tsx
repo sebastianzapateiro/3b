@@ -3,11 +3,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components/cuenta";
 import { normalizarWhatsapp } from "@las3b/shared";
+import { SelectorOficios } from "@/components/panel/SelectorOficios";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
 
-export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; alIngresar: () => void }) {
+export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: boolean; oficios: { id: string; nombre: string; slug: string; grupo: string }[]; alIngresar: () => void }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [enviadoA, setEnviadoA] = useState("");
@@ -19,6 +20,9 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
     // El WhatsApp es lo primero que necesitamos de un proveedor: se pide y se guarda desde el registro.
     const whatsapp = proveedor ? normalizarWhatsapp(String(datos.get("whatsapp") ?? "")) : null;
     if (proveedor && !whatsapp) return setError("Escribe un WhatsApp válido, por ejemplo 300 123 4567.");
+    // Los oficios del proveedor: con ellos queda creado su perfil y puede empezar a crear sus servicios.
+    const oficiosElegidos = proveedor ? [...new Set(datos.getAll("categoria").map(String).filter(Boolean))] : [];
+    if (proveedor && oficiosElegidos.length === 0) return setError("Elige al menos un oficio.");
     setCargando(true);
     setError("");
     const { error } = await authClient.signUp.email({
@@ -28,7 +32,7 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
       declaraMayorDeEdad: datos.get("mayorDeEdad") === "on",
       ...(whatsapp ? ({ telefono: whatsapp } as object) : {}),
       // Lo valida y registra el servidor (hooks de auth.ts → consentimientos).
-      ...({ aceptaPoliticas: datos.get("politicas") === "on" } as object),
+      ...({ aceptaPoliticas: datos.get("politicas") === "on", ...(proveedor ? { oficios: oficiosElegidos } : {}) } as object),
       callbackURL: "/ingreso?verificado=1",
     });
     setCargando(false);
@@ -65,6 +69,7 @@ export function FormRegistro({ proveedor, alIngresar }: { proveedor: boolean; al
           <span className="text-sm text-gris">Aquí te escriben los clientes y te avisamos de tu perfil.</span>
         </div>
       )}
+      {proveedor && <SelectorOficios oficios={oficios} elegidos={[]} porSlug />}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="clave" className={etiqueta}>Clave</label>
         <CampoClave id="clave" autoComplete="new-password" placeholder="Mínimo 8 caracteres" minLength={8} />

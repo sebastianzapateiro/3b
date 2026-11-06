@@ -39,7 +39,7 @@ function Campos({ s, oficios }: { s?: { nombre: string; descripcion: string | nu
 
 export const metadata = { title: "Servicios y precios" };
 
-export default async function ServiciosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
+export default async function ServiciosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string; bienvenida?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;
   const [lista, oficios] = await Promise.all([serviciosDelProveedor(proveedor.id), oficiosDelProveedor(proveedor.id)]);
@@ -47,6 +47,7 @@ export default async function ServiciosPanel({ searchParams }: { searchParams: P
 
   return (
     <div className="flex flex-col gap-5">
+      {sp.bienvenida === "1" && <Aviso tono="exito">¡Listo, tu perfil ya existe! Ahora crea tus servicios: lo que haces dentro de cada oficio y su precio desde. Con uno ya puedes seguir; el resto del perfil lo completas después.</Aviso>}
       {sp.ok && <Aviso tono="exito">{sp.ok}</Aviso>}
       {sp.error && <Aviso tono="error">{sp.error}</Aviso>}
       <p className="text-[15px] leading-normal text-tinta-2">
@@ -55,7 +56,7 @@ export default async function ServiciosPanel({ searchParams }: { searchParams: P
           : "Los precios son orientativos: el valor final lo acuerdas con cada cliente. Se muestran en tu página como «desde»."}
       </p>
 
-      {oficios.length === 0 && <Aviso tono="error">Primero elige tus oficios en el paso «Tus oficios y tu página»: cada servicio va dentro de uno de ellos.</Aviso>}
+      {oficios.length === 0 && <Aviso tono="error">Primero elige tus oficios en el paso «Tus oficios»: cada servicio va dentro de uno de ellos.</Aviso>}
 
       {oficios.length > 1 && <p className="text-sm text-gris">Tienes {oficios.length} oficios: <b className="text-tinta">{oficios.map((o) => o.nombre).join(", ")}</b>. Cada servicio se agrega dentro de uno de ellos.</p>}
 

@@ -5,9 +5,9 @@
  */
 import { guardarOrigen, origenDeCabeceras, registrarEvento } from "@/lib/actividad";
 import { cache } from "react";
-import { and, count, eq, inArray, isNotNull, asc } from "drizzle-orm";
+import { and, count, eq, inArray, isNotNull, asc, sql } from "drizzle-orm";
 import { z } from "zod";
-import { db, protegerDocumento, schema } from "@las3b/db";
+import { consultar, db, protegerDocumento, schema } from "@las3b/db";
 import { normalizarWhatsapp, slugSchema, sugerirSlug, SLUGS_RESERVADOS } from "@las3b/shared";
 import { estadoDocumentos } from "@/lib/documentos";
 import { FOTOS_MINIMAS, guardarCompletitud } from "@/lib/completitud";
@@ -29,7 +29,7 @@ async function slugLibre(base: string): Promise<string> {
 }
 
 /** Crea el borrador del proveedor (idempotente). Nombre y dirección salen de la cuenta; se editan en el panel. */
-export async function crearBorrador(usuario: { id: string; name?: string | null; email: string; telefono?: string | null }, cabeceras?: Headers) {
+export async function crearBorrador(usuario: { id: string; name?: string | null; email: string; telefono?: string | null }, cabeceras?: Headers, oficioSlugs: string[] = []) {
   const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   if (existe) return existe.id;
   const nombre = usuario.name?.trim() || usuario.email.split("@")[0]!;
@@ -39,6 +39,12 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
     .onConflictDoNothing({ target: proveedores.usuarioId })
     .returning({ id: proveedores.id });
   if (p) {
+    // Los oficios elegidos al crear la cuenta: solo los que existen y están activos, máximo 3 (los servicios van dentro de ellos).
+    const slugs = [...new Set(oficioSlugs)].slice(0, 3);
+    if (slugs.length > 0) {
+      const validas = await db.select({ id: categorias.id }).from(categorias).where(and(inArray(categorias.slug, slugs), isNotNull(categorias.padreId), eq(categorias.activa, true)));
+      if (validas.length > 0) await db.insert(proveedorCategorias).values(validas.map((c) => ({ proveedorId: p.id, categoriaId: c.id }))).onConflictDoNothing();
+    }
     await guardarCompletitud(p.id);
     // Origen (UTM) del primer ingreso y aviso al fundador (B1). Ninguno de los dos puede frenar el registro.
     await guardarOrigen(p.id, origenDeCabeceras(cabeceras));
@@ -48,6 +54,34 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
   // Otra petición lo creó al mismo tiempo.
   const [otro] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   return otro!.id;
+}
+
+/**
+ * A dónde entra el proveedor al panel tras crear su cuenta: con el perfil recién creado (borrador, sin servicios)
+ * lo siguiente es crear sus servicios; en cualquier otro caso, al Resumen.
+ */
+export async function rutaInicialProveedor(usuarioId: string): Promise<string> {
+  const [p] = await db.select({ id: proveedores.id, estado: proveedores.estado }).from(proveedores).where(eq(proveedores.usuarioId, usuarioId)).limit(1);
+  if (!p || p.estado !== "borrador") return "/panel";
+  const [cats, servs] = await Promise.all([
+    db.select({ n: count() }).from(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, p.id)),
+    db.select({ n: count() }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, p.id)),
+  ]);
+  return (cats[0]?.n ?? 0) > 0 && (servs[0]?.n ?? 0) === 0 ? "/panel/servicios?bienvenida=1" : "/panel?bienvenida=1";
+}
+
+/**
+ * Cuentas con el rol «proveedor» que no tienen perfil (por ejemplo, las que el equipo creó desde «Crear usuario»):
+ * les crea el perfil en borrador. Idempotente. Devuelve cuántas creó.
+ */
+export async function crearPerfilesFaltantes(): Promise<number> {
+  const sin = await consultar<{ id: string; name: string; email: string; telefono: string | null }>(sql`
+    SELECT u.id, u.name, u.email, u.telefono
+    FROM "user" u
+    JOIN usuario_roles r ON r.usuario_id = u.id AND r.rol = 'proveedor'
+    WHERE u.eliminado_en IS NULL AND NOT EXISTS (SELECT 1 FROM proveedores p WHERE p.usuario_id = u.id)`);
+  for (const u of sin) await crearBorrador(u);
+  return sin.length;
 }
 
 export type SeccionPanel = "perfil" | "servicios" | "fotos" | "verificacion";
@@ -82,9 +116,11 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
   ]);
   const tareas: TareaAlta[] = [
     { clave: "contacto", titulo: "Tus datos de contacto", texto: "Tu nombre, tu WhatsApp y tu correo. Es lo primero: así podemos escribirte.", ok: Boolean(p?.nombre.trim() && p.whatsapp.trim()), iniciada: Boolean(p?.nombre.trim() || p?.whatsapp.trim()), href: "/panel/perfil#contacto", seccion: "perfil" },
-    { clave: "negocio", titulo: "Tus oficios y tu página", texto: "Qué haces, cómo trabajas y la dirección de tu página.", ok: Boolean(p?.segmento && (cats?.n ?? 0) > 0), iniciada: Boolean(p?.segmento || (cats?.n ?? 0) > 0), href: "/panel/perfil#negocio", seccion: "perfil" },
-    { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
+    // Lo básico se pide al crear la cuenta (nombre, correo, WhatsApp y oficios); lo siguiente son los servicios, y luego el resto del perfil.
+    { clave: "oficios", titulo: "Tus oficios", texto: "A qué te dedicas. Cada servicio que ofrezcas va dentro de uno de tus oficios.", ok: (cats?.n ?? 0) > 0, href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
+    { clave: "negocio", titulo: "Cómo trabajas y tu página", texto: "Si eres independiente o empresa y la dirección de tu página.", ok: Boolean(p?.segmento), iniciada: Boolean(p?.segmento), href: "/panel/perfil#negocio", seccion: "perfil" },
+    { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
     { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
     { clave: "documentos", titulo: "Tu documento", texto: "Opcional: la foto de tu documento ayuda a verificar tu perfil. Es privada, solo la ve el equipo.", ok: docs.lista.some((r) => r.tipo === "documento_frente" && r.cargado), iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
     { clave: "foto", titulo: "Tu foto de perfil", texto: "Opcional, pero los clientes confían más en perfiles con foto. Se muestra en tu perfil.", ok: Boolean(p?.fotoPerfil), href: "/panel/perfil#foto", seccion: "perfil", opcional: true },

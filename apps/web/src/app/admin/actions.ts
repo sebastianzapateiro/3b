@@ -19,6 +19,7 @@ import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { eliminarCuenta } from "@/lib/eliminar-cuenta";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
+import { crearBorrador, crearPerfilesFaltantes } from "@/lib/alta-proveedor";
 import { guardarCompletitud } from "@/lib/completitud";
 import { categoriasSinPrecio, oficioDelServicio } from "@/lib/precios";
 import { hoyBogota, VALORES_FUENTE } from "@/lib/seguimiento";
@@ -358,6 +359,8 @@ export async function crearUsuario(formData: FormData) {
   // El admin responde por el correo; el enlace de invitación solo llega a ese buzón.
   const nuevo = await ctx.internalAdapter.createUser({ name: nombre, email: correo, emailVerified: true }, { method: "admin" });
   if (roles.length) await db.insert(usuarioRoles).values(roles.map((rol) => ({ usuarioId: nuevo.id, rol, asignadoPor: actor.user.id })));
+  // Con el rol Proveedor la cuenta nace con su perfil en borrador (si no, quedaba «Proveedor · sin perfil»).
+  if (roles.includes("proveedor")) await crearBorrador({ id: nuevo.id, name: nombre, email: correo });
 
   const { url, horas } = await crearInvitacion(nuevo.id);
   await enviarInvitacionPorCorreo({ para: correo, nombre, url, horas, motivo: "El equipo de LasTresB te creó una cuenta con este correo." });
@@ -397,6 +400,15 @@ export async function guardarRoles(formData: FormData) {
   if (nuevos.length) await db.insert(usuarioRoles).values(nuevos.map((rol) => ({ usuarioId, rol, asignadoPor: actor.user.id })));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "roles_actualizados", objetoTipo: "usuario", objetoId: usuarioId, metadatos: { antes: actuales, despues: nuevos } });
   volver("/admin/usuarios", { u: usuarioId, ok: "Roles guardados." });
+}
+
+/** Crea el perfil en borrador a todas las cuentas con rol Proveedor que no lo tienen. Solo admin; queda en la auditoría. */
+export async function crearPerfilesProveedorFaltantes() {
+  const actor = await exigirBackoffice(true);
+  const creados = await crearPerfilesFaltantes();
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "perfiles_proveedor_creados", objetoTipo: "usuario", resultado: String(creados) });
+  revalidatePath("/admin", "layout");
+  volver("/admin/usuarios", { ok: creados > 0 ? `Listo: creamos ${creados} ${creados === 1 ? "perfil" : "perfiles"} de proveedor en borrador.` : "No había cuentas de proveedor sin perfil." });
 }
 
 export async function suspenderUsuario(formData: FormData) {

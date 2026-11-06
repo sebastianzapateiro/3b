@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cambiarClaveUsuario, cambiarExigencia2fa, crearUsuario, eliminarUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { cambiarClaveUsuario, cambiarExigencia2fa, crearPerfilesProveedorFaltantes, crearUsuario, eliminarUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
 import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
 import { CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
@@ -31,6 +31,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
   const [lista, exige2fa] = await Promise.all([filtroRoles.length > 0 ? listarUsuarios(sp.q, filtroRoles.length === TODOS.length ? [] : filtroRoles) : Promise.resolve([]), exigencia2fa()]);
   const filtroUrl = `${sp.q ? `&q=${encodeURIComponent(sp.q)}` : ""}${filtroAplicado ? "&f=1" : ""}${filtroRoles.map((r) => `&rol=${r}`).join("")}`;
   const creando = sp.nuevo === "1";
+  const sinPerfil = lista.filter((u) => u.roles.includes("proveedor") && !u.perfilProveedor).length;
   const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
 
   return (
@@ -45,6 +46,12 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
 
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
         <section className="flex min-w-0 flex-[3_1_520px] flex-col gap-4">
+        {sinPerfil > 0 && (
+          <form action={crearPerfilesProveedorFaltantes} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
+            <span className="text-[15px]"><b>{sinPerfil} {sinPerfil === 1 ? "cuenta tiene" : "cuentas tienen"} el rol Proveedor y no {sinPerfil === 1 ? "tiene" : "tienen"} perfil.</b> Se crea en borrador: nadie lo ve hasta que se apruebe.</span>
+            <button type="submit" className={botonOscuro}>Crear perfiles en borrador</button>
+          </form>
+        )}
         <form method="get" className={`${tarjeta} flex flex-col gap-3 p-4`}>
           {sp.q && <input type="hidden" name="q" value={sp.q} />}
           <input type="hidden" name="f" value="1" />

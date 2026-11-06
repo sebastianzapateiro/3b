@@ -76,6 +76,16 @@ export default async function PanelLayout({ children }: { children: React.ReactN
               listo={alta.listo}
             />
           )}
+          {/* Ya enviado o publicado: se sigue invitando a completar el perfil (posiciona mejor) hasta que no falte ningún paso, opcionales incluidos. */}
+          {!borrador && alta.siguiente && (
+            <aside aria-label="Completa tu perfil" className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-amarillo-suave px-4 py-3 text-amarillo-oscuro">
+              <span className="flex min-w-0 flex-col text-[15px] leading-snug">
+                <b>Tu perfil está al {alta.porcentaje} %. Complétalo para aparecer mejor posicionado.</b>
+                <span>Siguiente: {alta.siguiente.titulo.toLowerCase()}.</span>
+              </span>
+              <Link href={alta.siguiente.href} className="flex h-10 flex-none items-center rounded-xl bg-tinta px-4 text-sm font-semibold text-white">Completar</Link>
+            </aside>
+          )}
           {children}
         </main>
       </div>

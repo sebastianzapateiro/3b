@@ -40,7 +40,14 @@ function origenesConfiables(): string[] {
   }
 }
 
-export const auth = betterAuth({
+/** Slugs de oficio que vienen en el cuerpo del registro (`oficios`), sin repetidos y máximo 3. */
+function oficiosDelRegistro(cuerpo: unknown): string[] {
+  const crudo = (cuerpo as { oficios?: unknown } | null)?.oficios;
+  const ids = Array.isArray(crudo) ? crudo.filter((s): s is string => typeof s === "string" && /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s)) : [];
+  return [...new Set(ids)].slice(0, 3);
+}
+
+export const auth =betterAuth({
   appName: "LasTresB",
   trustedOrigins: origenesConfiables(),
   advanced: {
@@ -104,6 +111,10 @@ export const auth = betterAuth({
           message: "Debes declarar que eres mayor de edad y aceptar los términos y la política de datos.",
         });
       }
+      // El proveedor trae desde el registro sus oficios (1 a 3): con ellos puede empezar a crear sus servicios.
+      if (tipoDeCabeceras(ctx.headers) === "proveedor" && oficiosDelRegistro(ctx.body).length === 0) {
+        throw new APIError("BAD_REQUEST", { code: "FALTAN_OFICIOS", message: "Elige al menos un oficio." });
+      }
     }),
   },
   databaseHooks: {
@@ -131,7 +142,7 @@ export const auth = betterAuth({
           if (tipo === "proveedor") {
             // Import dinámico: alta-proveedor → documentos → auth formaría un ciclo.
             const { crearBorrador } = await import("./alta-proveedor");
-            await crearBorrador(user, ctx.headers);
+            await crearBorrador(user, ctx.headers, oficiosDelRegistro(ctx.body));
           }
         },
       },

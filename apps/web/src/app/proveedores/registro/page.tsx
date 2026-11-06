@@ -8,7 +8,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { crearBorrador } from "@/lib/alta-proveedor";
+import { crearBorrador, rutaInicialProveedor } from "@/lib/alta-proveedor";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Registro de proveedor", robots: { index: false, follow: false } };
@@ -17,5 +17,5 @@ export default async function RegistroProveedor() {
   const sesion = await auth.api.getSession({ headers: await headers() });
   if (!sesion?.user) redirect(`/ingreso?${new URLSearchParams({ destino: "/proveedores/registro" })}`);
   await crearBorrador(sesion.user, await headers());
-  redirect("/panel?bienvenida=1");
+  redirect(await rutaInicialProveedor(sesion.user.id));
 }
