@@ -253,6 +253,14 @@ export function subcategoriaPorSlug(slug: string) {
   return undefined;
 }
 
+/**
+ * Servicios que aplican a un oficio, para el menú al crear los servicios de un proveedor (CU-35): los problemas típicos del oficio
+ * (los mismos chips de su página /servicios/[oficio]). Siempre queda «Otro servicio» para escribirlo.
+ */
+export function serviciosSugeridos(slugOficio: string): string[] {
+  return subcategoriaPorSlug(slugOficio)?.sub.seo.problemas ?? [];
+}
+
 export const TODAS_LAS_SUBCATEGORIAS = CATEGORIAS.flatMap((padre) => padre.subcategorias.map((sub) => ({ sub, padre })));
 
 /** Oficios de los que más se busca: «Lo más buscado» en /categorias. */

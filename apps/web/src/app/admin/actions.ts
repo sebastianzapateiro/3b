@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { slugSchema } from "@las3b/shared";
+import { slugSchema, sugerirSlug } from "@las3b/shared";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { auth } from "@/lib/auth";
@@ -19,7 +19,7 @@ import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { eliminarCuenta } from "@/lib/eliminar-cuenta";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
-import { crearBorrador, crearPerfilesFaltantes } from "@/lib/alta-proveedor";
+import { crearBorrador, crearPerfilesFaltantes, slugLibre } from "@/lib/alta-proveedor";
 import { guardarCompletitud } from "@/lib/completitud";
 import { categoriasSinPrecio, oficioDelServicio } from "@/lib/precios";
 import { hoyBogota, VALORES_FUENTE } from "@/lib/seguimiento";
@@ -107,7 +107,9 @@ const altaAsistida = z.object({
   servicioCategoria: z.string().optional(),
   precio: z.string().optional(),
   unidad: z.enum(["visita", "hora", "clase", "trabajo"]).default("visita"),
-  slug: slugSchema,
+  // Vacío o «automática»: la dirección se genera con el modelo de la plataforma (nombre + localidad).
+  slug: z.union([z.literal(""), slugSchema]).optional(),
+  slugAuto: z.string().optional(),
   origen: z.string().default("En persona"),
   fuente: z.enum(VALORES_FUENTE).optional().or(z.literal("").transform(() => undefined)),
 });
@@ -128,8 +130,14 @@ export async function crearProveedorAsistido(formData: FormData) {
   const invitar = texto(formData, "accion") === "invitar";
   if (invitar && !d.correo) volver("/admin/proveedores/nuevo", { error: "Para enviar la invitación el proveedor necesita un correo: con él ingresará. Agrégalo o guarda solo el borrador." });
 
-  const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.slug, d.slug)).limit(1);
-  if (existe) volver("/admin/proveedores/nuevo", { error: "Esa dirección de página ya está en uso." });
+  // Dirección de la página: si el equipo la escribió, debe estar libre; si es automática, se genera con el nombre y se deshace cualquier choque con un número.
+  let slug = d.slug ?? "";
+  if (!slug || d.slugAuto === "1") {
+    slug = await slugLibre(slug || sugerirSlug(d.nombrePublico));
+  } else {
+    const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.slug, slug)).limit(1);
+    if (existe) volver("/admin/proveedores/nuevo", { error: "Esa dirección de página ya está en uso." });
+  }
   if (d.correo) {
     const [cuenta] = await db.select({ id: user.id }).from(user).where(eq(user.email, d.correo.toLowerCase())).limit(1);
     if (cuenta) volver("/admin/proveedores/nuevo", { error: "Ya hay una cuenta con ese correo. Si es la misma persona, que entre y se registre como proveedor desde su cuenta." });
@@ -150,7 +158,7 @@ export async function crearProveedorAsistido(formData: FormData) {
       estado: "borrador",
       segmento,
       nombrePublico: d.nombrePublico,
-      slug: d.slug,
+      slug,
       presentacion: d.presentacion || null,
       whatsapp: d.whatsapp,
       emiteFactura: d.factura === "si",

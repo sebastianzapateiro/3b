@@ -17,7 +17,7 @@ const { proveedores, proveedorCategorias, proveedorLocalidades, serviciosProveed
 type Resultado = { ok: true } | { error: string };
 
 /** Primera dirección libre a partir de una base: «jairo-perez», «jairo-perez-2», … */
-async function slugLibre(base: string): Promise<string> {
+export async function slugLibre(base: string): Promise<string> {
   const raiz = slugSchema.safeParse(base).success ? base : `proveedor-${base || "nuevo"}`.slice(0, 50).replace(/-+$/, "");
   for (let i = 1; i < 50; i++) {
     const candidato = i === 1 ? raiz : `${raiz}-${i}`;
@@ -33,18 +33,18 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
   const [existe] = await db.select({ id: proveedores.id }).from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   if (existe) return existe.id;
   const nombre = usuario.name?.trim() || usuario.email.split("@")[0]!;
+  // Los oficios elegidos al crear la cuenta: solo los que existen y están activos, máximo 3 (los servicios van dentro de ellos).
+  const slugs = [...new Set(oficioSlugs)].slice(0, 3);
+  const validas = slugs.length > 0 ? await db.select({ id: categorias.id }).from(categorias).where(and(inArray(categorias.slug, slugs), isNotNull(categorias.padreId), eq(categorias.activa, true))) : [];
+  // Dirección automática con el modelo de la plataforma: el nombre («clemencia-rojas»), con número si ya existe. El oficio va en la URL pública (/nombre/oficio).
+  const direccion = await slugLibre(sugerirSlug(nombre));
   const [p] = await db
     .insert(proveedores)
-    .values({ usuarioId: usuario.id, estado: "borrador", nombrePublico: nombre, slug: await slugLibre(sugerirSlug(nombre)), whatsapp: normalizarWhatsapp(usuario.telefono ?? "") ?? "" })
+    .values({ usuarioId: usuario.id, estado: "borrador", nombrePublico: nombre, slug: direccion, whatsapp: normalizarWhatsapp(usuario.telefono ?? "") ?? "" })
     .onConflictDoNothing({ target: proveedores.usuarioId })
     .returning({ id: proveedores.id });
   if (p) {
-    // Los oficios elegidos al crear la cuenta: solo los que existen y están activos, máximo 3 (los servicios van dentro de ellos).
-    const slugs = [...new Set(oficioSlugs)].slice(0, 3);
-    if (slugs.length > 0) {
-      const validas = await db.select({ id: categorias.id }).from(categorias).where(and(inArray(categorias.slug, slugs), isNotNull(categorias.padreId), eq(categorias.activa, true)));
-      if (validas.length > 0) await db.insert(proveedorCategorias).values(validas.map((c) => ({ proveedorId: p.id, categoriaId: c.id }))).onConflictDoNothing();
-    }
+    if (validas.length > 0) await db.insert(proveedorCategorias).values(validas.map((c) => ({ proveedorId: p.id, categoriaId: c.id }))).onConflictDoNothing();
     await guardarCompletitud(p.id);
     // Origen (UTM) del primer ingreso y aviso al fundador (B1). Ninguno de los dos puede frenar el registro.
     await guardarOrigen(p.id, origenDeCabeceras(cabeceras));

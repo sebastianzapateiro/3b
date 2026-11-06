@@ -3,6 +3,9 @@ import { db, schema } from "@las3b/db";
 import Link from "next/link";
 import { crearProveedorAsistido, reenviarInvitacion } from "@/app/admin/actions";
 import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
+import { serviciosSugeridos } from "@las3b/shared";
+import { SelectorServicio } from "@/components/panel/SelectorServicio";
+import { SlugSugerido } from "@/components/admin/SlugSugerido";
 import { esCorreoFicticio, estadoInvitaciones } from "@/lib/invitaciones";
 import { parametro } from "@/lib/parametros";
 import { FUENTES_ORIGEN } from "@/lib/seguimiento";
@@ -18,7 +21,7 @@ export const metadata = { title: "Nuevo proveedor" };
 export default async function NuevoProveedor({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const sp = await searchParams;
   const [cats, locs, recientes] = await Promise.all([
-    db.select({ id: schema.categorias.id, nombre: schema.categorias.nombre }).from(schema.categorias).where(isNotNull(schema.categorias.padreId)).orderBy(asc(schema.categorias.nombre)),
+    db.select({ id: schema.categorias.id, nombre: schema.categorias.nombre, slug: schema.categorias.slug }).from(schema.categorias).where(isNotNull(schema.categorias.padreId)).orderBy(asc(schema.categorias.nombre)),
     db.select({ id: schema.localidades.id, nombre: schema.localidades.nombre }).from(schema.localidades).where(eq(schema.localidades.activa, true)).orderBy(asc(schema.localidades.numero)),
     db
       .select({ id: schema.proveedores.id, usuarioId: schema.proveedores.usuarioId, nombre: schema.proveedores.nombrePublico, correo: schema.user.email })
@@ -28,6 +31,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
       .orderBy(desc(schema.proveedores.createdAt))
       .limit(8),
   ]);
+  const sugeridos = Object.fromEntries(cats.map((c) => [c.id, serviciosSugeridos(c.slug)]));
   const [invitaciones, horas] = await Promise.all([estadoInvitaciones(recientes.map((r) => r.usuarioId)), parametro("invitacion_vigencia_h")]);
 
   return (
@@ -94,18 +98,17 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
               </div>
             </fieldset>
             <div className="flex flex-wrap gap-3.5">
-              <div className={`${grupo} flex-[1_1_100%]`}><label htmlFor="servicioCategoria" className={etiqueta}>Oficio del primer servicio</label><select id="servicioCategoria" name="servicioCategoria" className={campoAdmin}><option value="">El primero de los oficios marcados arriba</option>{cats.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select><span className="text-xs text-gris">Cada servicio va atado a un oficio, y debe ser uno de los marcados arriba. Más servicios se agregan después, en el perfil del proveedor.</span></div>
-              <div className={`${grupo} flex-[2_1_240px]`}><label htmlFor="servicio" className={etiqueta}>Primer servicio</label><input id="servicio" name="servicio" placeholder="Ej: Visita de diagnóstico" className={campoAdmin} /></div>
+
+              {/* Oficio (solo los marcados arriba) y, según él, el menú de servicios que aplican; «Otro» para escribir uno. */}
+              <SelectorServicio oficios={cats} sugeridos={sugeridos} mostrarOficio observar opcional oficioCampo="servicioCategoria" nombreCampo="servicio" etiquetaOficio="Oficio del primer servicio" etiquetaServicio="Primer servicio" claseCampo={campoAdmin} claseGrupo={`${grupo} flex-[1_1_100%]`} />
+              <span className="text-xs text-gris">Cada servicio va atado a un oficio marcado arriba. Más servicios se agregan después, en el perfil del proveedor.</span>
               <div className={`${grupo} flex-[1_1_140px]`}><label htmlFor="precio" className={etiqueta}>Precio desde</label><input id="precio" name="precio" inputMode="numeric" placeholder="$ valor" className={campoAdmin} /></div>
               <div className={`${grupo} flex-[1_1_120px]`}><label htmlFor="unidad" className={etiqueta}>Por</label><select id="unidad" name="unidad" className={campoAdmin}><option value="visita">Visita</option><option value="hora">Hora</option><option value="clase">Clase</option><option value="trabajo">Trabajo</option></select></div>
             </div>
             <div className={grupo}><label htmlFor="presentacion" className={etiqueta}>Presentación</label><textarea id="presentacion" name="presentacion" rows={3} maxLength={280} placeholder="En sus palabras: experiencia, especialidad, horario (hasta 280 caracteres)" className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></div>
             <div className={grupo}>
               <label htmlFor="slug" className={etiqueta}>Dirección de su página</label>
-              <div className="flex h-11 max-w-[480px] items-center overflow-hidden rounded-xl border-[1.5px] border-verde">
-                <span className="flex h-full items-center border-r-[1.5px] border-borde-campo bg-piedra px-2.5 font-mono text-[13px] font-semibold text-tinta-2">lastresb.com.co/</span>
-                <input id="slug" name="slug" required placeholder="jorge-plomero-suba" className="h-full min-w-0 flex-1 px-2.5 font-mono text-sm outline-none" />
-              </div>
+              <SlugSugerido campo="slugAuto" />
             </div>
           </section>
 
