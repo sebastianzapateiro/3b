@@ -39,23 +39,39 @@ function useEleccion() {
   return eleccion;
 }
 
-/** Carga Google Analytics solo con consentimiento y solo en producción. */
+/** Estado del modo de consentimiento de Google: la analítica solo usa cookies con permiso; publicidad, nunca. */
+const consentimiento = (analitica: boolean) =>
+  JSON.stringify({ analytics_storage: analitica ? "granted" : "denied", ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied" });
+
+/**
+ * Google Analytics en producción con el modo de consentimiento de Google (Consent Mode v2).
+ * Sin permiso se carga sin cookies: Google recibe avisos anónimos y estima las visitas; al aceptar se activan las cookies `_ga`.
+ */
 export function AnaliticaConsentida({ id, activa, gtm }: { id: string; activa: boolean; gtm?: string }) {
   const eleccion = useEleccion();
-  if (!activa || eleccion !== "si") return null;
+
+  // Si la persona cambia de opinión, se avisa a Google sin recargar la página.
+  useEffect(() => {
+    const gtag = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
+    if (eleccion !== undefined) gtag?.("consent", "update", JSON.parse(consentimiento(eleccion === "si")));
+  }, [eleccion]);
+
+  // Espera a leer la elección guardada para arrancar con el estado correcto.
+  if (!activa || eleccion === undefined) return null;
+  const base = `window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments);};gtag('consent','default',${consentimiento(eleccion === "si")});gtag('set','ads_data_redaction',true);`;
   return (
     <>
       {gtm ? (
         // Con Google Tag Manager, el contenedor es quien carga GA4 y las etiquetas: no se carga GA4 aparte (evita contar dos veces).
         <Script id="gtm" strategy="afterInteractive">
-          {`window.dataLayer=window.dataLayer||[];window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=${gtm}';document.head.appendChild(s);`}
+          {`${base}dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtm.js?id=${gtm}';document.head.appendChild(s);`}
         </Script>
       ) : (
         <>
-          <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
           <Script id="ga4" strategy="afterInteractive">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${id}',{anonymize_ip:true});`}
+            {`${base}gtag('js',new Date());gtag('config','${id}');`}
           </Script>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="afterInteractive" />
         </>
       )}
       <ClicsAnalitica />

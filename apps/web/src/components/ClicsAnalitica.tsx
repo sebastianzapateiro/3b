@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * Cuenta los clics en botones y enlaces de todo el sitio (Google Tag Manager / GA4). Solo se monta con el consentimiento de analítica
- * (ver Cookies.tsx). Cada clic envía el evento `clic_boton` con el texto, el destino y la página; en GTM se filtra por ese evento.
+ * Cuenta los clics en botones y enlaces de todo el sitio (Google Tag Manager / GA4). Se monta con Google Analytics, con o sin cookies según
+ * el consentimiento (ver Cookies.tsx). Cada clic envía el evento `clic_boton` con el texto, el destino y la página; en GTM se filtra por ese evento.
  * Para nombrar un botón a mano: `data-evento="nombre"`. No se envía nada escrito en formularios ni parámetros de la URL (pueden traer datos personales).
  */
 import { useEffect } from "react";
