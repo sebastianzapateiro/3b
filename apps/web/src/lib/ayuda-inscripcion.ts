@@ -26,8 +26,12 @@ export function enlaceAyuda(mensaje: string = MENSAJE_WHATSAPP_AYUDA): string | 
   return HAY_WHATSAPP_AYUDA ? `https://wa.me/${NUMERO_AYUDA}?${new URLSearchParams({ text: mensaje })}` : null;
 }
 
-/** Evento de analítica (GA4, solo si la persona aceptó las cookies de analítica; sin consentimiento no hace nada). */
+/**
+ * Evento de analítica: a Tag Manager (dataLayer) y a GA4 directo si no hay Tag Manager, como ClicsAnalitica.
+ * Sin consentimiento no se carga ninguno de los dos, así que no sale nada del navegador.
+ */
 export function eventoAyuda(nombre: "ayuda_abrir_panel" | "ayuda_clic_whatsapp" | "ayuda_enviar_llamada" | "ayuda_inscribirme_solo", origen: OrigenAyuda) {
-  const gtag = (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag;
-  gtag?.("event", nombre, { origen });
+  const w = window as unknown as { dataLayer?: unknown[]; gtag?: (...a: unknown[]) => void; conTagManager?: boolean };
+  (w.dataLayer ??= []).push({ event: nombre, origen }); // Tag Manager
+  if (!w.conTagManager) w.gtag?.("event", nombre, { origen }); // GA4 directo (con Tag Manager llegaría dos veces)
 }

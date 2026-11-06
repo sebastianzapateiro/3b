@@ -214,9 +214,9 @@ export function faqServicio(o: { nombre: string; localidad?: string; menores: bo
 }
 
 export const FAQ_COOKIES: Pregunta[] = [
-  { pregunta: "¿Puedo usar LasTresB sin aceptar cookies de analítica?", respuesta: "Sí. Las cookies necesarias bastan para buscar, ver perfiles y contactar. La analítica es opcional y solo se activa si la aceptas." },
+  { pregunta: "¿Puedo usar LasTresB sin aceptar cookies de analítica?", respuesta: "Sí. Las cookies necesarias bastan para buscar, ver perfiles y contactar. Las cookies de analítica son opcionales y solo se guardan si las aceptas; sin ellas solo medimos visitas de forma anónima, sin cookies." },
   { pregunta: "¿Cómo cambio mi decisión?", respuesta: "Usa el enlace «Configurar cookies» en el pie de cualquier página y elige de nuevo." },
-  { pregunta: "¿Usan cookies de publicidad?", respuesta: "No. Hoy solo usamos cookies necesarias y, con tu permiso, analítica agregada." },
+  { pregunta: "¿Usan cookies de publicidad?", respuesta: "No. Hoy solo usamos cookies necesarias y, con tu permiso, cookies de analítica agregada." },
 ];
 
 export const FAQ_RESENAS: Pregunta[] = [
