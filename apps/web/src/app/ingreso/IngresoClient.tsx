@@ -59,7 +59,7 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
     `flex h-11 flex-1 items-center justify-center rounded-xl text-[15px] font-semibold ${activo ? "bg-white text-tinta shadow-sm" : "text-tinta-2"}`;
 
   return (
-    <main className="grid min-h-[calc(100dvh-4.5rem)] grid-rows-[auto_1fr] lg:grid-cols-[2fr_3fr] lg:grid-rows-1 lg:gap-4 lg:p-4">
+    <main className="grid min-h-[calc(100dvh-4.5rem)] grid-rows-[auto_1fr] lg:grid-cols-[minmax(340px,1fr)_minmax(560px,1060px)] lg:grid-rows-1 lg:gap-4 lg:p-4">
       {/* Visual: franja baja en celular, panel completo en escritorio. */}
       <aside className="relative h-32 overflow-hidden bg-tinta text-white sm:h-40 lg:h-auto lg:rounded-[28px]" aria-label="Por qué LasTresB">
         <Image key={tipo} src={v.foto} alt={v.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
@@ -89,13 +89,13 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
         </div>
       </aside>
 
-      <section className="flex flex-col px-6 pb-8 pt-5 lg:items-center lg:justify-center lg:px-12 lg:py-6">
-        <div className="flex w-full max-w-[500px] flex-col gap-4 self-center">
+      <section className="flex flex-col px-6 pb-8 pt-5 lg:items-start lg:justify-center lg:px-10 lg:py-8 xl:flex-row xl:gap-10">
+        <div className="flex w-full max-w-[540px] flex-col gap-3.5 self-center xl:flex-1 xl:self-start">
           {aviso && <Aviso tono={AVISOS[aviso].tono}>{AVISOS[aviso].texto}</Aviso>}
 
           <div className="flex flex-col gap-2">
             {tipo === "proveedor" && <span className="inline-flex h-8 items-center self-start rounded-full bg-amarillo px-3.5 text-sm font-bold uppercase tracking-wide text-tinta">Solo para proveedores</span>}
-            <h1 className="font-display text-[36px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[44px] lg:text-[52px] lg:tracking-[-1.8px]">
+            <h1 className="font-display text-[36px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[44px] lg:text-[44px] lg:tracking-[-1.5px]">
               {tipo === "cliente" ? (modo === "ingresar" ? "Hola de nuevo" : "Crea tu cuenta") : modo === "ingresar" ? "Ingreso para proveedores" : "Crea tu cuenta de proveedor"}
             </h1>
             <p className="text-base leading-normal text-tinta-2">
@@ -123,6 +123,8 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
             Con Google o Apple solo usamos tu nombre, correo y foto para crear la cuenta, y antes te pedimos confirmación.{" "}
             <Link href="/privacidad" className="font-semibold text-verde underline">Datos personales</Link>
           </p>
+        </div>
+        <div className="mx-auto mt-5 w-full max-w-[540px] xl:sticky xl:top-24 xl:mx-0 xl:mt-0 xl:w-[400px] xl:flex-none">
           <AyudaInscripcion tipo={tipo} />
         </div>
       </section>
