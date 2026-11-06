@@ -116,7 +116,9 @@ const altaAsistida = z.object({
 
 export async function crearProveedorAsistido(formData: FormData) {
   const actor = await exigirBackoffice();
-  const crudo = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string"));
+  const crudo: Record<string, FormDataEntryValue> = Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string"));
+  // Si el equipo la escribe a mano, la dirección se normaliza («Jorge Plomería» → «jorge-plomeria») en vez de rechazarla.
+  crudo.slug = sugerirSlug(String(crudo.slug ?? ""));
   const r = altaAsistida.safeParse(crudo);
   if (!r.success) volver("/admin/proveedores/nuevo", { error: r.error.issues[0]?.message ?? "Revisa los datos." });
   const d = r.data;

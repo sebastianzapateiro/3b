@@ -42,7 +42,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
         subtitulo="Alta asistida para quien pide ayuda en persona o por teléfono. Tú llenas los datos; el proveedor confirma su WhatsApp y acepta términos y autorizaciones desde su propio celular."
       />
 
-      <form action={crearProveedorAsistido} className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
+      <form action={crearProveedorAsistido} className="flex flex-wrap items-start gap-6 px-5 pb-6 pt-6 lg:px-8">
         <div className="flex min-w-0 flex-[2_1_560px] flex-col gap-5">
           <Aviso ok={sp.ok} error={sp.error} />
 
@@ -123,40 +123,46 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
             <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría como alta asistida por ti. Para invitar, el proveedor necesita correo: con él ingresará. Otro verificador hace la aprobación final.</span>
           </section>
 
-          <section className={`${tarjeta} flex flex-col gap-2.5 p-[22px]`}>
-            <h2 className="font-display text-lg font-bold">Invitaciones</h2>
-            {recientes.length === 0 ? (
-              <p className="text-sm text-gris">Aún no hay altas asistidas en borrador.</p>
-            ) : (
-              <ul className="flex flex-col text-sm">
-                {recientes.map((r) => {
-                  const inv = invitaciones.get(r.usuarioId);
-                  const sinCorreo = esCorreoFicticio(r.correo);
-                  return (
-                    <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-borde-suave py-2.5 first:border-0">
-                      <Link href={`/admin/proveedores/${r.id}`} className="font-semibold hover:underline">{r.nombre}</Link>
-                      <span className="flex items-center gap-2">
-                        {sinCorreo ? <Chip tono="gris">Sin correo</Chip>
-                          : inv?.estado === "acepto" ? <Chip tono="verde">Aceptó · completa su perfil</Chip>
-                          : inv?.estado === "esperando" ? <Chip tono="amarillo">Esperando</Chip>
-                          : inv?.estado === "vencio" ? <Chip tono="rojo">Venció</Chip>
-                          : <Chip tono="gris">Sin enviar</Chip>}
-                        {!sinCorreo && (inv?.estado === "vencio" || inv?.estado === "sin_invitacion") && (
-                          <form action={reenviarInvitacion}>
-                            <input type="hidden" name="proveedorId" value={r.id} />
-                            <input type="hidden" name="vuelta" value="nuevo" />
-                            <button type="submit" className="font-semibold text-verde hover:text-verde-oscuro">{inv?.estado === "vencio" ? "Reenviar" : "Invitar"}</button>
-                          </form>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </section>
         </div>
       </form>
+
+      {/* Fuera del formulario principal: «Reenviar» e «Invitar» son formularios propios y no pueden ir anidados. */}
+      <div className="flex justify-end px-5 pb-10 lg:px-8">
+        <div className="flex w-full min-w-0 flex-col lg:max-w-[440px]">
+              <section className={`${tarjeta} flex flex-col gap-2.5 p-[22px]`}>
+                <h2 className="font-display text-lg font-bold">Invitaciones</h2>
+                {recientes.length === 0 ? (
+                  <p className="text-sm text-gris">Aún no hay altas asistidas en borrador.</p>
+                ) : (
+                  <ul className="flex flex-col text-sm">
+                    {recientes.map((r) => {
+                      const inv = invitaciones.get(r.usuarioId);
+                      const sinCorreo = esCorreoFicticio(r.correo);
+                      return (
+                        <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-borde-suave py-2.5 first:border-0">
+                          <Link href={`/admin/proveedores/${r.id}`} className="font-semibold hover:underline">{r.nombre}</Link>
+                          <span className="flex items-center gap-2">
+                            {sinCorreo ? <Chip tono="gris">Sin correo</Chip>
+                              : inv?.estado === "acepto" ? <Chip tono="verde">Aceptó · completa su perfil</Chip>
+                              : inv?.estado === "esperando" ? <Chip tono="amarillo">Esperando</Chip>
+                              : inv?.estado === "vencio" ? <Chip tono="rojo">Venció</Chip>
+                              : <Chip tono="gris">Sin enviar</Chip>}
+                            {!sinCorreo && (inv?.estado === "vencio" || inv?.estado === "sin_invitacion") && (
+                              <form action={reenviarInvitacion}>
+                                <input type="hidden" name="proveedorId" value={r.id} />
+                                <input type="hidden" name="vuelta" value="nuevo" />
+                                <button type="submit" className="font-semibold text-verde hover:text-verde-oscuro">{inv?.estado === "vencio" ? "Reenviar" : "Invitar"}</button>
+                              </form>
+                            )}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+        </div>
+      </div>
     </>
   );
 }
