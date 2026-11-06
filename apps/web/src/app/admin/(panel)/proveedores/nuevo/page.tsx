@@ -4,7 +4,7 @@ import Link from "next/link";
 import { crearProveedorAsistido, reenviarInvitacion } from "@/app/admin/actions";
 import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
 import { serviciosSugeridos } from "@las3b/shared";
-import { SelectorServicio } from "@/components/panel/SelectorServicio";
+import { OfreceYDonde } from "@/components/admin/OfreceYDonde";
 import { SlugSugerido } from "@/components/admin/SlugSugerido";
 import { esCorreoFicticio, estadoInvitaciones } from "@/lib/invitaciones";
 import { parametro } from "@/lib/parametros";
@@ -85,23 +85,8 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
 
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <h2 className="font-display text-xl font-bold"><span className="text-verde">3.</span> Qué ofrece y dónde</h2>
-            <fieldset className={grupo}>
-              <legend className="mb-2 text-sm font-semibold">Oficios <span className="font-normal text-gris">(puede tener varios)</span></legend>
-              <div className="flex flex-wrap gap-2">
-                {cats.map((c) => <label key={c.id} className={chip}><input type="checkbox" name="categoria" value={c.id} className="size-4 accent-white" />{c.nombre}</label>)}
-              </div>
-            </fieldset>
-            <fieldset className={grupo}>
-              <legend className="mb-2 text-sm font-semibold">Localidades donde trabaja</legend>
-              <div className="flex flex-wrap gap-2">
-                {locs.map((l) => <label key={l.id} className={chip}><input type="checkbox" name="localidad" value={l.id} className="size-4 accent-white" />{l.nombre}</label>)}
-              </div>
-            </fieldset>
+            <OfreceYDonde cats={cats} locs={locs} sugeridos={sugeridos} claseCampo={campoAdmin} />
             <div className="flex flex-wrap gap-3.5">
-
-              {/* Oficio (solo los marcados arriba) y, según él, el menú de servicios que aplican; «Otro» para escribir uno. */}
-              <SelectorServicio oficios={cats} sugeridos={sugeridos} mostrarOficio observar opcional oficioCampo="servicioCategoria" nombreCampo="servicio" etiquetaOficio="Oficio del primer servicio" etiquetaServicio="Primer servicio" claseCampo={campoAdmin} claseGrupo={`${grupo} flex-[1_1_100%]`} />
-              <span className="text-xs text-gris">Cada servicio va atado a un oficio marcado arriba. Más servicios se agregan después, en el perfil del proveedor.</span>
               <div className={`${grupo} flex-[1_1_140px]`}><label htmlFor="precio" className={etiqueta}>Precio desde</label><input id="precio" name="precio" inputMode="numeric" placeholder="$ valor" className={campoAdmin} /></div>
               <div className={`${grupo} flex-[1_1_120px]`}><label htmlFor="unidad" className={etiqueta}>Por</label><select id="unidad" name="unidad" className={campoAdmin}><option value="visita">Visita</option><option value="hora">Hora</option><option value="clase">Clase</option><option value="trabajo">Trabajo</option></select></div>
             </div>
