@@ -58,6 +58,8 @@ type ProveedorSeo = {
   ruta?: string;
   nombre: string;
   descripcion?: string | null;
+  /** Enlaces a sus redes y sitio web (schema.org `sameAs`). */
+  redes?: string[];
   servicios: string[];
   localidades: string[];
   imagen?: string | null;
@@ -81,6 +83,8 @@ export function jsonLdProveedor(p: ProveedorSeo) {
     description: p.descripcion ?? undefined,
     image: p.imagen ?? undefined,
     knowsAbout: p.servicios,
+    // Redes y sitio que el proveedor publicó: ayudan a que los buscadores los relacionen con su negocio.
+    sameAs: p.redes?.length ? p.redes : undefined,
     inLanguage: "es-CO",
     hasOfferCatalog: p.ofertas?.length
       ? {

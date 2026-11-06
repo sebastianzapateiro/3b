@@ -1,9 +1,16 @@
 import { notFound } from "next/navigation";
 import { rutaPublicaDe } from "@/lib/ruta-proveedor";
-import { aprobarProveedor, editarPerfilComoEquipo, guardarServicioComoEquipo, guardarSeguimiento, quitarServicioComoEquipo, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
+import { aprobarProveedor, editarPerfilComoEquipo, editarTodoComoAdmin, guardarServicioComoEquipo, quitarFotoComoEquipo, guardarSeguimiento, quitarServicioComoEquipo, rechazarProveedor, reenviarInvitacion } from "@/app/admin/actions";
 import { CargaDocumentosEquipo } from "@/components/admin/CargaDocumentosEquipo";
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
-import { etiquetaSegmento, listarLocalidades, obtenerRevision } from "@/lib/admin";
+import { etiquetaSegmento, listarLocalidades, listarOficios, obtenerRevision } from "@/lib/admin";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
+import { REDES } from "@las3b/shared";
+import { CargaFotos } from "@/components/CargaFotos";
+import { fotosDelProveedor } from "@/lib/fotos";
+import { parametro } from "@/lib/parametros";
+import { SelectorLocalidades } from "@/components/admin/SelectorLocalidades";
+import { exigirBackoffice } from "@/lib/verificacion";
 import { CATEGORIA_SIN_PRECIO } from "@/lib/precios";
 import { documentosExigidos, estadoDocumentos } from "@/lib/documentos";
 import { enlaceVigente, esCorreoFicticio, estadoInvitaciones, invitacionPorWhatsApp } from "@/lib/invitaciones";
@@ -70,8 +77,10 @@ export default async function Revision({ params, searchParams }: { params: Promi
   const { id } = await params;
   const sp = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
-  const [p, todasLocalidades] = await Promise.all([obtenerRevision(id), listarLocalidades()]);
+  const [p, todasLocalidades, todosOficios, { roles }, maxMbFoto, maximoFotos] = await Promise.all([obtenerRevision(id), listarLocalidades(), listarOficios(), exigirBackoffice(), parametro("foto_max_mb"), parametro("fotos_max")]);
+  const esAdmin = roles.includes("admin");
   if (!p) notFound();
+  const fotos = await fotosDelProveedor(p.id);
 
   const estado = ESTADO[p.estado] ?? { texto: p.estado, tono: "gris" as const };
   const exigidos = documentosExigidos(p.segmento, p.categorias).filter((e) => e.exigido);
@@ -155,6 +164,69 @@ export default async function Revision({ params, searchParams }: { params: Promi
             </dl>
           </section>
 
+          {esAdmin && (
+            <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
+              <h2 className="font-display text-xl font-bold">Editar todos los datos</h2>
+              <p className="-mt-1 text-sm text-gris">Solo administradores. Sirve en cualquier estado del perfil. Al proveedor le llega un aviso con <b>qué</b> cambió (no los valores) y todo queda en la auditoría.</p>
+              <form action={editarTodoComoAdmin} className="flex flex-col gap-3.5">
+                <input type="hidden" name="proveedorId" value={p.id} />
+                <div className="grid gap-3.5 sm:grid-cols-2">
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Nombre completo o razón social<input name="nombreLegal" required defaultValue={p.nombreLegal} className={campoAdmin} /></label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Nombre público<input name="nombrePublico" required defaultValue={p.nombre} className={campoAdmin} /></label>
+                  <div className="flex flex-col gap-1.5 text-sm font-semibold sm:col-span-2">
+                    <label htmlFor="slug-edicion">Dirección de su página</label>
+                    <div className="flex h-11 max-w-[480px] items-center overflow-hidden rounded-xl border-[1.5px] border-borde-campo">
+                      <span className="flex h-full items-center border-r-[1.5px] border-borde-campo bg-piedra px-2.5 font-mono text-[13px] font-semibold text-tinta-2">lastresb.com.co/</span>
+                      <input id="slug-edicion" name="slug" required defaultValue={p.slug} className="h-full min-w-0 flex-1 px-2.5 font-mono text-sm font-normal outline-none" />
+                    </div>
+                    <span className="text-xs font-normal text-gris">Si la cambias, la dirección anterior sigue funcionando y redirige a la nueva.</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5 text-sm font-semibold"><label htmlFor="whatsapp-edicion">WhatsApp</label><CampoWhatsapp id="whatsapp-edicion" defaultValue={p.whatsapp} className={campoAdmin} /></div>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Correo<input name="correo" type="email" defaultValue={p.correo && !p.correo.endsWith(".invalid") ? p.correo : ""} placeholder="Sin correo" className={campoAdmin} /><span className="text-xs font-normal text-gris">Si lo cambias, la cuenta queda por verificar.</span></label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Cómo trabaja
+                    <select name="segmento" defaultValue={p.segmento ?? "independiente_sin_rut"} className={campoAdmin}>
+                      <option value="independiente_sin_rut">Independiente, sin RUT</option>
+                      <option value="independiente_con_rut">Independiente con RUT</option>
+                      <option value="empresa">Empresa</option>
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Años de experiencia<input name="aniosExperiencia" type="number" min={0} max={80} defaultValue={p.aniosExperiencia ?? ""} className={campoAdmin} /></label>
+                  <div className="flex gap-2.5">
+                    <label className="flex w-24 flex-none flex-col gap-1.5 text-sm font-semibold">Tipo<select name="tipoDocumento" defaultValue={p.tipoDocumento ?? "cc"} className={campoAdmin}><option value="cc">CC</option><option value="ce">CE</option><option value="ppt">PPT</option><option value="nit">NIT</option></select></label>
+                    <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm font-semibold">Número de documento<input name="documento" inputMode="numeric" placeholder="••••••••  (vacío = no cambiar)" className={campoAdmin} /></label>
+                  </div>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">Fecha de nacimiento<input name="fechaNacimiento" type="date" defaultValue={p.fechaNacimientoIso} className={campoAdmin} /></label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold sm:col-span-2">Dirección de notificaciones<input name="direccion" defaultValue={p.direccion ?? ""} className={campoAdmin} /></label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold">N.º de matrícula<input name="numeroMatricula" defaultValue={p.numeroMatricula ?? ""} className={campoAdmin} /></label>
+                </div>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">Presentación <span className="font-normal text-gris">(hasta 1000 caracteres)</span><textarea name="presentacion" rows={6} maxLength={1000} defaultValue={p.presentacion ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>
+                <fieldset className="flex flex-col gap-2.5">
+                  <legend className="mb-1 text-sm font-semibold">Redes sociales y sitio web <span className="font-normal text-gris">(usuario como @tunegocio o enlace; vacío = sin red)</span></legend>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {REDES.map((r) => (
+                      <label key={r.clave} className="flex flex-col gap-1.5 text-sm font-semibold">{r.nombre}<input name={`red_${r.clave}`} defaultValue={p.redes[r.clave] ?? ""} placeholder={r.ejemplo} inputMode="url" maxLength={200} className={campoAdmin} /></label>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="flex flex-col gap-1.5">
+                  <legend className="mb-2 text-sm font-semibold">Oficios <span className="font-normal text-gris">(al menos uno; para quitar uno, primero cambia o quita sus servicios)</span></legend>
+                  <div className="flex flex-wrap gap-2">
+                    {todosOficios.map((o) => (
+                      <label key={o.id} className="flex h-[38px] cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-borde-campo px-3.5 text-sm has-[:checked]:border-verde has-[:checked]:bg-verde has-[:checked]:font-semibold has-[:checked]:text-white">
+                        <input type="checkbox" name="categoria" value={o.id} defaultChecked={p.oficioIds.includes(o.id)} className="size-4 accent-white" />{o.nombre}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+                <SelectorLocalidades locs={todasLocalidades} inicial={p.localidadIds} />
+                <fieldset className="flex flex-col gap-1"><legend className="mb-1 text-sm font-semibold">Lo que declara</legend>
+                  {DECLARACIONES.map(([k, t]) => <label key={k} className="flex min-h-9 items-center gap-2 text-sm"><input type="checkbox" name={k} defaultChecked={p.declaraciones[k]} className="size-[18px] accent-verde" />{t}</label>)}
+                </fieldset>
+                <label className="flex min-h-11 items-center gap-2.5 rounded-xl bg-piedra px-3.5 text-sm font-semibold"><input type="checkbox" name="avisar" defaultChecked className="size-[18px] accent-verde" />Avisar al proveedor por correo qué cambió</label>
+                <button type="submit" className="h-12 self-start rounded-xl bg-tinta px-6 text-[15px] font-semibold text-white">Guardar todos los cambios</button>
+              </form>
+            </section>
+          )}
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 className="font-display text-xl font-bold">Documentos privados</h2>
@@ -186,6 +258,31 @@ export default async function Revision({ params, searchParams }: { params: Promi
           </section>
 
           <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h2 className="font-display text-xl font-bold">Fotos de trabajos</h2>
+              <span className="text-sm text-gris">{fotos.length} de {maximoFotos}</span>
+            </div>
+            <p className="-mt-1 text-sm text-gris">Públicas: salen en la página del proveedor y suben su nivel. A diferencia de los documentos, estas sí las ve cualquiera. Súbelas solo si el proveedor te las dio y autorizó publicarlas.</p>
+            <CargaFotos api={`/api/v1/admin/proveedores/${p.id}/fotos`} maxMb={maxMbFoto} quedan={Math.max(0, maximoFotos - fotos.length)} textoAutoria="El proveedor me confirmó que estas fotos son de trabajos hechos por él y autorizó publicarlas." />
+            {fotos.length > 0 && (
+              <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {fotos.map((f) => (
+                  <li key={f.id} className="flex flex-col gap-1.5">
+                    <div className="aspect-square overflow-hidden rounded-2xl bg-borde-suave">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={f.url} alt={f.descripcion ?? "Foto de trabajo"} className="size-full object-cover" loading="lazy" />
+                    </div>
+                    <form action={quitarFotoComoEquipo}>
+                      <input type="hidden" name="proveedorId" value={p.id} />
+                      <input type="hidden" name="fotoId" value={f.id} />
+                      <button type="submit" className="inline-flex min-h-11 items-center text-sm font-semibold text-ladrillo-oscuro">Quitar</button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          <section className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
             <h2 className="font-display text-xl font-bold">Lista de verificación</h2>
             {[
               "El nombre coincide con el documento",
@@ -211,7 +308,7 @@ export default async function Revision({ params, searchParams }: { params: Promi
                 <input type="hidden" name="proveedorId" value={p.id} />
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Nombre público<input name="nombrePublico" required defaultValue={p.nombre} className={campoAdmin} /></label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">WhatsApp<input name="whatsapp" required defaultValue={p.whatsapp} inputMode="tel" className={campoAdmin} /></label>
-                <label className="flex flex-col gap-1.5 text-sm font-semibold">Presentación <span className="font-normal text-gris">(hasta 280 caracteres)</span><textarea name="presentacion" rows={3} maxLength={280} defaultValue={p.presentacion ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>
+                <label className="flex flex-col gap-1.5 text-sm font-semibold">Presentación <span className="font-normal text-gris">(hasta 1000 caracteres)</span><textarea name="presentacion" rows={5} maxLength={1000} defaultValue={p.presentacion ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Años de experiencia<input name="aniosExperiencia" type="number" min={0} max={80} defaultValue={p.aniosExperiencia ?? ""} className={campoAdmin} /></label>
                 <fieldset className="flex flex-col gap-2"><legend className="mb-1 text-sm font-semibold">Localidades donde trabaja</legend>
                   <div className="grid gap-x-3 gap-y-1 sm:grid-cols-2">

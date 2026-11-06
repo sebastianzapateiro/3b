@@ -86,6 +86,7 @@ export default async function PortafolioProveedor({ params }: Props) {
           nombre: p.nombre,
           descripcion: p.presentacion,
           imagen: p.fotoPerfil ?? (p.fotos[0] ? urlPublica(p.fotos[0].rutaMiniatura ?? p.fotos[0].ruta) : null),
+          redes: Object.values(p.redes),
           servicios: p.categorias,
           localidades: p.localidades,
           calificacion: { promedio: p.promedio, total: p.totalResenas },

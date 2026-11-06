@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { oficioPrincipal, rutaProveedor } from "@las3b/shared";
+import { oficioPrincipal, REDES, rutaProveedor, type ClaveRed } from "@las3b/shared";
 import { AccionesPerfil } from "@/components/AccionesPerfil";
 import { MarcaPerfilPublico } from "@/components/ayuda/MarcaPerfilPublico";
 import { FotoTrabajo } from "@/components/FotoTrabajo";
@@ -27,6 +27,20 @@ function IconoEstrella() {
   return (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="#F5B700" stroke="#B88600" strokeWidth="1.5" aria-hidden="true">
       <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />
+    </svg>
+  );
+}
+
+/** Ícono de cada red (trazos simples, heredan el color del texto). */
+function IconoRed({ clave }: { clave: ClaveRed }) {
+  const trazo = { fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" {...trazo}>
+      {clave === "instagram" && (<><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" /></>)}
+      {clave === "facebook" && <path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z" />}
+      {clave === "tiktok" && <path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5M14 3c.4 2.6 2.1 4.2 5 4.5" />}
+      {clave === "youtube" && (<><rect x="2.5" y="5.5" width="19" height="13" rx="4" /><path d="m10 9.5 5 2.5-5 2.5z" fill="currentColor" /></>)}
+      {clave === "web" && (<><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" /></>)}
     </svg>
   );
 }
@@ -145,6 +159,23 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
             <section className="flex flex-col gap-2 lg:gap-2.5">
               <h2 className={h2}>Sobre mí</h2>
               <p className="max-w-[640px] text-[15px] leading-[1.55] text-tinta-2 lg:text-[17px] lg:leading-[1.6]">{p.presentacion}</p>
+            </section>
+          )}
+
+          {REDES.some((r) => p.redes[r.clave]) && (
+            <section aria-label="Redes sociales" className="flex flex-col gap-2 lg:gap-2.5">
+              <h2 className={h2}>Sus redes</h2>
+              <ul className="flex flex-wrap gap-2">
+                {REDES.filter((r) => p.redes[r.clave]).map((r) => (
+                  <li key={r.clave}>
+                    {/* Enlaces que puso el proveedor: se abren aparte y sin dar autoridad de enlace (nofollow ugc). */}
+                    <a href={p.redes[r.clave]} target="_blank" rel="noopener noreferrer nofollow ugc" data-evento={`perfil_red_${r.clave}`} className="inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] border-borde-campo bg-white px-4 text-[15px] font-semibold text-tinta hover:border-tinta">
+                      <IconoRed clave={r.clave} />
+                      {r.nombre}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 

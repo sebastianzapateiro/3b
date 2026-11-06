@@ -2,7 +2,7 @@
 
 /**
  * P8 · Carga de fotos de trabajos: pide una URL firmada, sube el original y deja que el servidor lo procese
- * (WebP, sin EXIF/GPS). Exige la casilla de autoría (CU-36), que no viene premarcada.
+ * (WebP, sin EXIF/GPS). Exige la casilla de autoría (CU-36), que no viene premarcada. Sirve al proveedor (/api/v1/yo/fotos)
  */
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +20,7 @@ async function json(r: Response) {
   return d;
 }
 
-export function CargaFotos({ maxMb, quedan }: { maxMb: number; quedan: number }) {
+export function CargaFotos({ maxMb, quedan, api = "/api/v1/yo/fotos", textoAutoria = "Confirmo que estas fotos son de trabajos hechos por mí y que puedo publicarlas." }: { maxMb: number; quedan: number; api?: string; textoAutoria?: string }) {
   const id = useId();
   const router = useRouter();
   const [autoria, setAutoria] = useState(false);
@@ -35,11 +35,11 @@ export function CargaFotos({ maxMb, quedan }: { maxMb: number; quedan: number })
       for (const archivo of archivos.slice(0, quedan)) {
         const mime = mimeDe(archivo);
         const { camino, url } = (await json(
-          await fetch("/api/v1/yo/fotos/subida", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mime, bytes: archivo.size }) }),
+          await fetch(`${api}/subida`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mime, bytes: archivo.size }) }),
         )) as { camino: string; url: string };
         const subida = await fetch(url, { method: "PUT", headers: { "Content-Type": mime }, body: archivo });
         if (!subida.ok) throw new Error("No pudimos subir la foto. Revisa tu conexión e intenta de nuevo.");
-        await json(await fetch("/api/v1/yo/fotos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ camino, declaraAutoria: autoria }) }));
+        await json(await fetch(api, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ camino, declaraAutoria: autoria }) }));
         subidas += 1;
       }
       setMensaje({ tono: "ok", texto: subidas === 1 ? "Foto subida." : `${subidas} fotos subidas.` });
@@ -56,7 +56,7 @@ export function CargaFotos({ maxMb, quedan }: { maxMb: number; quedan: number })
     <div className="flex flex-col gap-3 rounded-[22px] border-2 border-dashed border-borde-campo p-5">
       <label className="flex min-h-11 items-start gap-2.5 py-1 text-[15px]">
         <input type="checkbox" checked={autoria} onChange={(e) => setAutoria(e.target.checked)} className="mt-0.5 size-5 flex-none accent-verde" />
-        <span>Confirmo que estas fotos son de trabajos hechos por mí y que puedo publicarlas.</span>
+        <span>{textoAutoria}</span>
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <label htmlFor={id} className={`flex h-11 items-center rounded-xl bg-verde px-5 text-sm font-semibold text-white ${bloqueado ? "pointer-events-none opacity-50" : ""}`}>

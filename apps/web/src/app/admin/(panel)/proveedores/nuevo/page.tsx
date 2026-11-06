@@ -5,6 +5,7 @@ import { crearProveedorAsistido, reenviarInvitacion } from "@/app/admin/actions"
 import { Aviso, campoAdmin, Chip, Encabezado, tarjeta } from "@/components/admin/Ui";
 import { serviciosSugeridos } from "@las3b/shared";
 import { OfreceYDonde } from "@/components/admin/OfreceYDonde";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { SlugSugerido } from "@/components/admin/SlugSugerido";
 import { esCorreoFicticio, estadoInvitaciones } from "@/lib/invitaciones";
 import { parametro } from "@/lib/parametros";
@@ -77,7 +78,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
                 <div className={`${grupo} min-w-0 flex-1`}><label htmlFor="documento" className={etiqueta}>Número</label><input id="documento" name="documento" required inputMode="numeric" placeholder="Sin puntos" className={campoAdmin} /></div>
               </div>
               <div className={grupo}><label htmlFor="fechaNacimiento" className={etiqueta}>Fecha de nacimiento</label><input id="fechaNacimiento" name="fechaNacimiento" type="date" className={campoAdmin} /></div>
-              <div className={grupo}><label htmlFor="whatsapp" className={etiqueta}>WhatsApp del proveedor</label><input id="whatsapp" name="whatsapp" type="tel" required placeholder="+57 300 000 0000" className={campoAdmin} /></div>
+              <div className={grupo}><label htmlFor="whatsapp" className={etiqueta}>WhatsApp del proveedor</label><CampoWhatsapp id="whatsapp" className={campoAdmin} /></div>
               <div className={grupo}><label htmlFor="correo" className={etiqueta}>Correo del proveedor</label><input id="correo" name="correo" type="email" placeholder="Si no tiene, déjalo vacío" className={campoAdmin} /></div>
               <div className={`${grupo} sm:col-span-2`}><label htmlFor="direccion" className={etiqueta}>Dirección de notificaciones</label><input id="direccion" name="direccion" required placeholder="Dirección completa y localidad" className={campoAdmin} /></div>
             </div>
@@ -90,7 +91,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
               <div className={`${grupo} flex-[1_1_140px]`}><label htmlFor="precio" className={etiqueta}>Precio desde</label><input id="precio" name="precio" inputMode="numeric" placeholder="$ valor" className={campoAdmin} /></div>
               <div className={`${grupo} flex-[1_1_120px]`}><label htmlFor="unidad" className={etiqueta}>Por</label><select id="unidad" name="unidad" className={campoAdmin}><option value="visita">Visita</option><option value="hora">Hora</option><option value="clase">Clase</option><option value="trabajo">Trabajo</option></select></div>
             </div>
-            <div className={grupo}><label htmlFor="presentacion" className={etiqueta}>Presentación</label><textarea id="presentacion" name="presentacion" rows={3} maxLength={280} placeholder="En sus palabras: experiencia, especialidad, horario (hasta 280 caracteres)" className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></div>
+            <div className={grupo}><label htmlFor="presentacion" className={etiqueta}>Presentación</label><textarea id="presentacion" name="presentacion" rows={5} maxLength={1000} placeholder="En sus palabras: experiencia, especialidad, horario (hasta 1000 caracteres)" className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></div>
             <div className={grupo}>
               <label htmlFor="slug" className={etiqueta}>Dirección de su página</label>
               <SlugSugerido campo="slugAuto" />

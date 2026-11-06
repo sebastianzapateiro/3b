@@ -1,3 +1,6 @@
+/** Largo máximo de la presentación («Sobre mí») del proveedor. */
+export const PRESENTACION_MAX = 1000;
+
 /** Largo máximo de lo que escribe el comprador en «¿Qué estás buscando?». */
 export const MENSAJE_CONTACTO_MAX = 500;
 
@@ -10,11 +13,26 @@ export function enlaceWhatsApp(telefonoE164: string, categoria: string, localida
   return enlaceConMensaje(telefonoE164, mensaje);
 }
 
-/** 10 dígitos de celular colombiano → con indicativo 57, listo para wa.me; null si no parece un número. */
+/** Indicativo de Colombia: los números de LasTresB son de Bogotá; el sistema lo agrega y la persona escribe solo sus 10 dígitos. */
+export const INDICATIVO_CO = "+57";
+
+/**
+ * Formato estándar con el que se guarda todo WhatsApp o celular: «+57» y los 10 dígitos («+573001234567»).
+ * Acepta lo que escriba la persona («300 123 4567», «573001234567», «+57 300 123 4567»); null si no parece un número.
+ * (wa.me recibe solo los dígitos: `enlaceConMensaje` quita el «+».)
+ */
 export function normalizarWhatsapp(v: string): string | null {
-  const digitos = v.replace(/\D/g, "");
-  const n = digitos.length === 10 ? `57${digitos}` : digitos;
-  return /^\d{11,13}$/.test(n) ? n : null;
+  const d = v.replace(/\D/g, "");
+  if (d.length === 10) return `${INDICATIVO_CO}${d}`;
+  if (d.length === 12 && d.startsWith("57")) return `+${d}`;
+  return /^\d{11,13}$/.test(d) ? `+${d}` : null;
+}
+
+/** Lo que se muestra en el campo, sin el indicativo (que va fijo al lado): «+573001234567» → «300 123 4567». */
+export function whatsappSinIndicativo(v: string): string {
+  const d = v.replace(/\D/g, "");
+  const local = d.length === 12 && d.startsWith("57") ? d.slice(2) : d;
+  return local.length === 10 ? `${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}` : local;
 }
 
 export function enlaceConMensaje(telefonoE164: string, mensaje: string): string {

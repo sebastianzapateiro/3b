@@ -6,6 +6,7 @@
  * Escritorio: panel anclado abajo a la derecha, sobre el botón. Celular: hoja inferior.
  */
 import Link from "next/link";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { useEffect, useId, useRef, useState } from "react";
 import { TODAS_LAS_SUBCATEGORIAS } from "@las3b/shared";
 import { enlaceAyuda, eventoAyuda, TEXTO_ATENCION, type OrigenAyuda } from "@/lib/ayuda-inscripcion";
@@ -104,7 +105,7 @@ export default function PanelAyudaProveedor({ abierto, origen, alCerrar }: { abi
             <input id={`${id}-o`} name="oficio" required maxLength={120} list={`${id}-lista`} placeholder="Ej: plomería, clases de inglés" className={campo} />
             <datalist id={`${id}-lista`}>{TODAS_LAS_SUBCATEGORIAS.map(({ sub }) => <option key={sub.slug} value={sub.nombre} />)}</datalist>
           </div>
-          <div className="flex flex-col gap-1"><label htmlFor={`${id}-c`} className="text-sm font-semibold">Tu celular</label><input id={`${id}-c`} name="celular" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} /></div>
+          <div className="flex flex-col gap-1"><label htmlFor={`${id}-c`} className="text-sm font-semibold">Tu celular</label><CampoWhatsapp id={`${id}-c`} name="celular" aria-label="Tu celular, sin el +57" className={campo} /></div>
           <label className="flex items-start gap-2.5 text-[13px] leading-snug text-tinta-2">
             <input type="checkbox" name="autoriza" required className="mt-0.5 size-[18px] flex-none accent-verde" />
             <span>Autorizo que me contacten para ayudarme a inscribirme, según la <Link href="/privacidad" target="_blank" className="font-semibold underline">política de tratamiento de datos</Link>.</span>

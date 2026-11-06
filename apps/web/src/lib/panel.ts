@@ -40,6 +40,7 @@ export async function exigirProveedor() {
       visitaAConvenir: proveedores.visitaAConvenir,
       motivoRechazo: proveedores.motivoRechazo,
       fotoPerfil: proveedores.fotoPerfil,
+      redesSociales: proveedores.redesSociales,
       rutFechaLimite: proveedores.rutFechaLimite,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,

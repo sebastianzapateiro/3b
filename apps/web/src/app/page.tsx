@@ -73,7 +73,10 @@ function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
 
 export default async function Home() {
   // Sin base (p. ej. en local sin el túnel) la sección simplemente no aparece.
-  const destacados = await proveedoresDestacados().catch(() => []);
+  const destacados = await proveedoresDestacados().catch((e) => {
+    console.warn("[home] no se pudieron cargar los perfiles:", e instanceof Error ? e.message.slice(0, 100) : e);
+    return [];
+  });
   const simulado = destacados.length === 0 && process.env.NODE_ENV !== "production";
 
   return (

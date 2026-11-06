@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components/cuenta";
 import { normalizarWhatsapp } from "@las3b/shared";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
@@ -65,7 +66,7 @@ export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: bo
       {proveedor && (
         <div className="flex flex-col gap-1.5">
           <label htmlFor="whatsapp" className={etiqueta}>WhatsApp</label>
-          <input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" autoComplete="tel" placeholder="300 123 4567" required className={campo} />
+          <CampoWhatsapp id="whatsapp" className={campo} />
           <span className="text-sm text-gris">Aquí te escriben los clientes y te avisamos de tu perfil.</span>
         </div>
       )}

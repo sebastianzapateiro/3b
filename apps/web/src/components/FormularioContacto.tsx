@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { useId, useState } from "react";
 
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-3.5 text-base text-tinta";
@@ -45,7 +46,7 @@ export function FormularioContacto({ destino }: { destino: string }) {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor={`${id}-wa`} className={etiqueta}>Tu WhatsApp</label>
-        <input id={`${id}-wa`} name="whatsapp" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} />
+        <CampoWhatsapp id={`${id}-wa`} className={campo} />
       </div>
       <label className="flex items-start gap-2.5 text-[13px] leading-snug text-tinta-2">
         <input type="checkbox" name="autoriza" required className="mt-0.5 size-[18px] flex-none accent-verde" />

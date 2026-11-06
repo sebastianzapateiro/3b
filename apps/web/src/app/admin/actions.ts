@@ -8,11 +8,12 @@ import { registrarEvento } from "@/lib/actividad";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
-import { slugSchema, sugerirSlug } from "@las3b/shared";
+import { normalizarWhatsapp, PRESENTACION_MAX, redesDesdeBase, redesDesdeFormulario, slugSchema, sugerirSlug } from "@las3b/shared";
 import { db, protegerDocumento, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
+import { avisarPerfilEditado } from "@/lib/avisos-proveedor";
 import { auth } from "@/lib/auth";
 import { avisarProveedorAprobado, avisarProveedorRechazado } from "@/lib/avisos-proveedor";
 import { asignarClave, CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
@@ -20,6 +21,7 @@ import { eliminarCuenta } from "@/lib/eliminar-cuenta";
 import { MOTIVOS_RECHAZO as MOTIVOS } from "@/lib/motivos-rechazo";
 import { crearInvitacion, enviarInvitacionPorCorreo, esCorreoFicticio } from "@/lib/invitaciones";
 import { crearBorrador, crearPerfilesFaltantes, slugLibre } from "@/lib/alta-proveedor";
+import { quitarFoto } from "@/lib/fotos";
 import { guardarCompletitud } from "@/lib/completitud";
 import { categoriasSinPrecio, oficioDelServicio } from "@/lib/precios";
 import { hoyBogota, VALORES_FUENTE } from "@/lib/seguimiento";
@@ -99,10 +101,11 @@ const altaAsistida = z.object({
   tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]),
   documento: z.string().regex(/^\d{5,15}$/, "El número de documento va sin puntos ni espacios."),
   fechaNacimiento: z.string().optional(),
-  whatsapp: z.string().transform((v) => v.replace(/[^\d+]/g, "")).pipe(z.string().regex(/^\+?\d{10,13}$/, "Revisa el WhatsApp.")),
+  // Formato estándar «+57XXXXXXXXXX»: se escribe solo el número y el sistema agrega el indicativo.
+  whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Revisa el WhatsApp: son 10 dígitos, por ejemplo 300 123 4567." }), z.NEVER)),
   correo: z.string().email("Revisa el correo.").optional().or(z.literal("")),
   direccion: z.string().min(5, "Escribe la dirección de notificaciones."),
-  presentacion: z.string().max(280, "La presentación admite hasta 280 caracteres.").optional(),
+  presentacion: z.string().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
   servicio: z.string().optional(),
   servicioCategoria: z.string().optional(),
   precio: z.string().optional(),
@@ -230,8 +233,9 @@ export async function guardarSeguimiento(formData: FormData) {
 
 const esquemaPerfilEquipo = z.object({
   nombrePublico: z.string().trim().min(2, "Escribe el nombre público."),
-  whatsapp: z.string().transform((v) => v.replace(/[^\d+]/g, "")).pipe(z.string().regex(/^\+?\d{10,13}$/, "Revisa el WhatsApp.")),
-  presentacion: z.string().trim().max(280, "La presentación admite hasta 280 caracteres.").optional(),
+  // Formato estándar «+57XXXXXXXXXX»: se escribe solo el número y el sistema agrega el indicativo.
+  whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Revisa el WhatsApp: son 10 dígitos, por ejemplo 300 123 4567." }), z.NEVER)),
+  presentacion: z.string().trim().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
   aniosExperiencia: z.coerce.number().int().min(0).max(80).optional().or(z.literal("").transform(() => undefined)),
 });
 
@@ -276,6 +280,152 @@ export async function editarPerfilComoEquipo(formData: FormData) {
   volver(ruta, { ok: "Perfil actualizado a nombre del proveedor." });
 }
 
+const esquemaEdicionAdmin = z.object({
+  nombreLegal: z.string().trim().min(3, "Escribe el nombre completo o la razón social."),
+  nombrePublico: z.string().trim().min(2, "Escribe el nombre público."),
+  slug: slugSchema,
+  whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Revisa el WhatsApp: son 10 dígitos, por ejemplo 300 123 4567." }), z.NEVER)),
+  correo: z.string().trim().email("Revisa el correo.").optional().or(z.literal("")),
+  presentacion: z.string().trim().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
+  aniosExperiencia: z.coerce.number().int().min(0).max(80).optional().or(z.literal("").transform(() => undefined)),
+  segmento: z.enum(["independiente_sin_rut", "independiente_con_rut", "empresa"]),
+  tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]),
+  // Vacío = no se cambia (el documento está cifrado y solo se muestra enmascarado).
+  documento: z.string().trim().regex(/^\d{5,15}$/, "El número de documento va sin puntos ni espacios.").optional().or(z.literal("")),
+  fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Revisa la fecha de nacimiento.").optional().or(z.literal("")),
+  direccion: z.string().trim().max(160, "La dirección admite hasta 160 caracteres.").optional(),
+  numeroMatricula: z.string().trim().max(30, "El número de matrícula admite hasta 30 caracteres.").optional(),
+});
+
+/**
+ * B1 · El administrador edita TODOS los datos de un proveedor, en cualquier estado (borrador, pendiente, publicado…):
+ * nombres, dirección de la página, WhatsApp, correo, presentación, tipo de trabajo, identidad, oficios, localidades y declaraciones.
+ * Al proveedor solo le llega una notificación con QUÉ cambió (nunca los valores) y todo queda en la auditoría.
+ * Cambiar la dirección de la página guarda la anterior para redirigirla (301). Cambiar el correo deja la cuenta por verificar.
+ */
+export async function editarTodoComoAdmin(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const ruta = `/admin/proveedores/${id}`;
+  if (!actor.roles.includes("admin")) volver(ruta, { error: "Solo los administradores pueden editar todos los datos." });
+  const r = esquemaEdicionAdmin.safeParse(Object.fromEntries([...formData.entries()].filter(([, v]) => typeof v === "string")));
+  if (!r.success) volver(ruta, { error: r.error.issues[0]?.message ?? "Revisa los datos." });
+  const d = r.data;
+
+  const { redes, error: errorRedes } = redesDesdeFormulario((n) => String(formData.get(n) ?? ""));
+  if (errorRedes) volver(ruta, { error: errorRedes });
+
+  const numeros = (nombre: string) => [...new Set(formData.getAll(nombre).map(Number).filter((n) => Number.isInteger(n) && n > 0))];
+  const categoriaIds = numeros("categoria");
+  const localidadIds = numeros("localidad");
+  if (categoriaIds.length === 0) volver(ruta, { error: "Deja al menos un oficio." });
+  if (localidadIds.length === 0) volver(ruta, { error: "Elige al menos una localidad." });
+
+  const [antes] = await db.select().from(proveedores).where(eq(proveedores.id, id)).limit(1);
+  if (!antes) volver("/admin/aprobaciones", { error: "Proveedor no encontrado." });
+  const [cuenta] = await db.select({ correo: user.email, nombre: user.name }).from(user).where(eq(user.id, antes.usuarioId)).limit(1);
+  const [catsAntes, locsAntes] = await Promise.all([
+    db.select({ id: proveedorCategorias.categoriaId }).from(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, id)),
+    db.select({ id: proveedorLocalidades.localidadId }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, id)),
+  ]);
+
+  const validas = await db.select({ id: categorias.id }).from(categorias).where(and(inArray(categorias.id, categoriaIds), isNotNull(categorias.padreId)));
+  if (validas.length !== categoriaIds.length) volver(ruta, { error: "Uno de los oficios no existe." });
+  // Un oficio con servicios publicados no se puede quitar sin antes cambiar o quitar esos servicios.
+  const quitados = catsAntes.map((c) => c.id).filter((c) => !categoriaIds.includes(c));
+  if (quitados.length > 0) {
+    const [huerfano] = await db.select({ nombre: serviciosProveedor.nombre }).from(serviciosProveedor).where(and(eq(serviciosProveedor.proveedorId, id), eq(serviciosProveedor.visible, true), inArray(serviciosProveedor.categoriaId, quitados))).limit(1);
+    if (huerfano) volver(ruta, { error: `Para quitar ese oficio, primero cambia o quita el servicio «${huerfano.nombre}».` });
+  }
+  if (d.slug !== antes.slug) {
+    const [ocupado] = await db.select({ id: proveedores.id }).from(proveedores).where(and(eq(proveedores.slug, d.slug), ne(proveedores.id, id))).limit(1);
+    if (ocupado) volver(ruta, { error: "Esa dirección de página ya está en uso." });
+  }
+  const correoNuevo = d.correo ? d.correo.toLowerCase() : "";
+  const cambiaCorreo = Boolean(correoNuevo) && correoNuevo !== cuenta?.correo;
+  if (cambiaCorreo) {
+    const [otra] = await db.select({ id: user.id }).from(user).where(and(eq(user.email, correoNuevo), ne(user.id, antes.usuarioId))).limit(1);
+    if (otra) volver(ruta, { error: "Ya hay una cuenta con ese correo." });
+  }
+
+  // Qué cambió, solo con nombres de campo (es lo único que se le cuenta al proveedor).
+  const mismos = (a: number[], b: number[]) => a.length === b.length && a.every((x) => b.includes(x));
+  const declaraciones = { emiteFactura: formData.has("emiteFactura"), ofreceGarantia: formData.has("ofreceGarantia"), atiendeUrgencias: formData.has("atiendeUrgencias"), disponible24h: formData.has("disponible24h"), visitaAConvenir: formData.has("visitaAConvenir") };
+  const cambios: string[] = [];
+  if (d.nombrePublico !== antes.nombrePublico) cambios.push("Nombre público");
+  if (d.nombreLegal !== cuenta?.nombre) cambios.push("Nombre completo o razón social");
+  if (d.slug !== antes.slug) cambios.push("Dirección de tu página");
+  if (d.whatsapp !== antes.whatsapp) cambios.push("WhatsApp");
+  if (cambiaCorreo) cambios.push("Correo");
+  if ((d.presentacion || null) !== (antes.presentacion || null)) cambios.push("Presentación");
+  if ((d.aniosExperiencia ?? null) !== (antes.aniosExperiencia ?? null)) cambios.push("Años de experiencia");
+  if (d.segmento !== antes.segmento) cambios.push("Cómo trabajas (independiente o empresa)");
+  if (d.tipoDocumento !== antes.tipoDocumento || d.documento) cambios.push("Documento de identidad");
+  if ((d.fechaNacimiento || null) !== (antes.fechaNacimiento || null)) cambios.push("Fecha de nacimiento");
+  if ((d.direccion || null) !== (antes.direccionNotificaciones || null)) cambios.push("Dirección de notificaciones");
+  if ((d.numeroMatricula || null) !== (antes.numeroMatricula || null)) cambios.push("Número de matrícula");
+  if (Object.entries(declaraciones).some(([k, v]) => v !== Boolean((antes as Record<string, unknown>)[k]))) cambios.push("Lo que declaras en tu perfil (factura, garantía, urgencias…)");
+  if (JSON.stringify(redesDesdeBase(antes.redesSociales)) !== JSON.stringify(redes)) cambios.push("Redes sociales");
+  if (!mismos(locsAntes.map((l) => l.id), localidadIds)) cambios.push("Localidades donde trabajas");
+
+  if (cambios.length === 0) volver(ruta, { ok: "No había cambios para guardar." });
+
+  try {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(user)
+        .set({ name: d.nombreLegal, telefono: d.whatsapp, ...(cambiaCorreo ? { email: correoNuevo, emailVerified: false } : {}) })
+        .where(eq(user.id, antes.usuarioId));
+      await tx
+        .update(proveedores)
+        .set({
+          nombrePublico: d.nombrePublico,
+          slug: d.slug,
+          whatsapp: d.whatsapp,
+          presentacion: d.presentacion || null,
+          aniosExperiencia: d.aniosExperiencia ?? null,
+          segmento: d.segmento,
+          tipoDocumento: d.tipoDocumento,
+          ...(d.documento ? protegerDocumento(d.documento) : {}),
+          fechaNacimiento: d.fechaNacimiento || null,
+          direccionNotificaciones: d.direccion || null,
+          numeroMatricula: d.numeroMatricula || null,
+          redesSociales: Object.keys(redes).length > 0 ? redes : null,
+          ...declaraciones,
+          updatedAt: new Date(),
+        })
+        .where(eq(proveedores.id, id));
+      if (d.slug !== antes.slug) await tx.insert(schema.slugsHistorial).values({ slug: antes.slug, proveedorId: id }).onConflictDoNothing();
+      await tx.delete(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, id));
+      await tx.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: id, categoriaId })));
+      await tx.delete(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, id));
+      await tx.insert(proveedorLocalidades).values(localidadIds.map((localidadId) => ({ proveedorId: id, localidadId })));
+    });
+  } catch {
+    volver(ruta, { error: "No pudimos guardar los cambios. Revisa que el documento o el correo no estén ya registrados en otra cuenta." });
+  }
+
+  await guardarCompletitud(id);
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "perfil_editado_por_equipo", objetoTipo: "proveedor", objetoId: id, metadatos: { campos: cambios, completo: true } });
+  if (formData.has("avisar")) await avisarPerfilEditado(id, cambios);
+  revalidatePath(ruta);
+  revalidatePath(`/${antes.slug}`);
+  revalidatePath(`/${d.slug}`);
+  volver(ruta, { ok: `Datos actualizados (${cambios.join(", ")}). ${formData.has("avisar") ? "Le avisamos al proveedor por correo qué cambió; si no tiene correo real, avísale por WhatsApp." : "No se le envió aviso."}` });
+}
+/** B1 · Quita una foto de trabajo a nombre del proveedor (borra sus archivos del bucket público). Queda en la auditoría. */
+export async function quitarFotoComoEquipo(formData: FormData) {
+  const actor = await exigirBackoffice();
+  const id = uuid.parse(texto(formData, "proveedorId"));
+  const fotoId = uuid.parse(texto(formData, "fotoId"));
+  const ruta = `/admin/proveedores/${id}`;
+  const quitada = await quitarFoto(id, fotoId);
+  if (quitada) await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "foto_quitada_equipo", objetoTipo: "proveedor", objetoId: id, metadatos: { fotoId } });
+  const [p] = await db.select({ slug: proveedores.slug }).from(proveedores).where(eq(proveedores.id, id)).limit(1);
+  revalidatePath(ruta);
+  if (p) revalidatePath(`/${p.slug}`);
+  volver(ruta, { ok: quitada ? "Foto quitada." : "No encontramos esa foto." });
+}
 const esquemaServicioEquipo = z.object({
   nombre: z.string().trim().min(2, "Escribe el nombre del servicio.").max(80),
   descripcion: z.string().trim().max(140, "El detalle admite hasta 140 caracteres.").optional(),

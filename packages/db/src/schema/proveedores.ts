@@ -27,7 +27,9 @@ export const proveedores = pgTable("proveedores", {
   aniosExperiencia: integer(),
   whatsapp: text().notNull(),
   horario: jsonb(),
-  paginaWeb: text(),
+  paginaWeb: text(),
+  /** Redes sociales y sitio web del proveedor (claves: instagram, facebook, tiktok, youtube, web) como enlaces https; se muestran en su página pública. */
+  redesSociales: jsonb().$type<Record<string, string>>(),
   emiteFactura: boolean().default(false),
   ofreceGarantia: boolean().default(false),
   /** «Atiendo urgencias el mismo día». Lo declara el proveedor; LasTresB no presta el servicio ni promete tiempos. */

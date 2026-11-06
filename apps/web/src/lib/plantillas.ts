@@ -134,6 +134,17 @@ export function proveedorAprobado(d: { nombre?: string | null; nombrePublico: st
   });
 }
 
+/** Proveedor: el equipo cambió datos de su perfil. Solo dice QUÉ cambió (nunca los valores: pueden ser datos privados). */
+export function perfilEditadoPorEquipo(d: { nombre?: string | null; cambios: string[] }): Mensaje {
+  return armar({
+    asunto: "El equipo de LasTresB actualizó tu perfil",
+    nombre: d.nombre,
+    titulo: "Actualizamos tu perfil",
+    cuerpo: ["El equipo de LasTresB hizo cambios en tu perfil. Esto fue lo que se actualizó:", { lista: d.cambios }, "Revisa tu perfil. Si algo no está bien, escríbenos y lo corregimos."],
+    boton: { texto: "Ver mi perfil", url: `${sitio}/panel/perfil` },
+  });
+}
+
 /** Proveedor: el equipo no pudo aprobarlo; se le dice el motivo y cómo corregirlo. */
 export function proveedorRechazado(d: { nombre?: string | null; motivo: string }): Mensaje {
   return armar({

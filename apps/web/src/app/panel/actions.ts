@@ -14,7 +14,7 @@ import { guardarContacto, guardarIdentidad, guardarNegocio, pendientesAlta, ruta
 import { datosParaConfirmar, exigirProveedorEditable } from "@/lib/panel";
 import { guardarCompletitud } from "@/lib/completitud";
 import { quitarFoto, quitarFotoPerfil } from "@/lib/fotos";
-import { opcionesComoTrabaja } from "@las3b/shared";
+import { opcionesComoTrabaja, PRESENTACION_MAX, redesDesdeFormulario } from "@las3b/shared";
 import { oficioDelServicio, oficiosDelProveedor } from "@/lib/precios";
 import { marcarServicioPrestado } from "@/lib/servicios-prestados";
 
@@ -41,7 +41,7 @@ export async function quitarFotoTrabajo(formData: FormData) {
 /* Perfil */
 
 const esquemaPerfil = z.object({
-  presentacion: z.string().trim().max(280, "La presentación admite hasta 280 caracteres.").optional(),
+  presentacion: z.string().trim().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
   aniosExperiencia: z.coerce.number().int().min(0).max(80).optional().or(z.literal("").transform(() => undefined)),
 });
 
@@ -76,6 +76,19 @@ export async function guardarPerfil(formData: FormData) {
   revalidatePath(`/${proveedor.slug}`);
   if (proveedor.estado === "borrador") redirect(await rutaSiguientePaso(proveedor.id, "Perfil guardado."));
   return volver("/panel/perfil", { ok: "Perfil guardado." });
+}
+
+/** Redes sociales y sitio web: se muestran en la página pública. Se aceptan como «@usuario» o enlace y se guardan como enlaces https limpios. */
+export async function guardarRedes(formData: FormData) {
+  const { proveedor } = await exigirProveedorEditable();
+  const { redes, error } = redesDesdeFormulario((n) => String(formData.get(n) ?? ""));
+  if (error) return volver("/panel/perfil", { error });
+  const hay = Object.keys(redes).length > 0;
+  await db.update(proveedores).set({ redesSociales: hay ? redes : null, updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
+  await registrarEvento(proveedor.id, "cambios", { campos: ["redes sociales"] });
+  revalidatePath("/panel", "layout");
+  revalidatePath(`/${proveedor.slug}`);
+  return volver("/panel/perfil", { ok: hay ? "Redes guardadas: ya se ven en tu página." : "Quitaste tus redes sociales." });
 }
 
 /** Pausar muestra «no disponible» en el perfil; reactivar lo vuelve a publicar. Solo si ya fue aprobado. */

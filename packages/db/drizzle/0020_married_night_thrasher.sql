@@ -1,0 +1,1 @@
+ALTER TABLE "proveedores" ADD COLUMN "redes_sociales" jsonb;

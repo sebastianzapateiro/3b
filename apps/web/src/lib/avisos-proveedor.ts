@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { enviarCorreo } from "@/lib/correo";
 import { esCorreoFicticio } from "@/lib/invitaciones";
-import { proveedorAprobado, proveedorRechazado, registroRecibido } from "@/lib/plantillas";
+import { perfilEditadoPorEquipo, proveedorAprobado, proveedorRechazado, registroRecibido } from "@/lib/plantillas";
 
 async function destinatario(proveedorId: string) {
   const [f] = await db
@@ -32,4 +32,11 @@ export async function avisarProveedorAprobado(proveedorId: string) {
 export async function avisarProveedorRechazado(proveedorId: string, motivo: string) {
   const d = await destinatario(proveedorId);
   if (d) void enviarCorreo({ para: d.correo, ...proveedorRechazado({ nombre: d.nombre, motivo }) });
+}
+
+/** El equipo editó datos del perfil: al proveedor solo le llega la lista de lo que cambió. Sin correo real, no se envía nada (el equipo le avisa por WhatsApp). */
+export async function avisarPerfilEditado(proveedorId: string, cambios: string[]) {
+  if (cambios.length === 0) return;
+  const d = await destinatario(proveedorId);
+  if (d) void enviarCorreo({ para: d.correo, ...perfilEditadoPorEquipo({ nombre: d.nombre, cambios }) });
 }

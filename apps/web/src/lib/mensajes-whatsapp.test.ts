@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { enlaceWhatsApp, mensajeSolicitud, normalizarWhatsapp } from "@las3b/shared";
+import { enlaceWhatsApp, mensajeSolicitud, normalizarWhatsapp, whatsappSinIndicativo } from "@las3b/shared";
 
 describe("mensaje del cliente al proveedor", () => {
   const base = { proveedor: "Don Jorge", cliente: "Marcela", categoria: "Plomería", solicitud: "Se me dañó la llave del lavaplatos. ¿Cuánto cobra la visita?" };
@@ -26,8 +26,10 @@ describe("mensaje del cliente al proveedor", () => {
 
 describe("WhatsApp", () => {
   it("normaliza celulares colombianos y descarta lo que no parece un número", () => {
-    expect(normalizarWhatsapp("300 123 4567")).toBe("573001234567");
-    expect(normalizarWhatsapp("+57 300 123 4567")).toBe("573001234567");
+    expect(normalizarWhatsapp("300 123 4567")).toBe("+573001234567");
+    expect(normalizarWhatsapp("+57 300 123 4567")).toBe("+573001234567");
+    expect(normalizarWhatsapp("573001234567")).toBe("+573001234567");
+    expect(whatsappSinIndicativo("+573001234567")).toBe("300 123 4567");
     expect(normalizarWhatsapp("123")).toBeNull();
   });
 

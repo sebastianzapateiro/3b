@@ -6,7 +6,7 @@
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, schema } from "@las3b/db";
-import { normalizarWhatsapp } from "@las3b/shared";
+import { normalizarWhatsapp, PRESENTACION_MAX } from "@las3b/shared";
 import { registrarEvento } from "@/lib/actividad";
 
 const { proveedores } = schema;
@@ -15,7 +15,7 @@ const { proveedores } = schema;
 const CAMPOS = {
   nombrePublico: { etiqueta: "nombre", valida: (v: string) => (v.length >= 2 && v.length <= 80 ? v : null) },
   whatsapp: { etiqueta: "WhatsApp", valida: (v: string) => normalizarWhatsapp(v) },
-  presentacion: { etiqueta: "presentación", valida: (v: string) => (v.length <= 280 ? v : null) },
+  presentacion: { etiqueta: "presentación", valida: (v: string) => (v.length <= PRESENTACION_MAX ? v : null) },
   direccionNotificaciones: { etiqueta: "dirección", valida: (v: string) => (v.length >= 6 && v.length <= 160 ? v : null) },
   numeroMatricula: { etiqueta: "n.º de matrícula", valida: (v: string) => (v.length >= 1 && v.length <= 30 ? v : null) },
 } as const;

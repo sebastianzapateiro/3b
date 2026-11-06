@@ -118,5 +118,6 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
     enlaces: [],
     esEjemplo: true,
     fotoPerfil: null,
+    redes: {},
   };
 }

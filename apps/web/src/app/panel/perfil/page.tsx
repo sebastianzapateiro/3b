@@ -1,4 +1,6 @@
-import { opcionesComoTrabaja } from "@las3b/shared";
+import Link from "next/link";
+import { opcionesComoTrabaja, REDES, redesDesdeBase } from "@las3b/shared";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { Aviso } from "@/components/cuenta";
 import { negocioEditable, whatsappParaCampo } from "@/lib/alta-proveedor";
@@ -9,7 +11,7 @@ import { AVISO_SERVICIOS_SALUD, esOficioConAvisoSalud } from "@las3b/shared";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
 import { urlPublica } from "@/lib/almacenamiento";
 import { parametro } from "@/lib/parametros";
-import { ajustarComoTrabaja, guardarContactoPanel, guardarNegocioPanel, guardarPerfil, quitarFotoPerfilAccion } from "../actions";
+import { ajustarComoTrabaja, guardarContactoPanel, guardarNegocioPanel, guardarPerfil, guardarRedes, quitarFotoPerfilAccion } from "../actions";
 
 /** P8 · Perfil del proveedor (CU-34) y, en borrador, datos del negocio del alta (CU-30). Mockup: docs/mockups/Panel_proveedor.md. */
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-4 text-base";
@@ -24,6 +26,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
   const [e, n] = await Promise.all([perfilEditable(p.id), borrador ? negocioEditable(p.id) : null]);
 
   const op = opcionesComoTrabaja(e.slugsOficios);
+  const redes = redesDesdeBase(p.redesSociales);
   const rutaPublica = await rutaPublicaDe(p.id, p.slug);
   const maxMbFoto = await parametro("foto_max_mb");
   return (
@@ -65,7 +68,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="whatsapp" className="text-sm font-semibold">WhatsApp</label>
-            <input id="whatsapp" name="whatsapp" type="tel" inputMode="tel" required defaultValue={whatsappParaCampo(p.whatsapp)} placeholder="300 123 4567" className={`${campo} sm:max-w-64`} />
+            <CampoWhatsapp id="whatsapp" defaultValue={p.whatsapp} className={`${campo} sm:max-w-64`} />
             <span className="text-xs text-gris">Aquí te escriben los clientes.</span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -107,8 +110,8 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
 
       <div id="sobre" className="flex scroll-mt-24 flex-col gap-1.5">
         <label htmlFor="presentacion" className="text-sm font-semibold">Sobre mí</label>
-        <textarea id="presentacion" name="presentacion" rows={4} maxLength={280} defaultValue={p.presentacion ?? ""} placeholder="Años de experiencia, en qué te especializas y cómo trabajas." className="rounded-xl border-[1.5px] border-borde-campo p-3 text-base leading-normal" />
-        <span className="text-xs text-gris">Hasta 280 caracteres.</span>
+        <textarea id="presentacion" name="presentacion" rows={6} maxLength={1000} defaultValue={p.presentacion ?? ""} placeholder="Años de experiencia, en qué te especializas y cómo trabajas." className="rounded-xl border-[1.5px] border-borde-campo p-3 text-base leading-normal" />
+        <span className="text-xs text-gris">Hasta 1000 caracteres.</span>
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -143,6 +146,28 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
 
       <button type="submit" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-tinta px-8 text-[17px] font-semibold text-white">Guardar cambios</button>
     </form>
+
+    <form action={guardarRedes} id="redes" className={`${tarjeta} scroll-mt-24`}>
+      <div className="flex flex-col gap-1">
+        <h2 className="font-display text-2xl font-bold">Redes sociales</h2>
+        <p className="text-sm text-gris">Opcional. Si tienes redes o un sitio web, agrégalos: se ven en tu página para que los clientes conozcan más de tu trabajo. Escribe tu usuario (@tunegocio) o el enlace.</p>
+      </div>
+      {REDES.map((r) => (
+        <div key={r.clave} className="flex flex-col gap-1.5">
+          <label htmlFor={`red_${r.clave}`} className="text-sm font-semibold">{r.nombre}</label>
+          <input id={`red_${r.clave}`} name={`red_${r.clave}`} defaultValue={redes[r.clave] ?? ""} placeholder={r.ejemplo} inputMode="url" autoComplete="off" maxLength={200} className={`${campo} sm:max-w-md`} />
+        </div>
+      ))}
+      <button type="submit" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-tinta px-8 text-[17px] font-semibold text-white">Guardar redes</button>
+    </form>
+
+    <section id="fotos-trabajos" className={`${tarjeta} scroll-mt-24`}>
+      <div className="flex flex-col gap-1">
+        <h2 className="font-display text-2xl font-bold">Fotos de tus trabajos</h2>
+        <p className="text-sm text-gris">Opcional, pero es lo que más confianza da: los clientes escriben más cuando ven tu trabajo. Son distintas a los documentos de verificación (esos son privados); estas se ven en tu página.</p>
+      </div>
+      <Link href="/panel/fotos" className="flex h-[54px] items-center justify-center self-start rounded-campo bg-verde px-8 text-[17px] font-semibold text-white">Subir fotos de mis trabajos</Link>
+    </section>
     </div>
   );
 }

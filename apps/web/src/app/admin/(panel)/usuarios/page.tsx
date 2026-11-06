@@ -17,6 +17,8 @@ const ROLES = [
 const TONO_ROL: Record<string, "gris" | "verde" | "amarillo" | "rojo"> = { comprador: "gris", proveedor: "verde", verificador: "amarillo", moderador: "rojo", admin: "amarillo" };
 const ROLES_EQUIPO = ["admin", "verificador", "moderador"];
 const ESTADO_PROVEEDOR: Record<string, string> = { borrador: "Borrador", pendiente: "Pendiente", aprobado: "Aprobado", en_revision: "En revisión", rechazado: "Rechazado", pausado: "Pausado", pausado_por_rut: "Pausado por RUT", suspendido: "Suspendido" };
+/** Opciones del filtro «Mostrar». Comprador y Proveedor se deciden por el perfil (no solo por el rol); «sin_rol» sigue aceptándose en la URL (sin rol de equipo). */
+const OPCIONES_FILTRO = ROLES;
 const fecha = (d: Date | null) => (d ? new Date(d).toLocaleDateString("es-CO", { dateStyle: "medium" }) : "—");
 
 export const metadata = { title: "Usuarios" };
@@ -25,11 +27,12 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
   await exigirBackoffice(true);
   const sp = await searchParams;
   // Filtro por tipo de usuario o rol: arranca con todos marcados (se ve el 100 %) y el admin desmarca los que no quiere.
-  const TODOS = [...ROLES.map((x) => x.v), "sin_rol"];
+  const TODOS = ROLES.map((x) => x.v);
   const filtroAplicado = sp.f === "1";
   const filtroRoles = (filtroAplicado ? ([] as (string | undefined)[]).concat(sp.rol) : TODOS).filter((r): r is string => Boolean(r)).filter((r) => [...ROLES.map((x) => x.v), "sin_rol"].includes(r));
   const [lista, exige2fa] = await Promise.all([filtroRoles.length > 0 ? listarUsuarios(sp.q, filtroRoles.length === TODOS.length ? [] : filtroRoles) : Promise.resolve([]), exigencia2fa()]);
   const filtroUrl = `${sp.q ? `&q=${encodeURIComponent(sp.q)}` : ""}${filtroAplicado ? "&f=1" : ""}${filtroRoles.map((r) => `&rol=${r}`).join("")}`;
+  const resumenFiltro = !filtroAplicado || filtroRoles.length === TODOS.length ? "Todos" : filtroRoles.length === 0 ? "Ninguno" : filtroRoles.map((v) => ROLES.find((r) => r.v === v)?.t ?? "Sin rol de equipo").join(", ");
   const creando = sp.nuevo === "1";
   const sinPerfil = lista.filter((u) => u.roles.includes("proveedor") && !u.perfilProveedor).length;
   const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
@@ -45,54 +48,59 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
       </Encabezado>
 
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
-        <section className="flex min-w-0 flex-[3_1_520px] flex-col gap-4">
+        <section className="flex min-w-0 flex-[1_1_100%] flex-col gap-4">
         {sinPerfil > 0 && (
           <form action={crearPerfilesProveedorFaltantes} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
             <span className="text-[15px]"><b>{sinPerfil} {sinPerfil === 1 ? "cuenta tiene" : "cuentas tienen"} el rol Proveedor y no {sinPerfil === 1 ? "tiene" : "tienen"} perfil.</b> Se crea en borrador: nadie lo ve hasta que se apruebe.</span>
             <button type="submit" className={botonOscuro}>Crear perfiles en borrador</button>
           </form>
         )}
-        <form method="get" className={`${tarjeta} flex flex-col gap-3 p-4`}>
+        {/* Filtro por tipo o rol: un menú desplegable en vez de todas las opciones a la vista. */}
+        <form method="get" className="flex flex-wrap items-center gap-3">
           {sp.q && <input type="hidden" name="q" value={sp.q} />}
           <input type="hidden" name="f" value="1" />
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-sm font-semibold">Mostrar usuarios de tipo o rol <span className="font-normal text-gris">(desmarca los que no quieras ver)</span></legend>
-            <div className="flex flex-wrap gap-2">
-              {[...ROLES, { v: "sin_rol", t: "Sin rol" }].map((r) => (
-                <label key={r.v} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-borde-campo bg-white px-3.5 text-sm font-semibold has-[:checked]:border-tinta has-[:checked]:bg-piedra">
-                  <input type="checkbox" name="rol" value={r.v} defaultChecked={filtroRoles.includes(r.v)} className="size-4 accent-verde" />
+          <details className="relative">
+            <summary className="flex h-11 cursor-pointer list-none items-center gap-2 rounded-xl border-[1.5px] border-borde-campo bg-white px-4 text-sm font-semibold marker:hidden [&::-webkit-details-marker]:hidden">
+              <span className="text-gris">Mostrar:</span> {resumenFiltro}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </summary>
+            <div className="absolute left-0 z-20 mt-1.5 flex w-64 flex-col gap-0.5 rounded-2xl border border-borde-suave bg-white p-2 shadow-[0_8px_30px_rgba(27,38,35,0.14)]">
+              <p className="px-2 pb-1 pt-1 text-[13px] text-gris">Elige qué usuarios quieres ver</p>
+              {OPCIONES_FILTRO.map((r) => (
+                <label key={r.v} className="flex min-h-10 cursor-pointer items-center gap-2.5 rounded-lg px-2 text-[15px] hover:bg-piedra">
+                  <input type="checkbox" name="rol" value={r.v} defaultChecked={filtroRoles.includes(r.v)} className="size-[18px] accent-verde" />
                   {r.t}
                 </label>
               ))}
+              <button type="submit" className="mt-1 h-10 rounded-xl bg-tinta text-sm font-semibold text-white">Aplicar</button>
             </div>
-          </fieldset>
-          <div className="flex flex-wrap items-center gap-3">
-            <button type="submit" className="h-11 rounded-xl bg-tinta px-5 text-sm font-semibold text-white">Aplicar filtro</button>
-            {filtroAplicado && <Link href="/admin/usuarios" className="flex min-h-11 items-center px-2 text-sm font-semibold text-verde underline">Mostrar todos</Link>}
-          </div>
+          </details>
+          {filtroAplicado && <Link href={`/admin/usuarios${sp.q ? `?q=${encodeURIComponent(sp.q)}` : ""}`} className="flex min-h-11 items-center px-1 text-sm font-semibold text-verde underline">Mostrar todos</Link>}
+          <span className="text-sm text-gris" role="status">{lista.length} {lista.length === 1 ? "usuario" : "usuarios"}{lista.length === 50 ? " (los 50 más recientes: afina con la búsqueda)" : ""}</span>
         </form>
+
         <div className={`${tarjeta} min-w-0 overflow-x-auto`}>
-          <table className="w-full min-w-[600px] border-collapse text-sm">
+          <table className="w-full min-w-[920px] border-collapse text-[13px]">
             <thead>
               <tr className="bg-crema text-left text-gris">
-                <th className="px-[18px] py-3 font-semibold">Usuario</th><th className="p-3 font-semibold">Roles</th><th className="p-3 font-semibold">Estado</th><th className="p-3 font-semibold">Último ingreso</th>
+                {["Usuario", "Teléfono", "Tipo y roles", "Estado", "Último ingreso", ""].map((h) => <th key={h || "acc"} className="whitespace-nowrap px-3.5 py-3 font-semibold">{h}</th>)}
               </tr>
             </thead>
             <tbody>
-              {lista.length === 0 && <tr><td colSpan={5} className="px-[18px] py-8 text-center text-gris">{filtroRoles.length === 0 ? "No hay ningún tipo de usuario marcado. Marca al menos uno y pulsa «Aplicar filtro»." : "No hay usuarios con ese criterio."}</td></tr>}
+              {lista.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-[15px] text-gris">{filtroRoles.length === 0 ? "No hay ningún tipo de usuario marcado. Elige al menos uno en «Mostrar»." : "No hay usuarios con ese criterio."}</td></tr>}
               {lista.map((u) => {
                 const suspendido = u.suspendidoHasta && new Date(u.suspendidoHasta) > new Date();
+                const sinCorreo = u.correo.endsWith(".invalid");
                 return (
-                  <tr key={u.id} className={`border-t border-borde-suave ${u.id === elegido?.id ? "bg-piedra" : ""}`}>
-                    <td className="px-[18px] py-3.5">
-                      <Link href={u.proveedorId ? `/admin/proveedores/${u.proveedorId}` : `/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex h-10 items-center justify-center rounded-xl border-2 border-tinta px-3 text-[13px] font-semibold text-tinta hover:bg-piedra">Ver perfil</Link>
-                    </td>
-                    <td className="p-3.5">
-                      <Link href={`/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex flex-col">
-                        <b>{u.nombre}</b><span className="text-gris">{u.correo}</span>
+                  <tr key={u.id} className={`border-t border-borde-suave align-top ${u.id === elegido?.id ? "bg-piedra" : ""}`}>
+                    <td className="max-w-[300px] px-3.5 py-3">
+                      <Link href={`/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex flex-col hover:underline">
+                        <b className="text-[14px]">{u.nombre}</b>
+                        <span className="truncate text-gris">{sinCorreo ? "Sin correo (alta asistida)" : u.correo}</span>
                       </Link>
                     </td>
-                    <td className="p-3.5">
+                    <td className="whitespace-nowrap px-3.5 py-3">{u.telefono || <span className="text-gris">—</span>}</td>
+                    <td className="px-3.5 py-3">
                       <span className="flex flex-wrap gap-1">
                         {u.perfilProveedor ? (
                           <Link href={`/admin/proveedores/${u.perfilProveedor.id}`} title="Ver perfil de proveedor"><Chip tono="verde">Proveedor · {ESTADO_PROVEEDOR[u.perfilProveedor.estado] ?? u.perfilProveedor.estado}</Chip></Link>
@@ -104,8 +112,11 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                         {u.roles.filter((r) => ROLES_EQUIPO.includes(r)).map((r) => <Chip key={r} tono={TONO_ROL[r] ?? "gris"}>{ROLES.find((x) => x.v === r)?.t ?? r}</Chip>)}
                       </span>
                     </td>
-                    <td className="p-3.5">{u.eliminadoEn ? <span className="font-semibold text-gris">Eliminada</span> : suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
-                    <td className="p-3.5 text-gris">{fecha(u.ultimoIngreso)}</td>
+                    <td className="whitespace-nowrap px-3.5 py-3">{u.eliminadoEn ? <span className="font-semibold text-gris">Eliminada</span> : suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
+                    <td className="whitespace-nowrap px-3.5 py-3 text-gris">{fecha(u.ultimoIngreso)}</td>
+                    <td className="px-3.5 py-3">
+                      <Link href={u.proveedorId ? `/admin/proveedores/${u.proveedorId}` : `/admin/usuarios?u=${u.id}${filtroUrl}`} className="inline-flex h-9 items-center whitespace-nowrap rounded-lg border-[1.5px] border-tinta px-3 font-semibold text-tinta hover:bg-piedra">Ver perfil</Link>
+                    </td>
                   </tr>
                 );
               })}

@@ -4,6 +4,7 @@
  */
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
+import { redesDesdeBase, type RedesSociales } from "@las3b/shared";
 import { urlPublica } from "@/lib/almacenamiento";
 import type { NivelPerfil } from "@/lib/demo";
 import { nivelDePerfil } from "@/lib/nivel";
@@ -78,6 +79,8 @@ export type PortafolioCompleto = {
   enlaces: { texto: string; ruta: string }[];
   /** Foto de perfil (opcional): URL pública. */
   fotoPerfil: string | null;
+  /** Redes sociales y sitio web que el proveedor publicó (enlaces https ya validados). */
+  redes: RedesSociales;
   /** Perfil de muestra (no es un proveedor real). */
   esEjemplo?: boolean;
 };
@@ -102,6 +105,7 @@ export async function obtenerPortafolioCompleto(
       nombre: proveedores.nombrePublico,
       presentacion: proveedores.presentacion,
       fotoPerfil: proveedores.fotoPerfil,
+      redesSociales: proveedores.redesSociales,
       whatsapp: proveedores.whatsapp,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
@@ -240,6 +244,7 @@ export async function obtenerPortafolioCompleto(
       presentacion: p.presentacion,
       whatsapp: p.whatsapp,
       fotoPerfil: p.fotoPerfil ? urlPublica(p.fotoPerfil) : null,
+      redes: redesDesdeBase(p.redesSociales),
       categoriaPrincipal,
       localidadPrincipal,
       servicios: servicios.map((s) => ({

@@ -6,6 +6,7 @@
  * - si no: se guarda una solicitud nueva (oficio, localidad, datos y autorización) con POST /api/v1/solicitudes. No redirige.
  */
 import Link from "next/link";
+import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { useId, useState } from "react";
 import { LOCALIDADES_BOGOTA } from "@las3b/shared";
 
@@ -58,7 +59,7 @@ export function AvisoWhatsApp({ texto, localidadInicial, lugar, existente = fals
       </b>
       <div className={`grid gap-3 ${existente ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
         <div className="flex min-w-0 flex-col gap-1"><label htmlFor={`${id}-n`} className="text-sm font-semibold text-tinta">Tu nombre</label><input id={`${id}-n`} name="nombre" required maxLength={80} autoComplete="given-name" className={campo} /></div>
-        <div className="flex min-w-0 flex-col gap-1"><label htmlFor={`${id}-w`} className="text-sm font-semibold text-tinta">Tu WhatsApp</label><input id={`${id}-w`} name="whatsapp" type="tel" required inputMode="tel" autoComplete="tel" placeholder="300 000 0000" className={campo} /></div>
+        <div className="flex min-w-0 flex-col gap-1"><label htmlFor={`${id}-w`} className="text-sm font-semibold text-tinta">Tu WhatsApp</label><CampoWhatsapp id={`${id}-w`} className={campo} /></div>
         {!existente && (
           <div className="flex min-w-0 flex-col gap-1">
             <label htmlFor={`${id}-l`} className="text-sm font-semibold text-tinta">Localidad</label>

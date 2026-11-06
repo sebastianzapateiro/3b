@@ -6,8 +6,9 @@
 import { cache } from "react";
 import { calcularCompletitud, estadoPerfil } from "@/lib/completitud";
 import { documentosExigidos } from "@/lib/documentos";
-import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, or, sql } from "drizzle-orm";
 import { db, schema, consultar } from "@las3b/db";
+import { redesDesdeBase } from "@las3b/shared";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, proveedorInsignias, categorias, localidades, documentos, insignias, user, usuarioRoles, auditoria, terminosBusqueda } = schema;
 
@@ -253,7 +254,7 @@ export async function obtenerRevision(id: string) {
       .innerJoin(insignias, eq(insignias.id, proveedorInsignias.insigniaId))
       .where(eq(proveedorInsignias.proveedorId, id)),
     db.select().from(schema.serviciosProveedor).where(and(eq(schema.serviciosProveedor.proveedorId, id), eq(schema.serviciosProveedor.visible, true))).orderBy(asc(schema.serviciosProveedor.orden), asc(schema.serviciosProveedor.id)),
-    db.select({ correo: user.email, correoVerificado: user.emailVerified }).from(user).where(eq(user.id, p.usuarioId)).limit(1),
+    db.select({ correo: user.email, correoVerificado: user.emailVerified, nombreLegal: user.name }).from(user).where(eq(user.id, p.usuarioId)).limit(1),
   ]);
 
   const historial = await db
@@ -300,6 +301,10 @@ export async function obtenerRevision(id: string) {
     // Solo para armar el enlace de invitación por WhatsApp; en pantalla se muestra la máscara.
     whatsapp: p.whatsapp,
     correo: u?.correo ?? null,
+    nombreLegal: u?.nombreLegal ?? "",
+    redes: redesDesdeBase(p.redesSociales),
+    oficioIds: cats.map((c) => c.id),
+    fechaNacimientoIso: p.fechaNacimiento ?? "",
     correoVerificado: Boolean(u?.correoVerificado),
     categorias: cats,
     localidades: locs.map((l) => l.nombre),
@@ -320,16 +325,18 @@ export async function listarUsuarios(q?: string, rolesFiltro: string[] = []) {
   const busqueda = q?.trim()
     ? or(ilike(user.email, `%${q.trim()}%`), ilike(user.name, `%${q.trim()}%`), ilike(user.telefono, `%${q.trim()}%`))
     : undefined;
-  const reales = rolesFiltro.filter((r) => r !== "sin_rol");
-  const porRol = rolesFiltro.length
-    ? or(
-        reales.length ? sql`EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id} AND ur.rol IN (${sql.join(reales.map((r) => sql`${r}`), sql`, `)}))` : undefined,
-        rolesFiltro.includes("sin_rol") ? sql`NOT EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id})` : undefined,
-      )
-    : undefined;
+  // Ser proveedor lo define tener perfil (o el rol), igual que la columna «Tipo y roles»; «comprador» es quien no es proveedor.
+  const esProveedor = sql`(EXISTS (SELECT 1 FROM proveedores p WHERE p.usuario_id = ${user.id}) OR EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id} AND ur.rol = 'proveedor'))`;
+  const conRol = (rol: string) => sql`EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id} AND ur.rol = ${rol})`;
+  const porTipo = (v: string) =>
+    v === "comprador" ? sql`NOT ${esProveedor}`
+    : v === "proveedor" ? esProveedor
+    : v === "sin_rol" ? sql`NOT EXISTS (SELECT 1 FROM usuario_roles ur WHERE ur.usuario_id = ${user.id} AND ur.rol IN ('verificador', 'moderador', 'admin'))`
+    : conRol(v);
+  const porRol = rolesFiltro.length ? or(...rolesFiltro.map(porTipo)) : undefined;
   const condicion = and(busqueda, porRol);
   const lista = await db
-    .select({ id: user.id, nombre: user.name, correo: user.email, suspendidoHasta: user.suspendidoHasta, eliminadoEn: user.eliminadoEn, conservarHasta: user.conservarHasta, dosFactor: user.twoFactorEnabled, creado: user.createdAt })
+    .select({ id: user.id, nombre: user.name, correo: user.email, telefono: user.telefono, suspendidoHasta: user.suspendidoHasta, eliminadoEn: user.eliminadoEn, conservarHasta: user.conservarHasta, dosFactor: user.twoFactorEnabled, creado: user.createdAt })
     .from(user)
     .where(condicion)
     .orderBy(desc(user.createdAt))
@@ -384,4 +391,9 @@ export async function listarLocalidades() {
   const barrios = filas<{ id: number; n: number }>(await consultar(sql`SELECT localidad_id AS id, count(*)::int AS n FROM barrios GROUP BY 1`));
   const mapa = new Map(barrios.map((b) => [b.id, b.n]));
   return locs.map((l) => ({ ...l, barrios: mapa.get(l.id) ?? 0 }));
+}
+
+/** Todos los oficios (subcategorías), para los formularios del equipo. */
+export async function listarOficios() {
+  return db.select({ id: categorias.id, nombre: categorias.nombre }).from(categorias).where(isNotNull(categorias.padreId)).orderBy(asc(categorias.nombre));
 }

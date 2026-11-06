@@ -134,6 +134,20 @@
       "when": 1793914876642,
       "tag": "0018_amused_pixie",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793994727209,
+      "tag": "0019_whatsapp_con_indicativo",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1793995131283,
+      "tag": "0020_married_night_thrasher",
+      "breakpoints": true
     }
   ]
 }
