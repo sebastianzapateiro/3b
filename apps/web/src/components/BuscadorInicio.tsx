@@ -160,7 +160,7 @@ export function BuscadorInicio() {
           <legend className={`${etiqueta} mb-1.5`}>Ubicación para el servicio</legend>
           <div className="flex flex-col gap-2 sm:flex-row">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por dirección exacta")}</div>
         </fieldset>
-        <button type="submit" disabled={enviando} className="flex h-13 w-full items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60 sm:w-[190px] sm:flex-none">
+        <button type="submit" disabled={enviando} data-evento="home_buscar" className="flex h-13 w-full items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60 sm:w-[190px] sm:flex-none">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           {enviando ? "Buscando…" : "Buscar"}
         </button>
