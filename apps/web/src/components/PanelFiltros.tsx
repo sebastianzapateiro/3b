@@ -35,7 +35,7 @@ type Props = {
   alAplicar?: () => void;
 };
 
-const chipBase = "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta";
+const chipBase = "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta";
 const chipOn = "border-verde bg-verde-claro font-semibold text-verde-oscuro";
 const chipOff = "border-borde-campo bg-white text-tinta hover:border-tinta";
 const chipVacio = "cursor-not-allowed border-borde-suave bg-piedra text-gris";
@@ -45,7 +45,8 @@ function Marca() {
 }
 
 /** Chip con conteo. Sin resultados y sin estar activo: atenuado y no se puede pulsar. */
-function Chip({ activo, onClick, cuenta, children }: { activo: boolean; onClick: () => void; cuenta?: number; children: React.ReactNode }) {
+/** `ajustar`: deja que un texto muy largo pase a otra línea; por defecto el chip va en una sola línea. */
+function Chip({ activo, onClick, cuenta, ajustar = false, children }: { activo: boolean; onClick: () => void; cuenta?: number; ajustar?: boolean; children: React.ReactNode }) {
   const vacio = !activo && cuenta === 0;
   return (
     <button
@@ -53,7 +54,7 @@ function Chip({ activo, onClick, cuenta, children }: { activo: boolean; onClick:
       aria-pressed={activo}
       aria-disabled={vacio || undefined}
       onClick={vacio ? undefined : onClick}
-      className={`${chipBase} ${activo ? chipOn : vacio ? chipVacio : chipOff}`}
+      className={`${chipBase} ${ajustar ? "" : "whitespace-nowrap"} ${activo ? chipOn : vacio ? chipVacio : chipOff}`}
     >
       {activo && <Marca />}
       {children}
@@ -152,7 +153,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
           </div>
           <div className="flex flex-wrap gap-2">
             {insigniasVisibles.map((c) => (
-              <Chip key={c} activo={v.insignias.includes(c)} onClick={() => alternarInsignia(c)} cuenta={conteos.insignias[c]}>{ETIQUETA_INSIGNIA[c]}</Chip>
+              <Chip key={c} activo={v.insignias.includes(c)} onClick={() => alternarInsignia(c)} cuenta={conteos.insignias[c]} ajustar={ETIQUETA_INSIGNIA[c].length > 30}>{ETIQUETA_INSIGNIA[c]}</Chip>
             ))}
           </div>
           {definiciones && (

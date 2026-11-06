@@ -11,6 +11,10 @@ export const FOTO_CATEGORIA: Record<string, string | undefined> = {
   hogar: "/fotos/hogar.jpg",
   "clases-y-refuerzo": "/fotos/clases.jpg",
   "servicios-varios": "/fotos/servicios-varios.jpg",
+  "acarreos-y-transporte": "/fotos/acarreos.jpg",
+  "mascotas-y-veterinaria": "/fotos/mascotas.jpg",
+  "servicios-profesionales": "/fotos/profesionales.jpg",
+  "mecanica-y-talleres": "/fotos/mecanica.jpg",
 };
 
 /** Los populares van primero dentro de su grupo; el resto conserva el orden de la taxonomía. */

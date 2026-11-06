@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MARCA } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
 import { FAQ_CONTACTO } from "@/lib/faqs";
 import { meta } from "@/lib/seo";
@@ -18,7 +19,7 @@ export default async function Contacto({ searchParams }: { searchParams: Promise
       <main className="mx-auto flex max-w-[1000px] flex-col gap-6 px-5 pb-10 pt-6 sm:px-6 md:pt-12">
         <header className="flex flex-col gap-2">
           <h1 className="font-display text-[32px] font-extrabold leading-tight tracking-[-1px] md:text-5xl">Contacto</h1>
-          <p className="max-w-[600px] text-base leading-normal text-tinta-2 md:text-lg">Cuéntanos qué necesitas. Te respondemos al correo que dejes.</p>
+          <p className="max-w-[600px] text-base leading-normal text-tinta-2 md:text-lg">Cuéntanos qué necesitas. Te respondemos al correo que dejes. También puedes escribirnos a <a href={`mailto:${MARCA.correo}`} className="font-semibold text-verde underline">{MARCA.correo}</a> o seguirnos en Instagram <a href={`https://www.instagram.com/${MARCA.instagram}/`} target="_blank" rel="noopener noreferrer" className="font-semibold text-verde underline">@{MARCA.instagram}</a>.</p>
         </header>
 
         <div className="grid items-start gap-5 lg:grid-cols-[3fr_2fr]">

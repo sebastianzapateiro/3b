@@ -19,6 +19,7 @@ const {
   localidades,
   terminosBusqueda,
   insignias,
+  serviciosProveedor,
 } = schema;
 
 export { INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type Orden } from "@/lib/filtros";
@@ -94,6 +95,26 @@ export type ResultadoBusqueda = {
   fotoPerfil: string | null;
 };
 
+/** Un servicio publicado por un proveedor visible (vista «por servicios» de /proveedores). */
+export type ResultadoServicio = {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  /** Oficio del servicio (categoría). */
+  oficio: string | null;
+  /** null = sin precio publicado («a convenir»). */
+  precioDesde: number | null;
+  unidad: string;
+  proveedor: { slug: string; nombre: string; nivel: NivelPerfil; fotoPerfil: string | null };
+};
+
+export type PaginaServicios = {
+  items: ResultadoServicio[];
+  total: number;
+  pagina: number;
+  porPagina: number;
+  categoriaNombre: string | null;
+};
 export type PaginaResultados = {
   items: ResultadoBusqueda[];
   total: number;
@@ -359,6 +380,63 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       precioVisita: r.precioVisita != null ? Number(r.precioVisita) : null,
       visitaAConvenir: r.convenir,
       fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : null,
+    })),
+    total,
+    pagina,
+    porPagina: POR_PAGINA,
+    categoriaNombre: categoria?.nombre ?? null,
+  };
+}
+
+/**
+ * Vista «por servicios»: cada servicio visible de los proveedores que cumplen los filtros (aprobados o en revisión, regla 6).
+ * Con un oficio elegido solo salen los servicios de ese oficio. Sin datos privados (regla 1).
+ */
+export async function buscarServicios(f: FiltrosBusqueda): Promise<PaginaServicios> {
+  const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
+  const { donde, categoria } = await condicionesDe(f);
+  const where = and(eq(serviciosProveedor.visible, true), donde, categoria ? inArray(serviciosProveedor.categoriaId, categoria.ids) : undefined);
+
+  const [c] = await db.select({ total: sql<number>`count(*)::int` }).from(serviciosProveedor).innerJoin(proveedores, eq(proveedores.id, serviciosProveedor.proveedorId)).where(where);
+  const total = c?.total ?? 0;
+
+  const orden: SQL[] =
+    f.orden === "precio"
+      ? [sql`${serviciosProveedor.precioDesde} ASC NULLS LAST`, sql`${proveedores.promedio} DESC`]
+      : f.orden === "resenas"
+        ? [sql`${proveedores.totalResenas} DESC`, sql`${proveedores.promedio} DESC`]
+        : [sql`${proveedores.promedio} DESC`, sql`${proveedores.totalResenas} DESC`];
+
+  const filas = await db
+    .select({
+      id: serviciosProveedor.id,
+      nombre: serviciosProveedor.nombre,
+      descripcion: serviciosProveedor.descripcion,
+      oficio: categorias.nombre,
+      precio: serviciosProveedor.precioDesde,
+      unidad: serviciosProveedor.unidad,
+      slug: proveedores.slug,
+      proveedor: proveedores.nombrePublico,
+      completitud: proveedores.completitud,
+      fotoPerfil: proveedores.fotoPerfil,
+    })
+    .from(serviciosProveedor)
+    .innerJoin(proveedores, eq(proveedores.id, serviciosProveedor.proveedorId))
+    .leftJoin(categorias, eq(categorias.id, serviciosProveedor.categoriaId))
+    .where(where)
+    .orderBy(...orden, serviciosProveedor.orden, serviciosProveedor.id)
+    .limit(POR_PAGINA)
+    .offset((pagina - 1) * POR_PAGINA);
+
+  return {
+    items: filas.map((r) => ({
+      id: r.id,
+      nombre: r.nombre,
+      descripcion: r.descripcion,
+      oficio: r.oficio,
+      precioDesde: r.precio != null ? Number(r.precio) : null,
+      unidad: r.unidad,
+      proveedor: { slug: r.slug, nombre: r.proveedor, nivel: nivelDePerfil(r.completitud), fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : null },
     })),
     total,
     pagina,

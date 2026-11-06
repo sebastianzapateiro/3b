@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { CATEGORIAS, LOCALIDADES_BOGOTA, TODAS_LAS_SUBCATEGORIAS } from "@las3b/shared";
 
-const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-3.5 text-base text-tinta";
+const campo = "h-12 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-3.5 text-base text-tinta";
 const etiqueta = "text-[13px] font-semibold text-gris";
 
 const sinTildes = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
@@ -106,7 +106,7 @@ export function BuscadorInicio() {
   );
 
   return (
-    <form onSubmit={enviar} className="flex flex-col gap-3.5 rounded-[22px] bg-white p-4 text-left shadow-[0_16px_48px_rgba(27,38,35,0.16)] sm:rounded-[28px] sm:p-6" noValidate>
+    <form onSubmit={enviar} className="flex flex-col gap-3.5 rounded-[22px] bg-white p-4 text-left shadow-[0_16px_48px_rgba(27,38,35,0.16)] sm:rounded-[24px] sm:p-5" noValidate>
       <div className={`grid gap-3.5 ${modo === "localidad" ? "sm:grid-cols-[minmax(0,1fr)_260px]" : ""}`}>
         <div className="flex min-w-0 flex-col gap-1.5">
           <label htmlFor={`${id}-q`} className={etiqueta}>¿Qué estás buscando?</label>
@@ -160,7 +160,7 @@ export function BuscadorInicio() {
           <legend className={`${etiqueta} mb-1.5`}>Ubicación para el servicio</legend>
           <div className="flex flex-col gap-2 sm:flex-row">{opcion("localidad", "Por localidad")}{opcion("exacta", "Por dirección exacta")}</div>
         </fieldset>
-        <button type="submit" disabled={enviando} className="flex h-13 w-full items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60 sm:w-[190px] sm:flex-none">
+        <button type="submit" disabled={enviando} className="flex h-12 w-full items-center justify-center gap-2 rounded-campo bg-ladrillo px-6 text-base font-semibold text-white hover:bg-ladrillo-oscuro disabled:opacity-60 sm:w-[190px] sm:flex-none">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
           {enviando ? "Buscando…" : "Buscar"}
         </button>

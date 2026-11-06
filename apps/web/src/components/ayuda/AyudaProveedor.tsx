@@ -2,7 +2,7 @@
 
 /**
  * A0 · Botón flotante «¿Ofreces un servicio? Te ayudamos a inscribirte» (CU-30), solo para proveedores. Va en el layout global.
- * - No se muestra en /admin ni en el panel. En /ingreso es la única ayuda (ya no hay tarjeta) y su texto es corto: «Te ayudamos a inscribirte».
+ * - No se muestra en /admin ni en el panel. En /ingreso es la única ayuda (ya no hay tarjeta): texto corto «Te ayudamos a inscribirte» en celular y, en escritorio, solo el ícono (el formulario ocupa ese lado y el botón tapaba los textos).
  * - En el perfil de un proveedor queda solo como ícono y sin animación (CSS: html[data-perfil], ver MarcaPerfilPublico), para no competir con «Contactar por WhatsApp».
  * - Se oculta con cualquier otro modal abierto o con el aviso de cookies (CSS en globals.css) y sube sobre el pie de página.
  * - Con sesión: un proveedor inscrito no lo ve; un cliente sí, sin animación.
@@ -132,20 +132,20 @@ export function AyudaProveedor() {
             ref={boton}
             type="button"
             onClick={() => abrir(enIngreso ? "ingreso" : "boton_flotante")}
-            aria-label="Ayuda para inscribirte como proveedor"
+            aria-label="Ayuda para inscribirte como proveedor" title="Te ayudamos a inscribirte"
             aria-haspopup="dialog"
-            className={`ayuda-boton flex min-h-12 items-center justify-center rounded-full bg-amarillo font-semibold text-tinta shadow-[0_6px_20px_rgba(27,38,35,0.28)] hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tinta ${compacto ? "size-12" : "gap-2 pl-4 pr-11"} ${conSesion ? "" : "ayuda-pulso"}`}
+            className={`ayuda-boton flex min-h-12 items-center justify-center rounded-full bg-amarillo font-semibold text-tinta shadow-[0_6px_20px_rgba(27,38,35,0.28)] hover:brightness-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-tinta ${compacto ? "size-12" : "gap-2 pl-4 pr-11"} ${enIngreso && !compacto ? "lg:size-12 lg:gap-0 lg:pl-0 lg:pr-0" : ""} ${conSesion ? "" : "ayuda-pulso"}`}
           >
             <IconoLlave />
             {!compacto && (
               <span className="ayuda-texto text-sm leading-tight">
                 <span className={enIngreso ? "hidden" : "hidden lg:inline"}>¿Ofreces un servicio? Te ayudamos a inscribirte</span>
-                <span className={enIngreso ? "" : "lg:hidden"}>Te ayudamos a inscribirte</span>
+                <span className={enIngreso ? "lg:hidden" : "lg:hidden"}>Te ayudamos a inscribirte</span>
               </span>
             )}
           </button>
           {!compacto && (
-            <button type="button" onClick={cerrarX} aria-label="Reducir el botón de ayuda" className="ayuda-cerrar absolute -right-3 -top-3 flex size-11 items-center justify-center rounded-full focus-visible:outline-3 focus-visible:outline-tinta">
+            <button type="button" onClick={cerrarX} aria-label="Reducir el botón de ayuda" className={`ayuda-cerrar absolute -right-3 -top-3 flex size-11 ${enIngreso ? "lg:hidden" : ""} items-center justify-center rounded-full focus-visible:outline-3 focus-visible:outline-tinta`}>
               <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full bg-tinta text-white">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M6 6l12 12M18 6 6 18" /></svg>
               </span>

@@ -22,14 +22,14 @@ export type ClaveTile = string;
 export const TEMAS: Record<ClaveTile, Tema> = {
   reparaciones: { desde: "#0F6B5C", hasta: "#6FB5A5", foto: { src: "/fotos/hogar.jpg", alt: "Manos de un técnico instalando una cerradura con un taladro" }, textoSinFoto: "blanco", pildora: "#0F6B5C" },
   "obra-y-acabados": { desde: "#0A4F44", hasta: "#3E9C88", foto: { src: "/fotos/nosotros.jpg", alt: "Dos maestros cortando madera dentro de una casa en remodelación" }, textoSinFoto: "blanco", pildora: "#0A4F44" },
-  instalaciones: { desde: "#2C8A78", hasta: "#8CCBBB", textoSinFoto: "blanco", pildora: "#1F6B5B" },
-  "limpieza-y-jardin": { desde: "#3E7D32", hasta: "#9CCB86", textoSinFoto: "blanco", pildora: "#3E7D32" },
+  instalaciones: { desde: "#2C8A78", hasta: "#8CCBBB", foto: { src: "/fotos/instalaciones.jpg", alt: "Técnico instalando un equipo de aire acondicionado en una terraza" }, textoSinFoto: "blanco", pildora: "#1F6B5B" },
+  "limpieza-y-jardin": { desde: "#3E7D32", hasta: "#9CCB86", foto: { src: "/fotos/limpieza.jpg", alt: "Rincón de una cocina con la mesa llena de cosas por ordenar y limpiar" }, textoSinFoto: "blanco", pildora: "#3E7D32" },
   "clases-y-refuerzo": { desde: "#C99400", hasta: "#F8D970", foto: { src: "/fotos/clases.jpg", alt: "Un profesor y un estudiante en una clase" }, textoSinFoto: "tinta", pildora: "#6B4E00" },
-  "acarreos-y-transporte": { desde: "#C2452D", hasta: "#E58C78", textoSinFoto: "blanco", pildora: "#C2452D" },
+  "acarreos-y-transporte": { desde: "#C2452D", hasta: "#E58C78", foto: { src: "/fotos/acarreos.jpg", alt: "Habitación vacía con escombros en el piso, lista para vaciar o remodelar" }, textoSinFoto: "blanco", pildora: "#C2452D" },
   "servicios-varios": { desde: "#4B4636", hasta: "#A99A78", foto: { src: "/fotos/servicios-varios.jpg", alt: "Dos personas arreglando plantas en una canasta" }, textoSinFoto: "blanco", pildora: "#4B4636" },
-  "mascotas-y-veterinaria": { desde: "#6B4E00", hasta: "#D9A62E", textoSinFoto: "blanco", pildora: "#6B4E00" },
-  "servicios-profesionales": { desde: "#1B2623", hasta: "#5C6B66", textoSinFoto: "blanco", pildora: "#1B2623" },
-  "mecanica-y-talleres": { desde: "#2E3A59", hasta: "#7C8DB5", textoSinFoto: "blanco", pildora: "#2E3A59" },
+  "mascotas-y-veterinaria": { desde: "#6B4E00", hasta: "#D9A62E", foto: { src: "/fotos/mascotas.jpg", alt: "Dos personas trabajando juntas dentro de una casa" }, textoSinFoto: "blanco", pildora: "#6B4E00" },
+  "servicios-profesionales": { desde: "#1B2623", hasta: "#5C6B66", foto: { src: "/fotos/profesionales.jpg", alt: "Hombre trabajando con un portátil y una tableta en su sala" }, textoSinFoto: "blanco", pildora: "#1B2623" },
+  "mecanica-y-talleres": { desde: "#2E3A59", hasta: "#7C8DB5", foto: { src: "/fotos/mecanica.jpg", alt: "Mano de un técnico con un destornillador revisando un tomacorriente" }, textoSinFoto: "blanco", pildora: "#2E3A59" },
 };
 
 /** Si aparece una categoría nueva sin tema, se ve con este degradado neutro hasta que se le asigne uno. */

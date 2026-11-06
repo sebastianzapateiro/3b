@@ -2,11 +2,10 @@ import Link from "next/link";
 import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
 import type { Metadata } from "next";
 import { CarruselCategorias } from "@/components/categorias/CarruselCategorias";
-import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
 import { TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO } from "@/lib/demo";
-import { serviciosDisponibles } from "@/lib/servicios-disponibles";
+import { proveedoresDestacados } from "@/lib/destacados";
 import { jsonLdLista, jsonLdSitio } from "@/lib/seo";
 import { ComoFunciona } from "@/components/ComoFunciona";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
@@ -18,7 +17,7 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const LOCALIDAD_INICIAL = "suba";
 
-/** Los servicios disponibles salen de la base: se refrescan cada 5 minutos. */
+/** Los perfiles del Home salen de la base: se refrescan cada 5 minutos. */
 export const revalidate = 300;
 
 const POPULARES =["Plomería", "Inglés", "Mudanzas", "Cerrajería"];
@@ -58,7 +57,7 @@ const CONFIANZA = [
   },
 ];
 
-const h2 = "font-display text-[22px] font-bold sm:text-[32px] sm:tracking-[-0.8px]";
+const h2 = "font-display text-[22px] font-bold sm:text-[26px] sm:tracking-[-0.6px]";
 
 const buscar = (params: Record<string, string>) => `/proveedores?${new URLSearchParams(params)}`;
 
@@ -74,8 +73,8 @@ function TresPuntos({ oscuro = false }: { oscuro?: boolean }) {
 
 export default async function Home() {
   // Sin base (p. ej. en local sin el túnel) la sección simplemente no aparece.
-  const disponibles = await serviciosDisponibles().catch(() => []);
-  const simulado = disponibles.length === 0 && process.env.NODE_ENV !== "production";
+  const destacados = await proveedoresDestacados().catch(() => []);
+  const simulado = destacados.length === 0 && process.env.NODE_ENV !== "production";
 
   return (
     <>
@@ -84,16 +83,16 @@ export default async function Home() {
 
       <main data-inicio>
         {/* Banner verde: la cabecera verde se funde con él y el buscador queda a caballo entre el verde y el blanco. */}
-        <section className="bg-verde px-5 pb-28 pt-6 text-center text-white sm:px-6 sm:pb-36 sm:pt-12">
-          <div className="mx-auto flex max-w-[860px] flex-col items-center gap-[18px] sm:gap-[22px]">
+        <section className="bg-verde px-5 pb-28 pt-6 text-center text-white sm:px-6 sm:pb-28 sm:pt-8">
+          <div className="mx-auto flex max-w-[860px] flex-col items-center gap-[18px] sm:gap-4">
             <span className="inline-flex h-[30px] items-center rounded-full bg-white/12 px-3.5 text-[13px] font-semibold text-[#DDEBE7] sm:h-8 sm:text-sm">
               <span className="sm:hidden">{MARCA.lema}</span>
               <span className="hidden sm:inline">Gratis · Sin comisiones · Hecho en Bogotá</span>
             </span>
-            <h1 className="text-balance font-display text-[38px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[4.2rem] sm:leading-[1.02] sm:tracking-[-2.2px]">
+            <h1 className="text-balance font-display text-[38px] font-extrabold leading-[1.05] tracking-[-1.2px] sm:text-[3.1rem] sm:leading-[1.05] sm:tracking-[-1.5px]">
               Encuentra quién te ayude, <span className="text-amarillo">cerca de ti.</span>
             </h1>
-            <p className="max-w-[700px] text-base leading-normal text-[#DDEBE7] sm:text-lg sm:leading-relaxed">
+            <p className="max-w-[700px] text-base leading-normal text-[#DDEBE7] sm:text-base sm:leading-relaxed">
               <span className="sm:hidden">Plomeros, profesores, acarreos y oficios de confianza en tu localidad. Escríbeles directo por WhatsApp, sin comisiones.</span>
               <span className="hidden sm:inline">
                 Plomeros, profesores particulares, acarreos y oficios de confianza en tu localidad. Compara reseñas reales y escríbeles directo por WhatsApp. 100% gratis para clientes y proveedores, sin costo de inscripción ni comisión.
@@ -102,7 +101,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="relative z-10 mx-auto -mt-[88px] flex max-w-[940px] flex-col items-center gap-5 px-5 sm:-mt-[108px] sm:px-6">
+        <section className="relative z-10 mx-auto -mt-[88px] flex max-w-[940px] flex-col items-center gap-5 px-5 sm:-mt-[84px] sm:px-6">
           <div className="w-full">
             <BuscadorInicio />
           </div>
@@ -119,7 +118,7 @@ export default async function Home() {
             ))}
           </div>
         </section>
-        <section id="categorias" className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-6">
+        <section id="categorias" className="mx-auto flex max-w-[1200px] scroll-mt-4 flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-10 sm:pt-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className={h2}>Explora por categoría</h2>
             <Link href="/proveedores" className="text-sm font-semibold text-ladrillo hover:text-ladrillo-oscuro sm:text-[15px]">
@@ -129,40 +128,22 @@ export default async function Home() {
           <CarruselCategorias />
         </section>
 
-        {(disponibles.length > 0 || simulado) && (
-          <section aria-labelledby="servicios-disponibles" className="mx-auto flex max-w-[1200px] flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-14 sm:pt-0">
+        {(destacados.length > 0 || simulado) && (
+          <section aria-labelledby="servicios-disponibles" className="mx-auto flex max-w-[1200px] flex-col gap-3.5 px-5 pb-7 pt-2 sm:gap-5 sm:px-6 sm:pb-10 sm:pt-0">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <h2 id="servicios-disponibles" className={h2}>Servicios disponibles</h2>
               <Link href="/proveedores" className="text-sm font-semibold text-verde hover:text-verde-oscuro sm:text-[15px]">
                 Ver todos los proveedores
               </Link>
             </div>
-            {disponibles.length === 0 ? (
-              // Simulación solo fuera de producción: reserva el espacio hasta que haya servicios reales.
-              <div className="flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:gap-4">
-                {RECOMENDADOS_DEMO.map((p) => <TarjetaProveedor key={p.slug} proveedor={p} />)}
-              </div>
-            ) : (
-            <ul className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {disponibles.map((s) => (
-                <li key={s.slug}>
-                  <Link href={`/proveedores?categoria=${s.slug}`} className="flex min-h-[76px] items-center gap-3.5 rounded-[20px] border border-borde-suave bg-white p-3.5 text-tinta transition-colors hover:border-tinta">
-                    <span className={`flex size-12 flex-none items-center justify-center rounded-2xl ${TONO_CATEGORIA[s.icono]}`}>
-                      <IconoCategoria icono={s.icono} className="size-6" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <b className="text-base">{s.nombre}</b>
-                      <span className="text-sm text-gris">{s.proveedores} {s.proveedores === 1 ? "proveedor" : "proveedores"} · {s.categoria}</span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            )}
+            {/* Perfiles reales; sin ninguno, los de ejemplo solo fuera de producción (reservan el espacio). Móvil muestra 2 tarjetas; escritorio, 3. */}
+            <div className="flex flex-col gap-3.5 sm:flex-row sm:flex-wrap sm:gap-4 [&>*:nth-child(n+3)]:hidden sm:[&>*:nth-child(n+3)]:flex">
+              {(destacados.length > 0 ? destacados : RECOMENDADOS_DEMO).map((p) => <TarjetaProveedor key={p.slug} proveedor={p} />)}
+            </div>
           </section>
         )}
 
-        <section className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 pb-7 pt-2 sm:px-6 sm:py-14">
+        <section className="mx-auto flex max-w-[1200px] flex-col gap-3 px-5 pb-7 pt-2 sm:px-6 sm:py-10">
           <h2 className={`${h2} sm:sr-only`}>Por qué confiar</h2>
           <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-4">
             {CONFIANZA.map((c) => (
@@ -174,7 +155,7 @@ export default async function Home() {
                   {c.icono}
                 </svg>
                 <span className="flex flex-col gap-0.5 sm:gap-1">
-                  <b className="text-[15px] sm:text-[17px]">{c.titulo}</b>
+                  <b className="text-[15px] sm:text-[16px]">{c.titulo}</b>
                   <span className="text-sm leading-[1.45] text-tinta-2 sm:text-[15px] sm:leading-normal">
                     {c.texto}
                     <span className="hidden sm:inline">{c.extra}</span>.
@@ -185,17 +166,17 @@ export default async function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[1200px] px-5 pb-7 pt-1 sm:px-6 sm:pb-14 sm:pt-0">
+        <section className="mx-auto max-w-[1200px] px-5 pb-7 pt-1 sm:px-6 sm:pb-10 sm:pt-0">
           <div className="flex flex-wrap items-center gap-10 rounded-3xl bg-tinta px-5 py-6 text-white sm:rounded-[32px] sm:px-10 sm:py-11">
             <div className="flex min-w-0 flex-[1_1_420px] flex-col gap-3 sm:gap-4">
               <span className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-[1px] text-amarillo">
                 <TresPuntos oscuro />
                 Para proveedores
               </span>
-              <h2 className="text-balance font-display text-[26px] font-extrabold leading-[1.1] sm:text-[40px] sm:leading-[1.05] sm:tracking-[-1px]">
+              <h2 className="text-balance font-display text-[26px] font-extrabold leading-[1.1] sm:text-[32px] sm:leading-[1.05] sm:tracking-[-0.8px]">
                 ¿Ofreces un servicio? Crea gratis tu página web.
               </h2>
-              <p className="max-w-[520px] text-[15px] leading-normal text-[#D5DCDA] sm:text-[17px] sm:leading-relaxed">
+              <p className="max-w-[520px] text-[15px] leading-normal text-[#D5DCDA] sm:text-[16px] sm:leading-relaxed">
                 Tu portafolio con dirección propia, código QR para tus volantes y reseñas de tus clientes. Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp.
                 <span className="hidden sm:inline"> Compártelo por WhatsApp y redes, y mira cuántos te visitan.</span>
               </p>

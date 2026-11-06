@@ -6,9 +6,10 @@ import { AvisoWhatsApp } from "@/components/AvisoWhatsApp";
 import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
 import { SelectorOrden } from "@/components/SelectorOrden";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
+import { TarjetaServicio } from "@/components/TarjetaServicio";
 import { cookies } from "next/headers";
 import { contieneServicioProhibido } from "@las3b/shared";
-import { buscarProveedores, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados } from "@/lib/busqueda";
+import { buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados, type PaginaServicios } from "@/lib/busqueda";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
@@ -66,11 +67,14 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const solicitud = idSolicitud && UUID.test(idSolicitud) ? await obtenerSolicitud(idSolicitud) : null;
   const punto = solicitud?.punto ?? undefined;
   const enviada = uno(sp.solicitud) === "1";
+  // Dos vistas del mismo listado: por servicios (la de inicio) o por proveedores.
+  // Con ubicación exacta se ordena por cercanía al proveedor: solo la vista por proveedores lo hace.
+  const porServicios = uno(sp.vista) !== "proveedores" && uno(sp.ubic) !== "exacta";
 
   // Si la base no responde (p. ej. en local sin el túnel) la página se muestra vacía en vez de caerse.
   let sinBase = false;
   const [resultado, conteos] = await Promise.all([
-    buscarProveedores({ ...filtrosDesdeParams(params), punto }),
+    porServicios ? buscarServicios(filtrosDesdeParams(params)) : buscarProveedores({ ...filtrosDesdeParams(params), punto }),
     conteosDeFiltros(filtrosDesdeParams(params)),
   ]).catch((e) => {
     // Aviso corto (no console.error): en desarrollo Next lo convertiría en una pantalla de error.
@@ -92,7 +96,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const href = (cambios: Record<string, string | string[] | null>) => {
     const p = new URLSearchParams();
     const actual: Record<string, string | string[] | undefined> = {
-      q, localidad, categoria, orden, ubic: exacta ? "exacta" : undefined, solicitud: enviada ? "1" : undefined, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
+      q, localidad, categoria, orden, vista: porServicios ? undefined : "proveedores", ubic: exacta ? "exacta" : undefined, solicitud: enviada ? "1" : undefined, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
       hoy: hoy ? "1" : undefined, h24: h24 ? "1" : undefined,
       insignia: insignias, tambien, pagina: pagina > 1 ? String(pagina) : undefined,
     };
@@ -117,7 +121,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
 
   // Parámetros ajenos al panel y datos que este necesita.
   const base = new URLSearchParams();
-  for (const [k, x] of [["q", q], ["localidad", localidad], ["categoria", categoria], ["orden", orden], ["ubic", exacta ? "exacta" : undefined], ["solicitud", enviada ? "1" : undefined]] as const) if (x) base.set(k, x);
+  for (const [k, x] of [["q", q], ["localidad", localidad], ["categoria", categoria], ["orden", orden], ["vista", porServicios ? undefined : "proveedores"], ["ubic", exacta ? "exacta" : undefined], ["solicitud", enviada ? "1" : undefined]] as const) if (x) base.set(k, x);
   const inicial = { insignias, cal, visita, hoy, h24, tambien };
   const vecinas = (localidad && localidad in LOCALIDADES_VECINAS ? LOCALIDADES_VECINAS[localidad as LocalidadSlug] : []).map((s) => ({
     slug: s,
@@ -137,7 +141,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     <>
       <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
         {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
-        <aside className="hidden min-w-0 lg:block lg:flex-[1_1_250px]">
+        <aside className="hidden min-w-0 lg:block lg:flex-[0_0_300px]">
           <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} modo="escritorio" /></div>
         </aside>
 
@@ -176,15 +180,24 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             <div className="flex flex-col gap-1">
               <h1 className="font-display text-[26px] font-extrabold leading-tight tracking-[-0.8px] sm:text-[34px] sm:tracking-[-1px]">{titulo}</h1>
               <span role="status" aria-live="polite" aria-atomic="true" className="text-[15px] text-gris">
-                {resultado.total} {resultado.total === 1 ? "proveedor" : "proveedores"}
+                {resultado.total} {porServicios ? (resultado.total === 1 ? "servicio" : "servicios") : resultado.total === 1 ? "proveedor" : "proveedores"}
               </span>
             </div>
-            <SelectorOrden actual={ordenActual} opciones={opcionesOrden} base={paramsDesdeValores(inicial, base).toString()} />
+            <div className="flex flex-wrap items-center gap-3">
+              <nav aria-label="Tipo de vista" className="flex rounded-xl bg-piedra p-1">
+                {([[true, "Por servicios", href({ vista: null, pagina: null })], [false, "Por proveedores", href({ vista: "proveedores", pagina: null })]] as const).map(([activa, texto, destino]) => (
+                  <Link key={texto} href={destino} aria-current={porServicios === activa ? "page" : undefined} className={`flex h-9 items-center rounded-lg px-3.5 text-sm font-semibold ${porServicios === activa ? "bg-white text-tinta shadow-sm" : "text-tinta-2 hover:text-tinta"}`}>{texto}</Link>
+                ))}
+              </nav>
+              <SelectorOrden actual={ordenActual} opciones={opcionesOrden} base={paramsDesdeValores(inicial, base).toString()} />
+            </div>
           </div>
 
           {resultado.items.length > 0 ? (
             <section aria-label="Resultados" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
-              {resultado.items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
+              {porServicios
+                ? (resultado as PaginaServicios).items.map((s, i) => <TarjetaServicio key={s.id} s={s} indice={i} />)
+                : (resultado as PaginaResultados).items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
             </section>
           ) : null}
 

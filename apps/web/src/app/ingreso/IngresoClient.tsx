@@ -62,7 +62,7 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
     // `minmax(0, 1fr)`: en pantallas muy angostas la columna no crece con el contenido (evita que el formulario se salga por los lados).
     <main className="grid min-h-[calc(100dvh-4.5rem)] grid-cols-[minmax(0,1fr)] grid-rows-[auto_1fr] lg:grid-cols-2 lg:grid-rows-1 lg:gap-4 lg:p-4">
       {/* Visual: franja baja en celular, panel completo en escritorio. Altura fija: no hay saltos al cambiar de tipo. */}
-      <aside className="relative h-32 min-w-0 overflow-hidden bg-tinta text-white sm:h-56 lg:h-auto lg:rounded-[28px]" aria-label="Por qué LasTresB">
+      <aside className="relative h-32 min-w-0 overflow-hidden bg-tinta text-white sm:h-56 lg:sticky lg:top-24 lg:h-[calc(100dvh-7rem)] lg:self-start lg:rounded-[28px]" aria-label="Por qué LasTresB">
         <Image key={tipo} src={v.foto} alt={v.alt} fill priority sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover" />
         <div className={`absolute inset-0 bg-gradient-to-t ${v.tono} to-tinta/20`} />
         <div className="relative flex h-full flex-col justify-end gap-3 p-5 lg:justify-between lg:p-12">
@@ -90,8 +90,8 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-col px-6 pb-8 pt-6 lg:items-center lg:justify-center lg:px-12 lg:py-10">
-        <div className="flex w-full min-w-0 max-w-[420px] flex-col gap-5 self-center">
+      <section className="flex min-w-0 flex-col px-6 pb-8 pt-6 lg:items-center lg:justify-center lg:px-12 lg:py-12">
+        <div className="flex w-full min-w-0 max-w-[420px] flex-col gap-6 self-center">
           {aviso && <Aviso tono={AVISOS[aviso].tono}>{AVISOS[aviso].texto}</Aviso>}
 
           <div className="flex flex-col gap-2">
@@ -106,8 +106,8 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
               {tipo === "cliente"
                 ? "La necesitas para calificar a quienes contactaste por LasTresB."
                 : modo === "ingresar"
-                  ? "Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp. Después completas tus datos y el equipo revisa tu perfil antes de publicarlo."
-                  : "Es 100% gratis, sin costo de inscripción ni comisión, y tus clientes te escriben directo por WhatsApp. Con tu nombre, WhatsApp y oficios creamos tu perfil; después creas tus servicios y completas tus datos."}
+                  ? "100% gratis y sin comisión: tus clientes te escriben directo por WhatsApp."
+                  : "100% gratis y sin comisión: tus clientes te escriben directo por WhatsApp. Con tu nombre, WhatsApp y oficios creamos tu perfil."}
             </p>
           </div>
 

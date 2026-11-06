@@ -4,6 +4,9 @@ export const MARCA = {
   wordmark: "LasTresB",
   lema: "Bueno, bonito y barato en Bogotá",
   dominio: "lastresb.com.co",
+  /** Redes y contacto oficiales. */
+  instagram: "lastresb.bogota3",
+  correo: "contactolastresb@lastresb.com.co",
 } as const;
 
 export const COLORES = {

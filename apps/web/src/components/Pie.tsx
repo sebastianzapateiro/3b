@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CATEGORIAS, LOCALIDADES_BOGOTA } from "@las3b/shared";
+import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
 import { BotonCookies } from "@/components/Cookies";
 import { Logo } from "@/components/Logo";
 
@@ -13,7 +13,7 @@ const titulo = "font-display text-base font-bold text-tinta";
 /**
  * Pie de página: aquí vive todo lo institucional y secundario que ya no está en la cabecera.
  * Cuatro columnas (Explorar, Recursos, Empresa, Proveedores) y una franja con categorías y localidades para navegar.
- * TODO: redes sociales (Instagram, etc.): el sitio aún no tiene enlaces; agregarlos aquí cuando existan.
+ * Redes y correo oficiales (Instagram y contacto) en la columna de la marca: salen de MARCA (packages/shared).
  * TODO: «Centro de ayuda a proveedores»: no existe todavía; hoy los proveedores usan Cómo funciona y Contacto.
  */
 export function Pie() {
@@ -25,6 +25,10 @@ export function Pie() {
         <div className="col-span-2 flex flex-col gap-3 lg:col-span-1">
           <Link href="/" aria-label="LasTresB, inicio" className="text-tinta"><Logo /></Link>
           <p className="max-w-[300px] text-sm leading-normal text-gris">Servicios de hogar y oficios de confianza en Bogotá. Contacta directo por WhatsApp, gratis y sin comisiones.</p>
+          <ul className="flex flex-col gap-0.5" aria-label="Redes y contacto">
+            <li><a href={`https://www.instagram.com/${MARCA.instagram}/`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-[15px] font-semibold text-tinta hover:underline sm:min-h-9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" /></svg>@{MARCA.instagram}</a></li>
+            <li><a href={`mailto:${MARCA.correo}`} className="inline-flex min-h-11 items-center gap-2 break-all text-[15px] text-tinta-2 hover:text-tinta hover:underline sm:min-h-9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>{MARCA.correo}</a></li>
+          </ul>
         </div>
 
         <nav aria-label="Explorar" className="flex flex-col">
