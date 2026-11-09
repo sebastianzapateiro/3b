@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CampoWhatsapp } from "@/components/CampoWhatsapp";
+import { enviarEvento, origenDeContacto, recordarDatosDeContacto } from "@/lib/analitica-eventos";
 import { useId, useState } from "react";
 
 const campo = "h-13 w-full rounded-campo border-[1.5px] border-borde-campo bg-white px-3.5 text-base text-tinta";
@@ -26,6 +27,9 @@ export function FormularioContacto({ destino }: { destino: string }) {
       });
       const j = await r.json();
       if (!r.ok) return setError(j.error ?? "No pudimos guardar tus datos. Intenta de nuevo.");
+      // Dejó sus datos y sigue a WhatsApp: es un contacto con un proveedor (evento clave en GA4).
+      enviarEvento("contacto_proveedor", { origen: origenDeContacto(destino) });
+      recordarDatosDeContacto();
       window.location.assign(destino);
     } catch {
       setError("No pudimos guardar tus datos. Revisa tu conexión e intenta de nuevo.");

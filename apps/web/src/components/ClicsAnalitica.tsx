@@ -6,6 +6,7 @@
  * Para nombrar un botón a mano: `data-evento="nombre"`. No se envía nada escrito en formularios ni parámetros de la URL (pueden traer datos personales).
  */
 import { useEffect } from "react";
+import { enviarEvento, esEnlaceDeContacto, origenDeContacto, yaDejoDatosDeContacto } from "@/lib/analitica-eventos";
 
 type Gtag = (...a: unknown[]) => void;
 
@@ -36,6 +37,11 @@ export function ClicsAnalitica() {
       (w.dataLayer ??= []).push({ event: "clic_boton", ...datos }); // Tag Manager
       // GA4 directo solo sin Tag Manager: con él, gtag() también dispara el activador y el evento llegaría dos veces.
       if (!w.conTagManager) w.gtag?.("event", "clic_boton", datos);
+
+      // Contacto con un proveedor. Quien ya dejó sus datos va directo a WhatsApp: es un contacto (evento clave). Quien no, pasa
+      // primero por el formulario de /contactar: aquí solo es una intención y el contacto se cuenta al enviarlo (FormularioContacto).
+      const href = el.getAttribute("href");
+      if (esEnlaceDeContacto(href)) enviarEvento(yaDejoDatosDeContacto() ? "contacto_proveedor" : "contacto_intencion", { origen: origenDeContacto(href!) });
     };
     document.addEventListener("click", alClic, { capture: true });
     return () => document.removeEventListener("click", alClic, { capture: true });

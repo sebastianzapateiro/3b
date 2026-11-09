@@ -5,6 +5,7 @@ import { Aviso, botonPrincipal, campo, CampoClave, etiqueta } from "@/components
 import { normalizarWhatsapp } from "@las3b/shared";
 import { SelectorOficios } from "@/components/panel/SelectorOficios";
 import { CampoWhatsapp } from "@/components/CampoWhatsapp";
+import { enviarEvento } from "@/lib/analitica-eventos";
 import { authClient, mensajeDeError } from "@/lib/auth-client";
 
 const casilla = "mt-0.5 size-5 flex-none accent-verde";
@@ -38,6 +39,8 @@ export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: bo
     });
     setCargando(false);
     if (error) return setError(mensajeDeError(error));
+    // Un proveedor creó su cuenta: evento clave en GA4 (el registro de cliente, solo para calificar, no cuenta).
+    if (proveedor) enviarEvento("registro_proveedor", { metodo: "correo" });
     setEnviadoA(correo);
   }
 

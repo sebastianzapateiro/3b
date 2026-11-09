@@ -52,6 +52,103 @@
         "firingTriggerId": ["3"],
         "tagFiringOption": "ONCE_PER_EVENT"
       }
+      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "6",
+        "name": "GA4 - contacto_proveedor (EVENTO CLAVE)",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TEMPLATE", "key": "eventName", "value": "contacto_proveedor" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-LJPS2R11K6" },
+          {
+            "type": "LIST",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "pagina" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{pagina}}" }
+                ]
+              }
+              ,{
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "origen" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{origen}}" }
+                ]
+              }            ]
+          }
+        ],
+        "firingTriggerId": ["4"],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      }      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "7",
+        "name": "GA4 - registro_proveedor (EVENTO CLAVE)",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TEMPLATE", "key": "eventName", "value": "registro_proveedor" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-LJPS2R11K6" },
+          {
+            "type": "LIST",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "pagina" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{pagina}}" }
+                ]
+              }
+              ,{
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "metodo" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{metodo}}" }
+                ]
+              }            ]
+          }
+        ],
+        "firingTriggerId": ["5"],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      }      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "tagId": "8",
+        "name": "GA4 - contacto_intencion (paso previo)",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TEMPLATE", "key": "eventName", "value": "contacto_intencion" },
+          { "type": "TEMPLATE", "key": "measurementIdOverride", "value": "G-LJPS2R11K6" },
+          {
+            "type": "LIST",
+            "key": "eventSettingsTable",
+            "list": [
+              {
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "pagina" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{pagina}}" }
+                ]
+              }
+              ,{
+                "type": "MAP",
+                "map": [
+                  { "type": "TEMPLATE", "key": "parameter", "value": "origen" },
+                  { "type": "TEMPLATE", "key": "parameterValue", "value": "{{origen}}" }
+                ]
+              }            ]
+          }
+        ],
+        "firingTriggerId": ["6"],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      }
     ],
     "trigger": [
       {
@@ -75,6 +172,52 @@
             "parameter": [
               { "type": "TEMPLATE", "key": "arg0", "value": "{{boton_texto}}" },
               { "type": "TEMPLATE", "key": "arg1", "value": "^(menu_proveedores|home_buscar|menu_ingreso_proveedores)$" }
+            ]
+          }
+        ]
+      }
+      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "4",
+        "name": "Evento - contacto_proveedor",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "contacto_proveedor" }
+            ]
+          }
+        ]
+      }      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "5",
+        "name": "Evento - registro_proveedor",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "registro_proveedor" }
+            ]
+          }
+        ]
+      }      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "triggerId": "6",
+        "name": "Evento - contacto_intencion",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          {
+            "type": "EQUALS",
+            "parameter": [
+              { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+              { "type": "TEMPLATE", "key": "arg1", "value": "contacto_intencion" }
             ]
           }
         ]
@@ -103,6 +246,29 @@
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
           { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "pagina" }
+        ]
+      }
+      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "6",
+        "name": "origen",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "origen" }
+        ]
+      }      ,{
+        "accountId": "0",
+        "containerId": "0",
+        "variableId": "7",
+        "name": "metodo",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "metodo" }
         ]
       }
     ],
