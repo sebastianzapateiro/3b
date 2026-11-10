@@ -7,7 +7,7 @@ import { TarjetaProveedor } from "@/components/TarjetaProveedor";
 import { RECOMENDADOS_DEMO } from "@/lib/demo";
 import { proveedoresDestacados } from "@/lib/destacados";
 import { jsonLdLista, jsonLdSitio, meta } from "@/lib/seo";
-import { ComoFunciona } from "@/components/ComoFunciona";
+import { ComoFuncionaHome } from "@/components/ComoFuncionaHome";
 import { BuscadorInicio } from "@/components/BuscadorInicio";
 import { Faq } from "@/components/Faq";
 import { FAQ_HOME } from "@/lib/faqs";
@@ -172,6 +172,8 @@ export default async function Home() {
             ))}
           </div>
         </section>
+
+        <ComoFuncionaHome />
 
         <section className="mx-auto max-w-[1200px] px-5 pb-7 pt-1 sm:px-6 sm:pb-10 sm:pt-0">
           <div className="flex flex-wrap items-center gap-10 rounded-3xl bg-tinta px-5 py-6 text-white sm:rounded-[32px] sm:px-10 sm:py-11">

@@ -117,6 +117,10 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 - Motivos de rechazo y sub-roles son **Propuesta** pendiente de Andrés: hacerlos configurables.
 - **Aceptación:** sin 2FA no entra; aprobar cambia el estado a `aprobado`, fija `aprobado_en` y el perfil aparece en búsqueda.
 
+## Cómo funciona (home y `/como-funciona`), 10 nov 2026
+
+Rediseño «Filas y recorrido» (`lib/como-funciona.content.ts`, `ComoFuncionaHome`, `ComoFuncionaPagina`). Trazabilidad verificada: cliente 1–2 → CU-01; cliente 4 → CU-05; proveedor 1–3 → CU-30/CU-32 (alta); cliente 3 y proveedor 4 → portafolio P7; cliente 5 → reseña por contacto previo (P5). No hay un CU propio de «Cómo funciona» en `docs/02`: no se le atribuye ninguno. Pendiente: fotos reales en `public/como-funciona/` (hoy degradado con icono; briefs en TODO del archivo de contenido), QR del proveedor y OTP de WhatsApp (no se prometen en el texto hasta que existan).
+
 ## [x] 8. Páginas legales `/terminos`, `/privacidad`, `/reclamos`
 
 > **Hecha (oct 2026):** además `/cookies`, `/terminos-proveedores`, `/resenas`, `/retiro-de-contenido`, `/reportar`. Pendiente: textos definitivos de Drive.

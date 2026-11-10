@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ComoFunciona } from "@/components/ComoFunciona";
+import { ComoFuncionaPagina } from "@/components/ComoFuncionaPagina";
 import { Faq } from "@/components/Faq";
 import { JsonLd } from "@/components/JsonLd";
 import { COMO_FUNCIONA } from "@/lib/como-funciona.content";
@@ -26,7 +26,7 @@ export default function PaginaComoFunciona() {
       <JsonLd datos={howTo("Cómo contratar un servicio en LasTresB", cliente.pasos, "paso")} />
       <JsonLd datos={howTo("Cómo ofrecer tus servicios en LasTresB", proveedor.pasos, "proveedor-paso")} />
       <main className="mx-auto flex max-w-[1000px] flex-col gap-6 px-5 pb-14 pt-4 sm:gap-8 sm:px-6 sm:pt-10">
-        <ComoFunciona />
+        <ComoFuncionaPagina />
       </main>
       <Faq preguntas={FAQ_COMO_FUNCIONA} />
     </>

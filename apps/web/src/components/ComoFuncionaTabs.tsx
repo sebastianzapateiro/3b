@@ -1,28 +1,28 @@
 "use client";
 
 /**
- * Pestañas de «¿Cómo funciona?». Los dos paneles llegan ya renderizados desde el servidor (HTML completo para SEO);
- * aquí solo se alterna cuál se ve, con flechas del teclado y sincronizado con ?como=cliente|proveedor.
+ * Pestañas «Soy cliente / Soy proveedor» (home y /como-funciona). Los dos paneles llegan ya renderizados desde el servidor
+ * (HTML completo para SEO); aquí solo se alterna cuál se ve, con flechas del teclado y, si `sincronizar`, con ?como=cliente|proveedor.
  */
 import { useEffect, useRef, useState } from "react";
 import type { RolComo } from "@/lib/como-funciona.content";
 
-type Pestana = { id: RolComo; titulo: string; subtexto: string; acento: "verde" | "ladrillo"; panel: React.ReactNode };
+type Pestana = { id: RolComo; titulo: string; subtexto: string; panel: React.ReactNode };
 
-const BORDE_ACTIVO = { verde: "border-b-verde", ladrillo: "border-b-ladrillo" } as const;
-
-export function ComoFuncionaTabs({ pestanas }: { pestanas: Pestana[] }) {
+export function ComoFuncionaTabs({ pestanas, prefijo, sincronizar = false, etiqueta = "¿Cómo funciona LasTresB?" }: { pestanas: Pestana[]; prefijo: string; sincronizar?: boolean; etiqueta?: string }) {
   const [activa, setActiva] = useState<RolComo>("cliente");
   const botones = useRef<(HTMLButtonElement | null)[]>([]);
 
   // La página es estática: el parámetro se lee en el navegador para no volverla dinámica.
   useEffect(() => {
+    if (!sincronizar) return;
     const como = new URLSearchParams(window.location.search).get("como");
     if (como === "cliente" || como === "proveedor") setActiva(como);
-  }, []);
+  }, [sincronizar]);
 
   function elegir(id: RolComo) {
     setActiva(id);
+    if (!sincronizar) return;
     const url = new URL(window.location.href);
     url.searchParams.set("como", id);
     window.history.replaceState(null, "", url);
@@ -40,31 +40,31 @@ export function ComoFuncionaTabs({ pestanas }: { pestanas: Pestana[] }) {
 
   return (
     <div>
-      <div role="tablist" aria-label="¿Cómo funciona LasTresB?" className="grid grid-cols-2 border-b-4 border-borde">
+      <div role="tablist" aria-label={etiqueta} className="mx-auto grid w-full max-w-[560px] grid-cols-2 gap-1 rounded-[40px] bg-piedra p-2">
         {pestanas.map((p, i) => {
           const on = p.id === activa;
           return (
             <button
               key={p.id}
               ref={(el) => { botones.current[i] = el; }}
-              id={`como-tab-${p.id}`}
+              id={`${prefijo}-tab-${p.id}`}
               type="button"
               role="tab"
               aria-selected={on}
-              aria-controls={`como-panel-${p.id}`}
+              aria-controls={`${prefijo}-panel-${p.id}`}
               tabIndex={on ? 0 : -1}
               onClick={() => elegir(p.id)}
               onKeyDown={(e) => teclas(e, i)}
-              className={`-mb-1 flex min-h-[72px] flex-col items-center justify-center gap-0.5 border-b-8 px-2 pb-2 pt-3 transition-colors duration-150 motion-reduce:transition-none focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-amarillo ${on ? `${BORDE_ACTIVO[p.acento]} text-tinta` : "border-b-transparent text-gris"}`}
+              className={`flex min-h-16 flex-col items-center justify-center rounded-[32px] px-2 py-2 transition-colors duration-150 motion-reduce:transition-none ${on ? "bg-verde text-crema" : "text-tinta hover:bg-white/60"}`}
             >
-              <span className="font-display text-xl font-extrabold tracking-[-0.03em] sm:text-[28px]">{p.titulo}</span>
-              <span className="text-sm">{p.subtexto}</span>
+              <span className="font-display text-lg font-extrabold sm:text-xl">{p.titulo}</span>
+              <span className={`text-[13px] ${on ? "text-crema" : "text-tinta-2"}`}>{p.subtexto}</span>
             </button>
           );
         })}
       </div>
       {pestanas.map((p) => (
-        <div key={p.id} role="tabpanel" id={`como-panel-${p.id}`} aria-labelledby={`como-tab-${p.id}`} hidden={p.id !== activa} className="pt-6 sm:pt-8">
+        <div key={p.id} role="tabpanel" id={`${prefijo}-panel-${p.id}`} aria-labelledby={`${prefijo}-tab-${p.id}`} hidden={p.id !== activa} className="pt-10">
           {p.panel}
         </div>
       ))}
