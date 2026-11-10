@@ -126,17 +126,17 @@ export type PaginaResultados = {
 
 const ESTADOS_VISIBLES = ["aprobado", "en_revision"] as const;
 
-/** La categoría puede ser una subcategoría o una categoría padre (incluye sus hijas). */
+/**
+ * La categoría puede ser una subcategoría, una categoría padre (incluye sus hijas) o varias separadas por coma
+ * (p. ej. el grupo «Reparaciones» de Hogar: `plomero,electricista,…`).
+ */
 async function resolverCategoria(slug: string | undefined): Promise<{ ids: number[]; nombre: string } | null> {
-  if (!slug) return null;
-  const [c] = await db
-    .select({ id: categorias.id, nombre: categorias.nombre })
-    .from(categorias)
-    .where(eq(categorias.slug, slug))
-    .limit(1);
-  if (!c) return null;
-  const hijas = await db.select({ id: categorias.id }).from(categorias).where(eq(categorias.padreId, c.id));
-  return { ids: [c.id, ...hijas.map((h) => h.id)], nombre: c.nombre };
+  const slugs = [...new Set((slug ?? "").split(",").map((s) => s.trim()).filter(Boolean))].slice(0, 30);
+  if (slugs.length === 0) return null;
+  const cs = await db.select({ id: categorias.id, nombre: categorias.nombre }).from(categorias).where(inArray(categorias.slug, slugs));
+  if (cs.length === 0) return null;
+  const hijas = await db.select({ id: categorias.id }).from(categorias).where(inArray(categorias.padreId, cs.map((c) => c.id)));
+  return { ids: [...cs.map((c) => c.id), ...hijas.map((h) => h.id)], nombre: cs.length === 1 ? cs[0]!.nombre : cs.map((c) => c.nombre).join(", ") };
 }
 
 async function resolverLocalidadIds(slugs: string[]): Promise<number[]> {

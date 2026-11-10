@@ -39,9 +39,9 @@ describe("mosaico de categorías", () => {
     expect(rep.oficios).toEqual(["Plomería", "Electricidad", "Gas"]);
   });
 
-  it("los tiles de Hogar enlazan a su subgrupo y el resto a su categoría", () => {
-    expect(tiles.find((t) => t.nombre === "Obra y acabados")!.href).toBe("/categorias/hogar#obra-y-acabados");
-    expect(tiles.find((t) => t.nombre === "Acarreos y transporte")!.href).toBe("/categorias/acarreos-y-transporte");
+  it("los tiles llevan a los resultados de /proveedores con el filtro aplicado", () => {
+    expect(tiles.find((t) => t.nombre === "Obra y acabados")!.href).toMatch(/^\/proveedores\?categoria=[a-z0-9-]+(,[a-z0-9-]+)+$/);
+    expect(tiles.find((t) => t.nombre === "Acarreos y transporte")!.href).toBe("/proveedores?categoria=acarreos-y-transporte");
   });
 
   it("describe cada tile para lectores de pantalla", () => {

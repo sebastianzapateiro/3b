@@ -89,12 +89,14 @@ export function construirMosaico(categorias: CategoriaPadre[]): TileMosaico[] {
   for (const c of categorias) {
     const grupos = [...new Set(c.subcategorias.map((s) => s.subgrupo).filter((g): g is string => Boolean(g)))];
     if (grupos.length === 0) {
-      agregar(c.slug, null, c.nombre, `/categorias/${c.slug}`, c, c.subcategorias);
+      agregar(c.slug, null, c.nombre, `/proveedores?categoria=${c.slug}`, c, c.subcategorias);
       continue;
     }
     for (const g of grupos) {
       const clave = sugerirSlug(g);
-      agregar(clave, c.nombre, g, `/categorias/${c.slug}#${clave}`, c, c.subcategorias.filter((s) => s.subgrupo === g));
+      const subs = c.subcategorias.filter((s) => s.subgrupo === g);
+      // Los resultados llegan ya filtrados por los oficios del grupo.
+      agregar(clave, c.nombre, g, `/proveedores?categoria=${subs.map((s) => s.slug).join(",")}`, c, subs);
     }
   }
   return tiles;

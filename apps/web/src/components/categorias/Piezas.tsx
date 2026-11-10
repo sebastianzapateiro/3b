@@ -59,6 +59,46 @@ export function OficiosAgrupados({ c, claseUrgencias = false }: { c: CategoriaPa
   );
 }
 
+/**
+ * Oficios de una categoría como filtro: cada uno lleva a los resultados de /proveedores con ese oficio ya aplicado,
+ * que es donde la gente interactúa. «Todos» muestra toda la categoría. Con subgrupos (Hogar) van en filas con su título.
+ */
+export function OficiosComoFiltro({ c }: { c: CategoriaPadre }) {
+  const chip = "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-borde bg-white px-4 text-sm font-semibold text-tinta transition-colors hover:border-verde hover:bg-verde-claro hover:text-verde-oscuro";
+  const grupos = [...new Set(c.subcategorias.map((s) => s.subgrupo).filter((g): g is string => Boolean(g)))];
+  const oficio = (s: Subcategoria) => (
+    <li key={s.slug}>
+      <Link href={`/proveedores?categoria=${s.slug}`} className={chip}>
+        {s.nombre}
+        {s.atiendeUrgencias && <span className="rounded-md bg-verde-claro px-1.5 py-0.5 text-[11px] font-bold leading-none text-verde-oscuro">24 h</span>}
+      </Link>
+    </li>
+  );
+  const todos = (
+    <li>
+      <Link href={`/proveedores?categoria=${c.slug}`} className="inline-flex min-h-11 items-center rounded-full bg-tinta px-5 text-sm font-semibold text-white hover:bg-tinta-2">Ver todo en {c.nombre}</Link>
+    </li>
+  );
+  return (
+    <nav aria-label={`Elige un oficio de ${c.nombre}`} className="flex flex-col gap-3">
+      <p className="text-sm font-semibold text-gris">Elige un oficio y ve los resultados</p>
+      {grupos.length === 0 ? (
+        <ul className="flex flex-wrap gap-2">{todos}{ordenar(c.subcategorias).map(oficio)}</ul>
+      ) : (
+        <>
+          <ul className="flex flex-wrap gap-2">{todos}</ul>
+          {grupos.map((g) => (
+            <div key={g} className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+              <h3 className="pt-3 text-xs font-bold uppercase tracking-[1px] text-gris sm:w-40 sm:flex-none">{g}</h3>
+              <ul className="flex flex-wrap gap-2">{ordenar(c.subcategorias.filter((s) => s.subgrupo === g)).map(oficio)}</ul>
+            </div>
+          ))}
+        </>
+      )}
+    </nav>
+  );
+}
+
 /** Tarjeta de escritorio y tablet: ícono, título, 4 chips y «Ver todo» con «+N más». Todas del mismo alto. */
 export function TarjetaCategoria({ c }: { c: CategoriaPadre }) {
   const primeros = ordenar(c.subcategorias).slice(0, 4);
