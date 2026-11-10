@@ -5,7 +5,8 @@ import { CargaDocumentosEquipo } from "@/components/admin/CargaDocumentosEquipo"
 import { Aviso, Chip, Encabezado, Iniciales, tarjeta, campoAdmin } from "@/components/admin/Ui";
 import { etiquetaSegmento, listarLocalidades, listarOficios, obtenerRevision } from "@/lib/admin";
 import { CampoWhatsapp } from "@/components/CampoWhatsapp";
-import { REDES } from "@las3b/shared";
+import { REDES, serviciosSugeridos } from "@las3b/shared";
+import { SelectorServicio } from "@/components/panel/SelectorServicio";
 import { CargaFotos } from "@/components/CargaFotos";
 import { fotosDelProveedor } from "@/lib/fotos";
 import { parametro } from "@/lib/parametros";
@@ -29,10 +30,19 @@ function CamposServicio({ oficios, servicio }: { oficios: { id: number; nombre: 
   const sinPrecio = oficio?.slug === CATEGORIA_SIN_PRECIO;
   return (
     <div className="flex flex-wrap gap-2">
-      {oficios.length > 1 && (
-        <select name="categoriaId" defaultValue={servicio?.categoriaId ?? oficios[0]?.id} aria-label="Oficio" className={`${campoAdmin} flex-[1_1_100%]`}>{oficios.map((o) => <option key={o.id} value={o.id}>{o.nombre}</option>)}</select>
-      )}
-      <input name="nombre" required defaultValue={servicio?.nombre} placeholder="Servicio" aria-label="Servicio" className={`${campoAdmin} flex-[2_1_200px]`} />
+      {/* El menú de servicios sale del catálogo según el oficio elegido; «Otro servicio» permite escribir uno propio. */}
+      <div className="flex flex-[1_1_100%] flex-wrap gap-2">
+        <SelectorServicio
+          oficios={oficios}
+          sugeridos={Object.fromEntries(oficios.map((o) => [o.id, serviciosSugeridos(o.slug)]))}
+          mostrarOficio={oficios.length > 1}
+          oficioInicial={servicio?.categoriaId ?? oficios[0]?.id}
+          nombreInicial={servicio?.nombre ?? ""}
+          etiquetaOficio="Oficio"
+          claseCampo={`${campoAdmin} w-full`}
+          claseEtiqueta="text-[13px] font-semibold text-gris"
+        />
+      </div>
       <input name="descripcion" maxLength={140} defaultValue={servicio?.descripcion ?? ""} placeholder="Detalle (opcional)" aria-label="Detalle" className={`${campoAdmin} flex-[2_1_200px]`} />
       {sinPrecio ? (
         <span className="flex h-11 flex-[1_1_160px] items-center text-sm font-semibold text-tinta-2">A convenir con el cliente</span>
@@ -196,7 +206,7 @@ export default async function Revision({ params, searchParams }: { params: Promi
                     <label className="flex min-w-0 flex-1 flex-col gap-1.5 text-sm font-semibold">Número de documento<input name="documento" inputMode="numeric" placeholder="••••••••  (vacío = no cambiar)" className={campoAdmin} /></label>
                   </div>
                   <label className="flex flex-col gap-1.5 text-sm font-semibold">Fecha de nacimiento<input name="fechaNacimiento" type="date" defaultValue={p.fechaNacimientoIso} className={campoAdmin} /></label>
-                  <label className="flex flex-col gap-1.5 text-sm font-semibold sm:col-span-2">Dirección de notificaciones<input name="direccion" defaultValue={p.direccion ?? ""} className={campoAdmin} /></label>
+                  <label className="flex flex-col gap-1.5 text-sm font-semibold sm:col-span-2">Dirección de notificaciones <span className="font-normal text-gris">(opcional)</span><input name="direccion" defaultValue={p.direccion ?? ""} className={campoAdmin} /></label>
                   <label className="flex flex-col gap-1.5 text-sm font-semibold">N.º de matrícula<input name="numeroMatricula" defaultValue={p.numeroMatricula ?? ""} className={campoAdmin} /></label>
                 </div>
                 <label className="flex flex-col gap-1.5 text-sm font-semibold">Presentación <span className="font-normal text-gris">(hasta 1000 caracteres)</span><textarea name="presentacion" rows={6} maxLength={1000} defaultValue={p.presentacion ?? ""} className="rounded-xl border-[1.5px] border-borde-campo p-3 text-[15px] leading-[1.45]" /></label>

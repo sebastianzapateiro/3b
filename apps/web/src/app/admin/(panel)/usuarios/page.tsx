@@ -153,15 +153,15 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
               <h2 className="font-display text-xl font-bold">Crear usuario</h2>
               <label htmlFor="nombre" className={etiquetaAdmin}>Nombre</label>
               <input id="nombre" name="nombre" required minLength={2} maxLength={80} autoComplete="off" placeholder="Ej: Laura Gómez" className={campoAdmin} />
-              <label htmlFor="correo" className={etiquetaAdmin}>Correo</label>
-              <input id="correo" name="correo" type="email" required maxLength={120} autoComplete="off" placeholder="nombre@correo.com" className={campoAdmin} />
+              <label htmlFor="correo" className={etiquetaAdmin}>Correo <span className="font-normal text-gris">(opcional)</span></label>
+              <input id="correo" name="correo" type="email" maxLength={120} autoComplete="off" placeholder="nombre@correo.com" className={campoAdmin} />
               <fieldset className="mt-1 flex flex-col gap-2.5 text-[15px]">
                 <legend className={`${etiquetaAdmin} mb-2`}>Roles</legend>
                 {ROLES.map((r) => (
                   <label key={r.v} className="flex items-center gap-2.5"><input type="checkbox" name="rol" value={r.v} className="size-5 accent-verde" />{r.t}</label>
                 ))}
               </fieldset>
-              <span className="text-[13px] leading-[1.45] text-gris">Le enviamos un correo para que elija su clave. Al entrar por primera vez acepta las políticas y, si su rol lo exige, activa el 2FA.</span>
+              <span className="text-[13px] leading-[1.45] text-gris">Si tiene correo, le enviamos un enlace para que elija su clave; sin correo no hay invitación (los roles del equipo sí lo necesitan). Al entrar por primera vez acepta las políticas y, si su rol lo exige, activa el 2FA.</span>
               <div className="flex gap-2">
                 <button type="submit" className={botonOscuro}>Crear y enviar invitación</button>
                 <Link href="/admin/usuarios" className="inline-flex h-11 items-center px-3 text-sm font-semibold text-gris">Cancelar</Link>

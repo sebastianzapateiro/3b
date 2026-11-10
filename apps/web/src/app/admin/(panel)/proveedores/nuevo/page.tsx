@@ -75,12 +75,12 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
               <div className={grupo}><label htmlFor="nombrePublico" className={etiqueta}>Nombre público</label><input id="nombrePublico" name="nombrePublico" required placeholder="Ej: Jorge Ramírez Plomería" className={campoAdmin} /></div>
               <div className="flex gap-2.5">
                 <div className={`${grupo} w-24 flex-none`}><label htmlFor="tipoDocumento" className={etiqueta}>Tipo</label><select id="tipoDocumento" name="tipoDocumento" className={campoAdmin}><option value="cc">CC</option><option value="ce">CE</option><option value="ppt">PPT</option><option value="nit">NIT</option></select></div>
-                <div className={`${grupo} min-w-0 flex-1`}><label htmlFor="documento" className={etiqueta}>Número</label><input id="documento" name="documento" required inputMode="numeric" placeholder="Sin puntos" className={campoAdmin} /></div>
+                <div className={`${grupo} min-w-0 flex-1`}><label htmlFor="documento" className={etiqueta}>Número <span className="font-normal text-gris">(opcional)</span></label><input id="documento" name="documento" inputMode="numeric" placeholder="Sin puntos" className={campoAdmin} /></div>
               </div>
-              <div className={grupo}><label htmlFor="fechaNacimiento" className={etiqueta}>Fecha de nacimiento</label><input id="fechaNacimiento" name="fechaNacimiento" type="date" className={campoAdmin} /></div>
+              <div className={grupo}><label htmlFor="fechaNacimiento" className={etiqueta}>Fecha de nacimiento <span className="font-normal text-gris">(opcional)</span></label><input id="fechaNacimiento" name="fechaNacimiento" type="date" className={campoAdmin} /></div>
               <div className={grupo}><label htmlFor="whatsapp" className={etiqueta}>WhatsApp del proveedor</label><CampoWhatsapp id="whatsapp" className={campoAdmin} /></div>
-              <div className={grupo}><label htmlFor="correo" className={etiqueta}>Correo del proveedor</label><input id="correo" name="correo" type="email" placeholder="Si no tiene, déjalo vacío" className={campoAdmin} /></div>
-              <div className={`${grupo} sm:col-span-2`}><label htmlFor="direccion" className={etiqueta}>Dirección de notificaciones</label><input id="direccion" name="direccion" required placeholder="Dirección completa y localidad" className={campoAdmin} /></div>
+              <div className={grupo}><label htmlFor="correo" className={etiqueta}>Correo del proveedor <span className="font-normal text-gris">(opcional)</span></label><input id="correo" name="correo" type="email" placeholder="Si no tiene, déjalo vacío" className={campoAdmin} /></div>
+              <div className={`${grupo} sm:col-span-2`}><label htmlFor="direccion" className={etiqueta}>Dirección de notificaciones <span className="font-normal text-gris">(opcional)</span></label><input id="direccion" name="direccion" placeholder="Dirección completa y localidad" className={campoAdmin} /></div>
             </div>
           </section>
 

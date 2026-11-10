@@ -98,13 +98,14 @@ const altaAsistida = z.object({
   factura: z.enum(["si", "no"]),
   nombreLegal: z.string().min(3, "Escribe el nombre completo o la razón social."),
   nombrePublico: z.string().min(3, "Escribe el nombre público."),
-  tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]),
-  documento: z.string().regex(/^\d{5,15}$/, "El número de documento va sin puntos ni espacios."),
+  // Documento, correo y dirección son opcionales para el equipo: el proveedor los completa después si hace falta.
+  tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]).optional().or(z.literal("")),
+  documento: z.string().trim().regex(/^\d{5,15}$/, "El número de documento va sin puntos ni espacios.").optional().or(z.literal("")),
   fechaNacimiento: z.string().optional(),
   // Formato estándar «+57XXXXXXXXXX»: se escribe solo el número y el sistema agrega el indicativo.
   whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Revisa el WhatsApp: son 10 dígitos, por ejemplo 300 123 4567." }), z.NEVER)),
   correo: z.string().email("Revisa el correo.").optional().or(z.literal("")),
-  direccion: z.string().min(5, "Escribe la dirección de notificaciones."),
+  direccion: z.string().trim().max(160, "La dirección admite hasta 160 caracteres.").optional(),
   presentacion: z.string().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
   servicio: z.string().optional(),
   servicioCategoria: z.string().optional(),
@@ -167,9 +168,9 @@ export async function crearProveedorAsistido(formData: FormData) {
       presentacion: d.presentacion || null,
       whatsapp: d.whatsapp,
       emiteFactura: d.factura === "si",
-      tipoDocumento: d.tipoDocumento,
-      ...protegerDocumento(d.documento),
-      direccionNotificaciones: d.direccion,
+      tipoDocumento: d.documento ? d.tipoDocumento || "cc" : null,
+      ...(d.documento ? protegerDocumento(d.documento) : {}),
+      direccionNotificaciones: d.direccion || null,
       fechaNacimiento: d.fechaNacimiento || null,
       fuenteOrigen: d.fuente ?? null,
       primerContacto: hoyBogota(),
@@ -289,7 +290,7 @@ const esquemaEdicionAdmin = z.object({
   presentacion: z.string().trim().max(PRESENTACION_MAX, `La presentación admite hasta ${PRESENTACION_MAX} caracteres.`).optional(),
   aniosExperiencia: z.coerce.number().int().min(0).max(80).optional().or(z.literal("").transform(() => undefined)),
   segmento: z.enum(["independiente_sin_rut", "independiente_con_rut", "empresa"]),
-  tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]),
+  tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]).optional().or(z.literal("")),
   // Vacío = no se cambia (el documento está cifrado y solo se muestra enmascarado).
   documento: z.string().trim().regex(/^\d{5,15}$/, "El número de documento va sin puntos ni espacios.").optional().or(z.literal("")),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Revisa la fecha de nacimiento.").optional().or(z.literal("")),
@@ -360,7 +361,7 @@ export async function editarTodoComoAdmin(formData: FormData) {
   if ((d.presentacion || null) !== (antes.presentacion || null)) cambios.push("Presentación");
   if ((d.aniosExperiencia ?? null) !== (antes.aniosExperiencia ?? null)) cambios.push("Años de experiencia");
   if (d.segmento !== antes.segmento) cambios.push("Cómo trabajas (independiente o empresa)");
-  if (d.tipoDocumento !== antes.tipoDocumento || d.documento) cambios.push("Documento de identidad");
+  if ((d.tipoDocumento && d.tipoDocumento !== antes.tipoDocumento) || d.documento) cambios.push("Documento de identidad");
   if ((d.fechaNacimiento || null) !== (antes.fechaNacimiento || null)) cambios.push("Fecha de nacimiento");
   if ((d.direccion || null) !== (antes.direccionNotificaciones || null)) cambios.push("Dirección de notificaciones");
   if ((d.numeroMatricula || null) !== (antes.numeroMatricula || null)) cambios.push("Número de matrícula");
@@ -385,7 +386,7 @@ export async function editarTodoComoAdmin(formData: FormData) {
           presentacion: d.presentacion || null,
           aniosExperiencia: d.aniosExperiencia ?? null,
           segmento: d.segmento,
-          tipoDocumento: d.tipoDocumento,
+          tipoDocumento: d.tipoDocumento || antes.tipoDocumento || null,
           ...(d.documento ? protegerDocumento(d.documento) : {}),
           fechaNacimiento: d.fechaNacimiento || null,
           direccionNotificaciones: d.direccion || null,
@@ -507,27 +508,33 @@ const ROLES = ["comprador", "proveedor", "verificador", "moderador", "admin"] as
 export async function crearUsuario(formData: FormData) {
   const actor = await exigirBackoffice(true);
   const datos = z
-    .object({ nombre: z.string().min(2).max(80), correo: z.string().email().max(120), roles: z.array(z.enum(ROLES)) })
+    .object({ nombre: z.string().min(2).max(80), correo: z.string().email().max(120).optional().or(z.literal("")), roles: z.array(z.enum(ROLES)) })
     .safeParse({ nombre: texto(formData, "nombre"), correo: texto(formData, "correo").toLowerCase(), roles: formData.getAll("rol") });
   if (!datos.success) volver("/admin/usuarios", { nuevo: "1", error: "Revisa el nombre y el correo." });
-  const { nombre, correo, roles } = datos.data;
+  const { nombre, roles } = datos.data;
+  // El correo es opcional para el equipo. Sin correo la cuenta queda con uno ficticio (como en el alta asistida) y no recibe invitación.
+  const conCorreo = Boolean(datos.data.correo);
+  if (!conCorreo && roles.some((r) => r !== "proveedor")) volver("/admin/usuarios", { nuevo: "1", error: "Los roles del equipo necesitan correo: con él ingresan y activan el 2FA. Sin correo solo se puede crear un proveedor o un usuario sin rol." });
+  const correo = conCorreo ? datos.data.correo! : `${randomUUID()}@sin-correo.lastresb.invalid`;
 
   const [existe] = await db.select({ id: user.id }).from(user).where(eq(user.email, correo)).limit(1);
   if (existe) volver("/admin/usuarios", { u: existe.id, error: "Ya hay una cuenta con ese correo." });
 
   const ctx = await auth.$context;
-  // El admin responde por el correo; el enlace de invitación solo llega a ese buzón.
-  const nuevo = await ctx.internalAdapter.createUser({ name: nombre, email: correo, emailVerified: true }, { method: "admin" });
+  // Con correo, el admin responde por él: el enlace de invitación solo llega a ese buzón.
+  const nuevo = await ctx.internalAdapter.createUser({ name: nombre, email: correo, emailVerified: conCorreo }, { method: "admin" });
   if (roles.length) await db.insert(usuarioRoles).values(roles.map((rol) => ({ usuarioId: nuevo.id, rol, asignadoPor: actor.user.id })));
   // Con el rol Proveedor la cuenta nace con su perfil en borrador (si no, quedaba «Proveedor · sin perfil»).
   if (roles.includes("proveedor")) await crearBorrador({ id: nuevo.id, name: nombre, email: correo });
 
-  const { url, horas } = await crearInvitacion(nuevo.id);
-  await enviarInvitacionPorCorreo({ para: correo, nombre, url, horas, motivo: "El equipo de LasTresB te creó una cuenta con este correo." });
+  if (conCorreo) {
+    const { url, horas } = await crearInvitacion(nuevo.id);
+    await enviarInvitacionPorCorreo({ para: correo, nombre, url, horas, motivo: "El equipo de LasTresB te creó una cuenta con este correo." });
+  }
 
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "usuario_creado", objetoTipo: "usuario", objetoId: nuevo.id, metadatos: { roles } });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "usuario_creado", objetoTipo: "usuario", objetoId: nuevo.id, metadatos: { roles, sinCorreo: !conCorreo } });
   revalidatePath("/admin", "layout");
-  volver("/admin/usuarios", { u: nuevo.id, ok: `Cuenta creada. Enviamos la invitación a ${correo}.` });
+  volver("/admin/usuarios", { u: nuevo.id, ok: conCorreo ? `Cuenta creada. Enviamos la invitación a ${correo}.` : "Cuenta creada sin correo. Cuando tenga uno, agrégalo desde su ficha." });
 }
 
 /** B4 · Qué roles del equipo deben usar 2FA. Solo admin; el rol admin siempre lo exige y no se puede cambiar. */

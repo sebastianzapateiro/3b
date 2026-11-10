@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Faq } from "@/components/Faq";
 import { FAQ_NOSOTROS } from "@/lib/faqs";
-import { meta } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { jsonLdMigas, jsonLdPagina, meta } from "@/lib/seo";
 
-export const metadata = meta({ titulo: "Quiénes somos: servicios de confianza en Bogotá", descripcion: "LasTresB es un directorio gratuito donde encuentras en Bogotá a quien te ayude, por localidad, y le escribes directo por WhatsApp.", ruta: "/nosotros" });
+const DESC = "LasTresB es un directorio gratuito donde encuentras en Bogotá a quien te ayude, por localidad, y le escribes directo por WhatsApp.";
+export const metadata = meta({ titulo: "Quiénes somos: servicios de confianza en Bogotá", descripcion: DESC, ruta: "/nosotros" });
 
 const tarjeta = "rounded-[22px] border border-borde-suave bg-white shadow-[0_8px_30px_rgba(27,38,35,0.06)]";
 
@@ -18,6 +20,8 @@ const VALORES = [
 export default function Nosotros() {
   return (
     <>
+      <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Quiénes somos", ruta: "/nosotros" }])} />
+      <JsonLd datos={jsonLdPagina({ tipo: "AboutPage", nombre: "Quiénes somos", descripcion: DESC, ruta: "/nosotros" })} />
       <main className="mx-auto flex max-w-[1100px] flex-col gap-10 px-5 pb-10 pt-6 sm:px-6 md:gap-14 md:pt-12">
         <header className="grid items-center gap-6 md:grid-cols-2 md:gap-10">
           <div className="flex flex-col gap-4">

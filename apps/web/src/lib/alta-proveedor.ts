@@ -121,7 +121,7 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
     { clave: "negocio", titulo: "Cómo trabajas y tu página", texto: "Si eres independiente o empresa y la dirección de tu página.", ok: Boolean(p?.segmento), iniciada: Boolean(p?.segmento), href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
-    { clave: "identidad", titulo: "Datos de identidad", texto: "Documento, dirección y fecha de nacimiento. Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.direccion && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
+    { clave: "identidad", titulo: "Datos de identidad", texto: "Tu cédula y fecha de nacimiento (la dirección es opcional). Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
     { clave: "documentos", titulo: "Tu documento", texto: "Opcional: la foto de tu documento ayuda a verificar tu perfil. Es privada, solo la ve el equipo.", ok: docs.lista.some((r) => r.tipo === "documento_frente" && r.cargado), iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
     { clave: "foto", titulo: "Tu foto de perfil", texto: "Opcional, pero los clientes confían más en perfiles con foto. Se muestra en tu perfil.", ok: Boolean(p?.fotoPerfil), href: "/panel/perfil#foto", seccion: "perfil", opcional: true },
     { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, iniciada: (fotos?.n ?? 0) > 0, href: "/panel/fotos", seccion: "fotos", opcional: true },
@@ -216,7 +216,8 @@ export async function guardarNegocio(proveedor: { id: string; estado: string }, 
 const esquemaIdentidad = z.object({
   tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"], { message: "Elige el tipo de documento." }),
   documento: z.string().trim().regex(/^[0-9A-Za-z-]{4,20}$/, "Escribe el número de documento sin puntos ni espacios."),
-  direccionNotificaciones: z.string().trim().min(6, "Escribe tu dirección de notificaciones.").max(160),
+  // La dirección es opcional: no se le exige a nadie.
+  direccionNotificaciones: z.string().trim().max(160, "La dirección admite hasta 160 caracteres.").optional(),
   fechaNacimiento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Escribe tu fecha de nacimiento."),
   numeroMatricula: z.string().trim().max(30, "El número de matrícula admite hasta 30 caracteres.").optional(),
 });
@@ -239,7 +240,7 @@ export async function guardarIdentidad(proveedor: { id: string; estado: string }
     .set({
       tipoDocumento: r.data.tipoDocumento,
       ...protegerDocumento(r.data.documento),
-      direccionNotificaciones: r.data.direccionNotificaciones,
+      direccionNotificaciones: r.data.direccionNotificaciones || null,
       fechaNacimiento: r.data.fechaNacimiento,
       ...(r.data.numeroMatricula !== undefined ? { numeroMatricula: r.data.numeroMatricula || null } : {}),
       updatedAt: new Date(),

@@ -116,6 +116,8 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
 
   // Filtros activos como chips con «x» para quitarlos de uno en uno.
   const activos: { texto: string; quitar: string }[] = [
+    ...(nombreLocalidad && !exacta ? [{ texto: nombreLocalidad, quitar: href({ localidad: null, tambien: null, pagina: null }) }] : []),
+    ...(q ? [{ texto: `«${q}»`, quitar: href({ q: null, pagina: null }) }] : []),
     ...insignias.map((i) => ({ texto: ETIQUETA_INSIGNIA[i], quitar: href({ insignia: insignias.filter((x) => x !== i), pagina: null }) })),
     ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")}+`, quitar: href({ cal: null, pagina: null }) }] : []),
     ...(visita ? [{ texto: visita === "convenir" ? "Visita a convenir" : `Visita ${etiquetaTope(Number(visita)).toLowerCase()}`, quitar: href({ visita: null, pagina: null }) }] : []),
@@ -123,7 +125,10 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     ...(h24 ? [{ texto: "24 horas", quitar: href({ h24: null, pagina: null }) }] : []),
     ...tambien.map((t) => ({ texto: `También ${LOCALIDADES_BOGOTA.find((l) => l.slug === t)?.nombre ?? t}`, quitar: href({ tambien: tambien.filter((x) => x !== t), pagina: null }) })),
   ];
-  const hayFiltros = activos.length > 0;
+  // «hayFiltros» (los del panel) no cuenta la localidad ni el texto buscado, que sí se muestran como chips.
+  const hayFiltros = insignias.length > 0 || cal !== "0" || !!visita || hoy || h24 || tambien.length > 0;
+  /** Borra todo: filtros, localidad, texto y oficio. Deja solo la vista elegida. */
+  const borrarTodo = href({ q: null, localidad: null, categoria: null, ubic: null, solicitud: null, orden: null, insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, pagina: null });
 
   // Parámetros ajenos al panel y datos que este necesita.
   const base = new URLSearchParams();
@@ -192,6 +197,9 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link href={borrarTodo} className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-ladrillo-oscuro underline">Borrar todos los filtros</Link>
+              </li>
             </ul>
           )}
 

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { MARCA } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
 import { FAQ_CONTACTO } from "@/lib/faqs";
-import { meta } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
+import { jsonLdMigas, jsonLdPagina, meta } from "@/lib/seo";
 import { MOTIVOS_CONTACTO } from "@/lib/contacto";
 import { enviarMensaje } from "./actions";
 
-export const metadata = meta({ titulo: "Contacto y ayuda con LasTresB", descripcion: "Escríbenos para resolver una duda, contarnos una sugerencia o hablar con el equipo de LasTresB, el directorio de servicios de Bogotá.", ruta: "/contacto" });
+const DESC = "Escríbenos para resolver una duda, contarnos una sugerencia o hablar con el equipo de LasTresB, el directorio de servicios de Bogotá.";
+export const metadata = meta({ titulo: "Contacto y ayuda con LasTresB", descripcion: DESC, ruta: "/contacto" });
 
 const campo = "h-12 w-full rounded-xl border-[1.5px] border-borde-campo bg-white px-3 text-base";
 const tarjeta = "rounded-[22px] border border-borde-suave bg-white shadow-[0_8px_30px_rgba(27,38,35,0.06)]";
@@ -16,6 +18,8 @@ export default async function Contacto({ searchParams }: { searchParams: Promise
   const sp = await searchParams;
   return (
     <>
+      <JsonLd datos={jsonLdMigas([{ nombre: "Inicio", ruta: "/" }, { nombre: "Contacto", ruta: "/contacto" }])} />
+      <JsonLd datos={jsonLdPagina({ tipo: "ContactPage", nombre: "Contacto", descripcion: DESC, ruta: "/contacto" })} />
       <main className="mx-auto flex max-w-[1000px] flex-col gap-6 px-5 pb-10 pt-6 sm:px-6 md:pt-12">
         <header className="flex flex-col gap-2">
           <h1 className="font-display text-[32px] font-extrabold leading-tight tracking-[-1px] md:text-5xl">Contacto</h1>

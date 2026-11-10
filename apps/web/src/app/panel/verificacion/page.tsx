@@ -74,8 +74,8 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="direccionNotificaciones" className="text-sm font-semibold">Dirección de notificaciones</label>
-            <input id="direccionNotificaciones" name="direccionNotificaciones" required autoComplete="street-address" placeholder="Calle 123 # 45-67, Bogotá" className={campo} />
+            <label htmlFor="direccionNotificaciones" className="text-sm font-semibold">Dirección de notificaciones <span className="font-normal text-gris">(opcional)</span></label>
+            <input id="direccionNotificaciones" name="direccionNotificaciones" autoComplete="street-address" placeholder="Calle 123 # 45-67, Bogotá" className={campo} />
           </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor="fechaNacimiento" className="text-sm font-semibold">Fecha de nacimiento</label>

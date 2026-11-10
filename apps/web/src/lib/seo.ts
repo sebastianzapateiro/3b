@@ -182,6 +182,20 @@ export function jsonLdServicio(s: { nombre: string; descripcion: string; ruta: s
   };
 }
 
+/** Páginas institucionales: «Quiénes somos» (AboutPage) y «Contacto» (ContactPage), ligadas a la organización. */
+export function jsonLdPagina(p: { tipo: "AboutPage" | "ContactPage"; nombre: string; descripcion: string; ruta: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": p.tipo,
+    name: p.nombre,
+    description: p.descripcion,
+    url: absoluta(p.ruta),
+    inLanguage: "es-CO",
+    isPartOf: { "@id": absoluta("/#sitio") },
+    about: { "@id": absoluta("/#organizacion") },
+  };
+}
+
 /** Página de colección (listados de categorías, localidades, guías, servicios). */
 export function jsonLdColeccion(c: { nombre: string; descripcion: string; ruta: string }) {
   return {
