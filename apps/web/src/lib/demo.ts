@@ -96,6 +96,9 @@ export function perfilDemo(slug: string): import("@/lib/portafolio-completo").Po
   const dia = 86_400_000;
   return {
     slug: p.slug,
+    estado: "demo",
+    esEmpresa: false,
+    actualizado: new Date(ahora),
     nombre: p.nombre,
     presentacion: "Perfil de ejemplo para mostrar cómo se ve un portafolio en LasTresB. Aquí cada proveedor cuenta, en sus propias palabras, su experiencia y cómo trabaja.",
     whatsapp: "",

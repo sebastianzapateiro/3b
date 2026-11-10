@@ -4,7 +4,7 @@
  */
 import { LOCALIDADES_BOGOTA, subcategoriaPorSlug } from "@las3b/shared";
 import { buscarProveedores, type PaginaResultados } from "@/lib/busqueda";
-import { conteosPorOficio, localidadesConProveedores, minProveedoresSeo, preciosDesde } from "@/lib/publicacion";
+import { conteosPorOficio, conteosPorOficioYLocalidad, localidadesConProveedores, minProveedoresSeo, preciosDesde } from "@/lib/publicacion";
 import type { Variante } from "@/lib/seo-servicios";
 
 const VACIO: PaginaResultados = { items: [], total: 0, pagina: 1, porPagina: 10, categoriaNombre: null };
@@ -25,11 +25,13 @@ export async function cargarPaginaServicio(o: { oficio: string; variante: Varian
     orden: o.variante === "economico" ? "precio" : undefined,
   }).catch(() => VACIO);
 
-  const suficiente = resultado.total >= minimo;
-  const publicar: "si" | "noindex" | "no" = suficiente ? "si" : o.variante === "base" ? "noindex" : "no";
-
+  // La misma cuenta que usa el sitemap: proveedores aprobados con ficha completa (lib/indexacion.ts), no los que haya en la lista.
   const conteos = await conteosPorOficio().catch(() => []);
   const mio = conteos.find((c) => c.oficio === o.oficio);
+  const enLocalidad = localidad ? (await conteosPorOficioYLocalidad().catch(() => [])).find((c) => c.oficio === o.oficio && c.localidad === localidad.slug)?.total ?? 0 : 0;
+  const disponibles = localidad ? enLocalidad : o.variante === "urgente" ? mio?.urgentes ?? 0 : o.variante === "economico" ? mio?.conPrecio ?? 0 : mio?.total ?? 0;
+  const suficiente = disponibles >= minimo;
+  const publicar: "si" | "noindex" | "no" = suficiente ? "si" : o.variante === "base" ? "noindex" : "no";
   return {
     ...hallado,
     variante: o.variante,

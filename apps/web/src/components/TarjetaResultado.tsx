@@ -38,7 +38,7 @@ export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: 
       <Link href={perfil} className="flex min-w-0 gap-3 text-tinta">
         {r.fotoPerfil ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.fotoPerfil} alt="" className="size-16 flex-none rounded-2xl object-cover" loading="lazy" />
+          <img src={r.fotoPerfil} alt={`Foto de ${r.nombre}`} className="size-16 flex-none rounded-2xl object-cover" loading="lazy" />
         ) : (
           <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold ${AVATARES[indice % AVATARES.length]}`}>
             {iniciales}

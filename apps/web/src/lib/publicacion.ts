@@ -5,6 +5,7 @@
  */
 import { eq, sql } from "drizzle-orm";
 import { db, schema, consultar } from "@las3b/db";
+import { FICHA_INDEXABLE_SQL } from "@/lib/indexacion";
 
 export const MIN_PROVEEDORES_SEO_POR_DEFECTO = 3;
 
@@ -37,7 +38,7 @@ export async function conteosPorOficio(): Promise<ConteoOficio[]> {
       FROM proveedores p
       JOIN proveedor_categorias pc ON pc.proveedor_id = p.id
       JOIN categorias c ON c.id = pc.categoria_id
-      WHERE p.estado IN ('aprobado','en_revision') AND c.activa
+      WHERE ${FICHA_INDEXABLE_SQL} AND c.activa
       GROUP BY c.slug`),
   );
 }
@@ -52,7 +53,7 @@ export async function conteosPorOficioYLocalidad(): Promise<ConteoLocal[]> {
       JOIN categorias c ON c.id = pc.categoria_id
       JOIN proveedor_localidades pl ON pl.proveedor_id = p.id
       JOIN localidades l ON l.id = pl.localidad_id
-      WHERE p.estado IN ('aprobado','en_revision') AND c.activa
+      WHERE ${FICHA_INDEXABLE_SQL} AND c.activa
       GROUP BY c.slug, l.slug`),
   );
 }
@@ -77,7 +78,7 @@ export async function preciosDesde(oficio: string, localidad?: string): Promise<
       JOIN categorias c ON c.id = pc.categoria_id AND c.slug = ${oficio}
       JOIN servicios_proveedor s ON s.proveedor_id = p.id AND s.visible AND s.precio_desde IS NOT NULL
       ${localidad ? sql`JOIN proveedor_localidades pl ON pl.proveedor_id = p.id JOIN localidades l ON l.id = pl.localidad_id AND l.slug = ${localidad}` : sql``}
-      WHERE p.estado IN ('aprobado','en_revision')
+      WHERE ${FICHA_INDEXABLE_SQL}
       GROUP BY p.id`),
   );
   return r.map((x) => Number(x.precio)).filter((n) => Number.isFinite(n));

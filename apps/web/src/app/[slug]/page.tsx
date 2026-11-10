@@ -9,6 +9,7 @@ import { FAQ_PORTAFOLIO } from "@/lib/faqs";
 import { perfilDemo, RECOMENDADOS_DEMO } from "@/lib/demo";
 import { PerfilProveedor } from "@/components/PerfilProveedor";
 import { obtenerPortafolioCompleto } from "@/lib/portafolio-completo";
+import { esFichaIndexable } from "@/lib/indexacion";
 import { jsonLdMigas, jsonLdProveedor, meta } from "@/lib/seo";
 
 /**
@@ -38,7 +39,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const titulo = `${p.nombre}: ${oficios} en ${zona}, Bogotá`;
     // `||` y no `??`: una presentación vacía no debe dejar la meta descripción en blanco.
     const descripcion = (p.presentacion?.trim() || `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`).slice(0, 155);
-    return meta({ titulo, descripcion, ruta: rutaEstandar(p.slug, p.categorias, oficio), tipo: "profile" });
+    // Solo se indexa la ficha aprobada y completa (lib/indexacion.ts); las demás siguen visibles pero con noindex.
+    return meta({ titulo, descripcion, ruta: rutaEstandar(p.slug, p.categorias, oficio), tipo: "profile", noindex: !esFichaIndexable(p) });
   }
   if (r.tipo === "demo" || r.tipo === "no_disponible") {
     return { title: r.nombre, robots: { index: false, follow: true } };
@@ -84,6 +86,8 @@ export default async function PortafolioProveedor({ params }: Props) {
           slug: p.slug,
           ruta: estandar,
           nombre: p.nombre,
+          esEmpresa: p.esEmpresa,
+          actualizado: p.actualizado,
           descripcion: p.presentacion,
           imagen: p.fotoPerfil ?? (p.fotos[0] ? urlPublica(p.fotos[0].rutaMiniatura ?? p.fotos[0].ruta) : null),
           redes: Object.values(p.redes),

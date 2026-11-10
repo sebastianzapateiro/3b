@@ -1,13 +1,10 @@
 import Link from "next/link";
-import { CATEGORIAS, LOCALIDADES_BOGOTA, MARCA } from "@las3b/shared";
+import { MARCA } from "@las3b/shared";
 import { BotonCookies } from "@/components/Cookies";
 import { Logo } from "@/components/Logo";
-
-/** Localidades con más demanda: enlaces internos en el pie (SEO local, solo Bogotá). */
-const LOCALIDADES_DESTACADAS = ["suba", "kennedy", "engativa", "bosa", "usaquen"];
+import { PieSeo } from "@/components/PieSeo";
 
 const enlace = "inline-flex min-h-11 items-center text-[15px] text-tinta-2 hover:text-tinta hover:underline sm:min-h-9";
-const enlaceCorto = "inline-flex min-h-11 items-center text-sm text-tinta-2 hover:text-tinta hover:underline";
 const titulo = "font-display text-base font-bold text-tinta";
 
 /**
@@ -17,14 +14,12 @@ const titulo = "font-display text-base font-bold text-tinta";
  * TODO: «Centro de ayuda a proveedores»: no existe todavía; hoy los proveedores usan Cómo funciona y Contacto.
  */
 export function Pie() {
-  const destacadas = LOCALIDADES_DESTACADAS.map((s) => LOCALIDADES_BOGOTA.find((l) => l.slug === s)!);
-
   return (
     <footer className="border-t border-borde bg-white">
+      <PieSeo />
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-x-6 gap-y-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.5fr_1fr_1fr_1fr_1fr]">
         <div className="col-span-2 flex flex-col gap-3 lg:col-span-1">
           <Link href="/" aria-label="LasTresB, inicio" className="text-tinta"><Logo /></Link>
-          <p className="max-w-[300px] text-sm leading-normal text-gris">Servicios de hogar y oficios de confianza en Bogotá. Contacta directo por WhatsApp, gratis y sin comisiones.</p>
           <ul className="flex flex-col gap-0.5" aria-label="Redes y contacto">
             <li><a href={`https://www.instagram.com/${MARCA.instagram}/`} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 text-[15px] font-semibold text-tinta hover:underline sm:min-h-9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" /></svg>@{MARCA.instagram}</a></li>
             <li><a href={`mailto:${MARCA.correo}`} className="inline-flex min-h-11 items-center gap-2 break-all text-[15px] text-tinta-2 hover:text-tinta hover:underline sm:min-h-9"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></svg>{MARCA.correo}</a></li>
@@ -62,19 +57,6 @@ export function Pie() {
           <Link href="/ingreso" className={enlace}>Registrar mi servicio</Link>
           <Link href="/terminos-proveedores" className={enlace}>Términos del proveedor</Link>
         </nav>
-      </div>
-
-      <div className="border-t border-borde-suave">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-1 px-4 py-4 sm:px-6">
-          <nav aria-label="Categorías" className="flex flex-wrap items-center gap-x-5">
-            <span className="text-sm font-semibold text-tinta">Categorías</span>
-            {CATEGORIAS.map((c) => <Link key={c.slug} href={`/categorias/${c.slug}`} className={enlaceCorto}>{c.nombre}</Link>)}
-          </nav>
-          <nav aria-label="Servicios por localidad" className="flex flex-wrap items-center gap-x-5">
-            <span className="text-sm font-semibold text-tinta">Servicios por localidad</span>
-            {destacadas.map((l) => <Link key={l.slug} href={`/proveedores?localidad=${l.slug}`} className={enlaceCorto}>{l.nombre}</Link>)}
-          </nav>
-        </div>
       </div>
 
       <div className="border-t border-borde-suave">

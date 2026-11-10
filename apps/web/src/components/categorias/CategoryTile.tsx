@@ -31,7 +31,7 @@ export function CategoryTile({ tile, prioridad = false, carrusel = false }: { ti
       style={foto ? undefined : { backgroundImage: `linear-gradient(135deg, ${tema.desde}, ${tema.hasta})` }}
     >
       {foto ? (
-        <Image src={foto.src} alt="" fill priority={prioridad} sizes={carrusel ? "300px" : grande ? "(min-width: 900px) 510px, 100vw" : "(min-width: 900px) 250px, (min-width: 600px) 50vw, 100vw"} className="-z-20 object-cover" />
+        <Image src={foto.src} alt={foto.alt} fill priority={prioridad} sizes={carrusel ? "300px" : grande ? "(min-width: 900px) 510px, 100vw" : "(min-width: 900px) 250px, (min-width: 600px) 50vw, 100vw"} className="-z-20 object-cover" />
       ) : (
         <IconoCategoria icono={tile.icono} grosor={0.7} className="absolute -right-5 -top-5 -z-10 size-[170px] opacity-[.22]" />
       )}

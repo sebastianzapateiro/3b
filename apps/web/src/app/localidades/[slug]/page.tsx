@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CATEGORIAS, LOCALIDADES_BOGOTA } from "@las3b/shared";
 import { IconoCategoria, TONO_CATEGORIA } from "@/components/CategoriaVisual";
 import { JsonLd } from "@/components/JsonLd";
+import { localidadesIndexables } from "@/lib/indexacion";
 import { conteosPorOficioYLocalidad, minProveedoresSeo } from "@/lib/publicacion";
 import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
 import { Faq } from "@/components/Faq";
@@ -24,7 +25,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const localidad = LOCALIDADES_BOGOTA.find((l) => l.slug === slug);
   if (!localidad) return {};
+  // Solo se indexa con proveedores reales que la atiendan (lib/indexacion.ts); sin oferta la página funciona pero no se indexa.
+  const conOferta = await localidadesIndexables();
   return meta({
+    noindex: conOferta !== null && !conOferta.has(localidad.slug),
     titulo: `Servicios y oficios en ${localidad.nombre}, Bogotá`,
     descripcion: `Plomería, electricidad, clases, acarreos y más en ${localidad.nombre}, Bogotá. Compara reseñas reales y escríbeles directo por WhatsApp, sin comisiones.`,
     ruta: `/localidades/${localidad.slug}`,

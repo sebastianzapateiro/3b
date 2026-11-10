@@ -55,6 +55,12 @@ export type ResenaPublica = {
 
 export type PortafolioCompleto = {
   slug: string;
+  /** Estado del proveedor: solo «aprobado» con perfil completo se indexa (lib/indexacion.ts). */
+  estado: string;
+  /** Empresa o independiente: define si su ficha se describe como organización o como persona (schema.org). */
+  esEmpresa: boolean;
+  /** Última modificación real del perfil. */
+  actualizado: Date;
   nombre: string;
   presentacion: string | null;
   whatsapp: string;
@@ -110,6 +116,8 @@ export async function obtenerPortafolioCompleto(
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
       completitud: proveedores.completitud,
+      segmento: proveedores.segmento,
+      actualizado: proveedores.updatedAt,
       desde: proveedores.createdAt,
     })
     .from(proveedores)
@@ -240,6 +248,9 @@ export async function obtenerPortafolioCompleto(
     tipo: "publicado",
     proveedor: {
       slug: p.slug,
+      estado: p.estado,
+      esEmpresa: p.segmento === "empresa",
+      actualizado: p.actualizado,
       nombre: p.nombre,
       presentacion: p.presentacion,
       whatsapp: p.whatsapp,

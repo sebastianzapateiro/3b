@@ -62,6 +62,10 @@ type ProveedorSeo = {
   redes?: string[];
   servicios: string[];
   localidades: string[];
+  /** Empresa: se describe como organización; independiente: como persona. */
+  esEmpresa?: boolean;
+  /** Última modificación real del perfil. */
+  actualizado?: Date;
   imagen?: string | null;
   /** Solo con reseñas reales y verificadas (pautas de Google: nada de calificaciones de ejemplo). */
   calificacion?: { promedio: number; total: number } | null;
@@ -72,12 +76,12 @@ type ProveedorSeo = {
 };
 
 /** Portafolio del proveedor (P7): negocio local con zona de servicio y calificación agregada. */
-export function jsonLdProveedor(p: ProveedorSeo) {
+function entidadProveedor(p: ProveedorSeo) {
   const url = absoluta(p.ruta ?? `/${p.slug}`);
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "@id": `${url}#negocio`,
+    "@type": p.esEmpresa ? "Organization" : "Person",
+    "@id": `${url}#proveedor`,
     name: p.nombre,
     url,
     description: p.descripcion ?? undefined,
@@ -106,12 +110,33 @@ export function jsonLdProveedor(p: ProveedorSeo) {
           reviewRating: { "@type": "Rating", ratingValue: r.estrellas, bestRating: 5, worstRating: 1 },
         }))
       : undefined,
-    areaServed: p.localidades.map((nombre) => ({ "@type": "AdministrativeArea", name: `${nombre}, Bogotá` })),
-    address: { "@type": "PostalAddress", addressLocality: "Bogotá", addressRegion: "Bogotá D.C.", addressCountry: "CO" },
+    // Sin dirección: son profesionales que van al cliente, no un establecimiento (no es un LocalBusiness). La zona va como cobertura.
+    ...(p.esEmpresa ? { areaServed: p.localidades.map((nombre) => ({ "@type": "AdministrativeArea", name: `${nombre}, Bogotá` })) } : { workLocation: { "@type": "Place", name: `Bogotá, Colombia${p.localidades.length ? ` (${p.localidades.join(", ")})` : ""}` } }),
     aggregateRating:
-      p.calificacion && p.calificacion.total > 0
+      p.esEmpresa && p.calificacion && p.calificacion.total > 0
         ? { "@type": "AggregateRating", ratingValue: p.calificacion.promedio.toFixed(1), reviewCount: p.calificacion.total, bestRating: 5, worstRating: 1 }
         : undefined,
+  };
+}
+
+/**
+ * Ficha del proveedor (P7): página de perfil (ProfilePage) cuyo tema principal es la persona o la empresa.
+ * No se marca como LocalBusiness: los independientes no tienen un establecimiento. Reseñas y calificación solo si son reales y visibles.
+ */
+export function jsonLdProveedor(p: ProveedorSeo) {
+  const url = absoluta(p.ruta ?? `/${p.slug}`);
+  const { "@context": _contexto, ...principal } = entidadProveedor(p);
+  void _contexto;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": `${url}#perfil`,
+    url,
+    name: p.nombre,
+    inLanguage: "es-CO",
+    isPartOf: { "@id": absoluta("/#sitio") },
+    ...(p.actualizado ? { dateModified: p.actualizado.toISOString() } : {}),
+    mainEntity: principal,
   };
 }
 

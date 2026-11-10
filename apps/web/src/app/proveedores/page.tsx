@@ -9,6 +9,7 @@ import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { TarjetaServicio } from "@/components/TarjetaServicio";
 import { cookies } from "next/headers";
 import { contieneServicioProhibido } from "@las3b/shared";
+import { conteosPorOficio, minProveedoresSeo } from "@/lib/publicacion";
 import { buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados, type PaginaServicios } from "@/lib/busqueda";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
@@ -31,10 +32,17 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       ruta: "/proveedores",
     });
   }
+  // Resultados filtrados: no se indexan. La canonical apunta a la página SEO del oficio solo si ya existe y se indexa (si no, sería
+  // una canonical hacia una página noindex o 404); en cualquier otro caso, a la lista general.
+  let canonical = "/proveedores";
+  if (categoria && subcategoriaPorSlug(categoria) && Object.keys(sp).every((k) => k === "categoria")) {
+    const [conteos, minimo] = await Promise.all([conteosPorOficio().catch(() => []), minProveedoresSeo()]);
+    if ((conteos.find((c) => c.oficio === categoria)?.total ?? 0) >= minimo) canonical = `/servicios/${categoria}`;
+  }
   return {
     title: "Proveedores: resultados de búsqueda",
     robots: { index: false, follow: true },
-    ...(categoria && subcategoriaPorSlug(categoria) ? { alternates: { canonical: `/servicios/${categoria}` } } : {}),
+    alternates: { canonical },
   };
 }
 
