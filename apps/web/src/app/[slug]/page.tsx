@@ -9,8 +9,8 @@ import { FAQ_PORTAFOLIO } from "@/lib/faqs";
 import { perfilDemo, RECOMENDADOS_DEMO } from "@/lib/demo";
 import { PerfilProveedor } from "@/components/PerfilProveedor";
 import { obtenerPortafolioCompleto } from "@/lib/portafolio-completo";
-import { esFichaIndexable } from "@/lib/indexacion";
-import { jsonLdMigas, jsonLdProveedor, meta } from "@/lib/seo";
+import { metadatosFicha, rutaPrincipalDe } from "@/lib/ficha-seo";
+import { jsonLdMigas, jsonLdProveedor } from "@/lib/seo";
 
 /**
  * P7 · Portafolio público del proveedor en lastresb.com.co/<slug> (RF-37 a RF-43, CU-04).
@@ -29,19 +29,11 @@ const resolver = cache(async (slug: string) => {
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug, oficio } = await params;
+  const { slug } = await params;
   const r = await resolver(slug);
 
-  if (r.tipo === "publicado") {
-    const p = r.proveedor;
-    const oficios = p.categorias.slice(0, 2).join(" y ") || "servicios";
-    const zona = p.localidades.slice(0, 2).join(" y ") || "Bogotá";
-    const titulo = `${p.nombre}: ${oficios} en ${zona}, Bogotá`;
-    // `||` y no `??`: una presentación vacía no debe dejar la meta descripción en blanco.
-    const descripcion = (p.presentacion?.trim() || `${p.nombre} ofrece ${oficios.toLowerCase()} en ${zona}, Bogotá. Mira sus reseñas y escríbele por WhatsApp.`).slice(0, 155);
-    // Solo se indexa la ficha aprobada y completa (lib/indexacion.ts); las demás siguen visibles pero con noindex.
-    return meta({ titulo, descripcion, ruta: rutaEstandar(p.slug, p.categorias, oficio), tipo: "profile", noindex: !esFichaIndexable(p) });
-  }
+  // Canonical siempre a la URL principal del proveedor (también en /nombre/otro-oficio) y noindex si la ficha no es indexable: lib/ficha-seo.ts.
+  if (r.tipo === "publicado") return metadatosFicha(r.proveedor);
   if (r.tipo === "demo" || r.tipo === "no_disponible") {
     return { title: r.nombre, robots: { index: false, follow: true } };
   }
@@ -79,12 +71,14 @@ export default async function PortafolioProveedor({ params }: Props) {
   // Un solo modelo de URL: /nombre/oficio. /nombre y los oficios que el proveedor no tiene van (301) al estándar.
   const estandar = rutaEstandar(p.slug, p.categorias, oficio);
   if (estandar !== (oficio ? `/${p.slug}/${oficio}` : `/${p.slug}`)) permanentRedirect(estandar);
+  // El schema y las migas describen la URL principal (la misma del canonical), aunque se entre por la de otro oficio.
+  const principal = rutaPrincipalDe(p);
   return (
     <>
       <JsonLd
         datos={jsonLdProveedor({
           slug: p.slug,
-          ruta: estandar,
+          ruta: principal,
           nombre: p.nombre,
           esEmpresa: p.esEmpresa,
           actualizado: p.actualizado,
@@ -101,7 +95,7 @@ export default async function PortafolioProveedor({ params }: Props) {
       <JsonLd
         datos={jsonLdMigas([
           { nombre: "Inicio", ruta: "/" },
-          { nombre: p.nombre, ruta: estandar },
+          { nombre: p.nombre, ruta: principal },
         ])}
       />
       <PerfilProveedor proveedor={p} />

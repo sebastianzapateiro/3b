@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, subcategoriaPorSlug, type LocalidadSlug } from "@las3b/shared";
+import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, type LocalidadSlug } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
 import { AvisoWhatsApp } from "@/components/AvisoWhatsApp";
 import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
@@ -9,7 +9,6 @@ import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { TarjetaServicio } from "@/components/TarjetaServicio";
 import { cookies } from "next/headers";
 import { contieneServicioProhibido } from "@las3b/shared";
-import { conteosPorOficio, minProveedoresSeo } from "@/lib/publicacion";
 import { buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados, type PaginaServicios } from "@/lib/busqueda";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
@@ -23,8 +22,7 @@ import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
  */
 export async function generateMetadata({ searchParams }: { searchParams: Promise<Params> }): Promise<Metadata> {
   const sp = await searchParams;
-  const categoria = uno(sp.categoria);
-  // La lista completa se indexa; las búsquedas con parámetros no (apuntan a la página SEO del oficio, si la hay).
+  // La lista completa se indexa; las búsquedas con parámetros no.
   if (Object.keys(sp).length === 0) {
     return meta({
       titulo: "Proveedores y servicios de confianza en Bogotá",
@@ -32,17 +30,11 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
       ruta: "/proveedores",
     });
   }
-  // Resultados filtrados: no se indexan. La canonical apunta a la página SEO del oficio solo si ya existe y se indexa (si no, sería
-  // una canonical hacia una página noindex o 404); en cualquier otro caso, a la lista general.
-  let canonical = "/proveedores";
-  if (categoria && subcategoriaPorSlug(categoria) && Object.keys(sp).every((k) => k === "categoria")) {
-    const [conteos, minimo] = await Promise.all([conteosPorOficio().catch(() => []), minProveedoresSeo()]);
-    if ((conteos.find((c) => c.oficio === categoria)?.total ?? 0) >= minimo) canonical = `/servicios/${categoria}`;
-  }
+  // Resultados filtrados: solo `noindex, follow`, SIN canonical. Un noindex con canonical hacia otra URL manda señales
+  // contradictorias (Google lo desaconseja) y, además, la landing del oficio puede no existir. Los enlaces siguen contando.
   return {
     title: "Proveedores: resultados de búsqueda",
     robots: { index: false, follow: true },
-    alternates: { canonical },
   };
 }
 

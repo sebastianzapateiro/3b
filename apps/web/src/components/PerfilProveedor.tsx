@@ -208,7 +208,7 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
                 {p.fotos.length > 3 && <span className="text-sm font-semibold text-gris">{p.fotos.length} fotos</span>}
               </div>
               <div className="grid grid-cols-3 gap-2 lg:grid-cols-4 lg:gap-2.5">
-                {p.fotos.slice(0, 4).map((f) => <FotoTrabajo key={f.id} foto={f} proveedor={p.nombre} />)}
+                {p.fotos.slice(0, 4).map((f, i, lista) => <FotoTrabajo key={f.id} foto={f} oficio={p.categoriaPrincipal} posicion={i + 1} total={lista.length} />)}
               </div>
             </section>
           )}

@@ -38,5 +38,12 @@ export const segmentoOficio = (nombreOficio: string): string => sugerirSlug(nomb
 /** Oficio principal de la página: el primero por orden alfabético del segmento (estable aunque cambie el orden de guardado). */
 export const oficioPrincipal = (nombresOficio: string[]): string | undefined => [...nombresOficio].sort((a, b) => segmentoOficio(a).localeCompare(segmentoOficio(b)))[0];
 
+/**
+ * URL PRINCIPAL de un proveedor: la única que se indexa (canonical y sitemap). Las URLs de sus otros oficios (/nombre/otro-oficio)
+ * siguen funcionando con el mismo contenido, pero su canonical apunta a esta. Hoy el oficio principal es el primero alfabético
+ * (no hay un campo que lo defina; ver docs/06-plan.md).
+ */
+export const rutaPrincipalProveedor = (slug: string, nombresOficio: string[]): string => rutaProveedor(slug, oficioPrincipal(nombresOficio));
+
 /** URL estándar de la página de un proveedor: /nombre-del-proveedor/oficio (p. ej. /clemencia-rojas/aseo-y-limpieza). */
 export const rutaProveedor = (slug: string, nombreOficio?: string): string => (nombreOficio ? `/${slug}/${segmentoOficio(nombreOficio)}` : `/${slug}`);

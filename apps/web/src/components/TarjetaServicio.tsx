@@ -34,7 +34,7 @@ export function TarjetaServicio({ s, indice }: { s: ResultadoServicio; indice: n
       <Link href={perfil} className="mt-auto flex items-center gap-3 rounded-2xl bg-crema p-2.5 text-tinta">
         {p.fotoPerfil ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={p.fotoPerfil} alt={`Foto de ${p.nombre}`} className="size-11 flex-none rounded-xl object-cover" loading="lazy" />
+          <img src={p.fotoPerfil} alt="" className="size-11 flex-none rounded-xl object-cover" loading="lazy" />
         ) : (
           <span aria-hidden="true" className={`flex size-11 flex-none items-center justify-center rounded-xl font-display text-base font-bold ${AVATARES[indice % AVATARES.length]}`}>{iniciales}</span>
         )}

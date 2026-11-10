@@ -24,6 +24,7 @@ export const PARAMETROS: Parametro[] = [
   { clave: "plazo_reclamo_consumo_dias_habiles", etiqueta: "Reclamos de consumo", grupo: "Plazos legales (días hábiles)", defecto: 15 },
   { clave: "conservacion_eliminados_anios", etiqueta: "Conservación bloqueada de cuentas eliminadas (años)", grupo: "Datos personales", defecto: 5 },
   { clave: "min_proveedores_seo", etiqueta: "Mínimo de proveedores para publicar páginas SEO", grupo: "SEO", defecto: 3 },
+  { clave: "min_proveedores_localidad", etiqueta: "Mínimo de proveedores para indexar la página de una localidad", grupo: "SEO", defecto: 1 },
 ];
 
 export const defectoDe = (clave: string) => PARAMETROS.find((p) => p.clave === clave)?.defecto ?? null;

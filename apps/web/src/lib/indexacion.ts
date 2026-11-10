@@ -4,14 +4,24 @@
  *
  * Ficha: proveedor «aprobado» con perfil completo = al menos 1 oficio, 1 localidad, 1 servicio visible y una foto
  * (de perfil o de sus trabajos). Los demás (en revisión, incompletos) siguen visibles en el sitio pero con noindex y fuera del sitemap.
- * Localidad: al menos MIN_PROVEEDORES_LOCALIDAD proveedores aprobados con ficha indexable que la atiendan (1 a decisión del dueño, 10 nov 2026).
+ * Localidad: al menos `min_proveedores_localidad` (parámetro de `configuracion`, 1 por defecto: decisión del dueño, 10 nov 2026) proveedores con ficha indexable que la atiendan.
+ * La página de la localidad solo muestra lo que existe (oficios y proveedores reales de esa localidad): ver app/localidades/[slug].
  */
-import { sql } from "drizzle-orm";
-import { consultar } from "@las3b/db";
+import { eq, sql } from "drizzle-orm";
+import { consultar, db, schema } from "@las3b/db";
+import { defectoDe } from "@las3b/shared";
 import type { PortafolioCompleto } from "@/lib/portafolio-completo";
 
-/** Mínimo de proveedores indexables para indexar la página de una localidad. */
-export const MIN_PROVEEDORES_LOCALIDAD = 1;
+/** Mínimo de proveedores indexables para indexar la página de una localidad: parámetro de `configuracion` (regla 8). */
+export async function minProveedoresLocalidad(): Promise<number> {
+  try {
+    const [c] = await db.select({ valor: schema.configuracion.valor }).from(schema.configuracion).where(eq(schema.configuracion.clave, "min_proveedores_localidad")).limit(1);
+    const n = Number(c?.valor);
+    return Number.isFinite(n) && n > 0 ? n : (defectoDe("min_proveedores_localidad") ?? 1);
+  } catch {
+    return defectoDe("min_proveedores_localidad") ?? 1;
+  }
+}
 
 /** Misma regla que `esFichaIndexable`, como condición SQL sobre la tabla `proveedores` con alias `p`. */
 export const FICHA_INDEXABLE_SQL = sql`(
@@ -36,7 +46,8 @@ export async function localidadesIndexables(): Promise<Set<string> | null> {
       JOIN localidades l ON l.id = pl.localidad_id
       WHERE ${FICHA_INDEXABLE_SQL}
       GROUP BY l.slug`)) as unknown as { localidad: string; total: number }[];
-    return new Set(filas.filter((f) => f.total >= MIN_PROVEEDORES_LOCALIDAD).map((f) => f.localidad));
+    const minimo = await minProveedoresLocalidad();
+    return new Set(filas.filter((f) => f.total >= minimo).map((f) => f.localidad));
   } catch (e) {
     console.warn("[indexacion] No se pudieron leer las localidades:", e instanceof Error ? e.message : e);
     return null;
