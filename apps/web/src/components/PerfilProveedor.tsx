@@ -6,6 +6,7 @@ import { FotoTrabajo } from "@/components/FotoTrabajo";
 import { Insignia } from "@/components/Insignia";
 import { Resena } from "@/components/Resena";
 import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
+import { fotoGenericaPara } from "@/lib/foto-generica";
 import type { PortafolioCompleto } from "@/lib/portafolio-completo";
 import { absoluta } from "@/lib/seo";
 
@@ -126,9 +127,9 @@ export function PerfilProveedor({ proveedor: p }: { proveedor: PortafolioComplet
 
           {/* Cabecera del perfil */}
           <section className="-mx-5 flex flex-col gap-3.5 bg-[linear-gradient(#0F6B5C_0_48px,transparent_48px)] px-5 lg:mx-0 lg:flex-row lg:flex-wrap lg:items-center lg:gap-[22px] lg:rounded-[26px] lg:border lg:border-borde-suave lg:bg-white lg:bg-none lg:p-7">
-            {p.fotoPerfil ? (
+            {p.fotoPerfil || fotoGenericaPara(p.categorias) ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.fotoPerfil} alt={`Foto de ${p.nombre}`} className="size-24 flex-none rounded-[26px] border-4 border-crema object-cover lg:size-28" />
+              <img src={p.fotoPerfil ?? fotoGenericaPara(p.categorias)!} alt={p.fotoPerfil ? `Foto de ${p.nombre}` : ""} className="size-24 flex-none rounded-[26px] border-4 border-crema object-cover lg:size-28" />
             ) : (
               <span aria-hidden="true" className="flex size-24 flex-none items-center justify-center rounded-[26px] border-4 border-crema bg-[#D7E8E2] font-display text-[34px] font-extrabold text-verde-oscuro lg:size-28 lg:rounded-[30px] lg:border-0 lg:text-[40px]">
               {iniciales}

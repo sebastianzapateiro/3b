@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { opcionesComoTrabaja, REDES, redesDesdeBase } from "@las3b/shared";
 import { CampoWhatsapp } from "@/components/CampoWhatsapp";
 import { rutaPublicaDe } from "@/lib/ruta-proveedor";
 import { Aviso } from "@/components/cuenta";
-import { negocioEditable, whatsappParaCampo } from "@/lib/alta-proveedor";
+import { negocioEditable, rutaAlta, whatsappParaCampo } from "@/lib/alta-proveedor";
 import { FormularioGuiado } from "@/components/panel/FormularioGuiado";
 import { exigirProveedor, perfilEditable } from "@/lib/panel";
 import { CargaFotoPerfil } from "@/components/CargaFotoPerfil";
@@ -23,6 +24,7 @@ export default async function PerfilPanel({ searchParams }: { searchParams: Prom
   const { proveedor: p, usuario } = await exigirProveedor();
   const sp = await searchParams;
   const borrador = p.estado === "borrador";
+  if (borrador) redirect(rutaAlta(sp));
   const [e, n] = await Promise.all([perfilEditable(p.id), borrador ? negocioEditable(p.id) : null]);
 
   const op = opcionesComoTrabaja(e.slugsOficios);

@@ -20,7 +20,10 @@ import { marcarServicioPrestado } from "@/lib/servicios-prestados";
 
 const { proveedores, serviciosProveedor, resenas, respuestasResena, proveedorLocalidades } = schema;
 
-const volver = (ruta: string, params: Record<string, string>): never => redirect(`${ruta}?${new URLSearchParams(params)}`);
+const volver = (ruta: string, params: Record<string, string>, ancla = ""): never => redirect(`${ruta}?${new URLSearchParams(params)}${ancla}`);
+/** En el alta (borrador) los servicios se editan dentro de la página única /panel/alta; ya publicado, en /panel/servicios. */
+const rutaServicios = (estado: string) => (estado === "borrador" ? "/panel/alta" : "/panel/servicios");
+const anclaServicios = (estado: string) => (estado === "borrador" ? "#servicios" : "");
 const pagina = (ruta: string) => {
   revalidatePath(ruta);
   revalidatePath("/panel", "layout"); // el menú lateral muestra el avance del perfil
@@ -115,9 +118,9 @@ const esquemaServicio = z.object({
 });
 
 /** Los servicios de Aseo no guardan precio ni unidad de tiempo: el valor es «a convenir» (lib/precios.ts). */
-async function datosServicio(formData: FormData, proveedorId: string) {
+async function datosServicio(formData: FormData, proveedorId: string, estado: string) {
   const r = esquemaServicio.safeParse({ unidad: "trabajo", ...Object.fromEntries(formData) });
-  if (!r.success) return volver("/panel/servicios", { error: r.error.issues[0]?.message ?? "Revisa los datos." });
+  if (!r.success) return volver(rutaServicios(estado), { error: r.error.issues[0]?.message ?? "Revisa los datos." }, anclaServicios(estado));
   const { categoriaId, sinPrecio } = await oficioDelServicio(proveedorId, Number(formData.get("categoriaId")) || null);
   const precio = sinPrecio ? "" : r.data.precio?.replace(/\D/g, "");
   return { nombre: r.data.nombre, descripcion: r.data.descripcion || null, precioDesde: precio || null, unidad: sinPrecio ? ("trabajo" as const) : r.data.unidad, categoriaId };
@@ -125,23 +128,23 @@ async function datosServicio(formData: FormData, proveedorId: string) {
 
 export async function agregarServicio(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
-  const d = await datosServicio(formData, proveedor.id);
+  const d = await datosServicio(formData, proveedor.id, proveedor.estado);
   await db.insert(serviciosProveedor).values({ proveedorId: proveedor.id, ...d });
   await registrarEvento(proveedor.id, "cambios", { campos: ["servicios y precios"] });
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
-  return volver("/panel/servicios", { ok: "Servicio agregado." });
+  return volver(rutaServicios(proveedor.estado), { ok: "Servicio agregado." }, anclaServicios(proveedor.estado));
 }
 
 export async function actualizarServicio(formData: FormData) {
   const { proveedor } = await exigirProveedorEditable();
   const id = z.coerce.number().int().parse(formData.get("id"));
-  const d = await datosServicio(formData, proveedor.id);
+  const d = await datosServicio(formData, proveedor.id, proveedor.estado);
   await db.update(serviciosProveedor).set(d).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
   await registrarEvento(proveedor.id, "cambios", { campos: ["servicios y precios"] });
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
-  return volver("/panel/servicios", { ok: "Servicio actualizado." });
+  return volver(rutaServicios(proveedor.estado), { ok: "Servicio actualizado." }, anclaServicios(proveedor.estado));
 }
 
 export async function quitarServicio(formData: FormData) {
@@ -150,7 +153,7 @@ export async function quitarServicio(formData: FormData) {
   await db.update(serviciosProveedor).set({ visible: false }).where(and(eq(serviciosProveedor.id, id), eq(serviciosProveedor.proveedorId, proveedor.id)));
   pagina("/panel/servicios");
   revalidatePath(`/${proveedor.slug}`);
-  return volver("/panel/servicios", { ok: "Servicio quitado." });
+  return volver(rutaServicios(proveedor.estado), { ok: "Servicio quitado." }, anclaServicios(proveedor.estado));
 }
 
 /* Reseñas (CU-45: una sola respuesta por reseña, no editable) */

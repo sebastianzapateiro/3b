@@ -48,8 +48,15 @@ async function plazoRutDias() {
 export async function aprobarProveedor(formData: FormData) {
   const actor = await exigirBackoffice();
   const id = uuid.parse(texto(formData, "proveedorId"));
+  const ok = await aprobarYPublicar(id, actor);
+  if (!ok) volver("/admin/aprobaciones", { error: "Proveedor no encontrado." });
+  volver("/admin/aprobaciones", { ok: "Proveedor aprobado y publicado." });
+}
+
+/** Aprueba y publica un proveedor. Sin requisitos mínimos de datos ni segunda aprobación: el equipo decide (alta flexible). Devuelve false si no existe. */
+async function aprobarYPublicar(id: string, actor: Awaited<ReturnType<typeof exigirBackoffice>>) {
   const [p] = await db.select({ segmento: proveedores.segmento, estado: proveedores.estado }).from(proveedores).where(eq(proveedores.id, id)).limit(1);
-  if (!p) volver("/admin/aprobaciones", { error: "Proveedor no encontrado." });
+  if (!p) return false;
 
   const limite = p.segmento === "independiente_sin_rut" ? new Date(Date.now() + (await plazoRutDias()) * 86_400_000).toISOString().slice(0, 10) : null;
   await db
@@ -67,7 +74,7 @@ export async function aprobarProveedor(formData: FormData) {
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "proveedor_aprobado", objetoTipo: "proveedor", objetoId: id });
   await avisarProveedorAprobado(id);
   revalidatePath("/admin", "layout");
-  volver("/admin/aprobaciones", { ok: "Proveedor aprobado y publicado." });
+  return true;
 }
 
 
@@ -96,7 +103,8 @@ const altaAsistida = z.object({
   tipo: z.enum(["independiente", "empresa"]),
   rut: z.enum(["si", "no"]),
   factura: z.enum(["si", "no"]),
-  nombreLegal: z.string().min(3, "Escribe el nombre completo o la razón social."),
+  // Opcional: si falta se usa el nombre público.
+  nombreLegal: z.string().trim().optional(),
   nombrePublico: z.string().min(3, "Escribe el nombre público."),
   // Documento, correo y dirección son opcionales para el equipo: el proveedor los completa después si hace falta.
   tipoDocumento: z.enum(["cc", "ce", "ppt", "nit"]).optional().or(z.literal("")),
@@ -131,10 +139,14 @@ export async function crearProveedorAsistido(formData: FormData) {
   const localidadIds = formData.getAll("localidad").map(Number).filter(Number.isInteger);
   if (categoriaIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una categoría." });
   if (d.servicio && d.servicioCategoria && !categoriaIds.includes(Number(d.servicioCategoria))) volver("/admin/proveedores/nuevo", { error: "El oficio del servicio debe ser uno de los oficios elegidos." });
-  if (localidadIds.length === 0) volver("/admin/proveedores/nuevo", { error: "Elige al menos una localidad." });
-  // Con el correo el proveedor ingresa después de crear su clave: sin él la invitación no le sirve.
+  // Localidad opcional para el equipo: sin ninguna se toma «Todo Bogotá» (todas), para que el perfil aparezca en las búsquedas.
+  if (localidadIds.length === 0) {
+    const todas = await db.select({ id: schema.localidades.id }).from(schema.localidades);
+    localidadIds.push(...todas.map((l) => l.id));
+  }
+  // El correo es opcional para el equipo: sin él se crea la invitación (enlace) y se entrega por WhatsApp desde la ficha.
   const invitar = texto(formData, "accion") === "invitar";
-  if (invitar && !d.correo) volver("/admin/proveedores/nuevo", { error: "Para enviar la invitación el proveedor necesita un correo: con él ingresará. Agrégalo o guarda solo el borrador." });
+  const aprobar = texto(formData, "accion") === "aprobar";
 
   // Dirección de la página: si el equipo la escribió, debe estar libre; si es automática, se genera con el nombre y se deshace cualquier choque con un número.
   let slug = d.slug ?? "";
@@ -156,7 +168,7 @@ export async function crearProveedorAsistido(formData: FormData) {
   // El proveedor confirma WhatsApp, acepta términos y crea su clave desde su propia invitación (Ley 1581):
   // aquí solo queda el borrador a su nombre.
   // Con invitación el correo queda verificado: el enlace para crear la clave solo llega a ese buzón.
-  await db.insert(user).values({ id: usuarioId, name: d.nombreLegal, email: correo, emailVerified: invitar, telefono: d.whatsapp });
+  await db.insert(user).values({ id: usuarioId, name: d.nombreLegal || d.nombrePublico, email: correo, emailVerified: invitar && !!d.correo, telefono: d.whatsapp });
   const [nuevo] = await db
     .insert(proveedores)
     .values({
@@ -193,12 +205,18 @@ export async function crearProveedorAsistido(formData: FormData) {
 
   if (invitar) {
     const { url, horas } = await crearInvitacion(usuarioId, DESTINO_PROVEEDOR_INVITADO);
-    await enviarInvitacionPorCorreo({ para: correo, nombre: d.nombreLegal, url, horas, motivo: `El equipo de LasTresB te registró como proveedor («${d.nombrePublico}»). Al entrar revisas tus datos, aceptas los términos y envías tu perfil a revisión.` });
+    if (d.correo) await enviarInvitacionPorCorreo({ para: correo, nombre: d.nombreLegal || d.nombrePublico, url, horas, motivo: `El equipo de LasTresB te registró como proveedor («${d.nombrePublico}»). Al entrar revisas tus datos, aceptas los términos y envías tu perfil a revisión.` });
   }
-  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "alta_asistida", objetoTipo: "proveedor", objetoId: id, metadatos: { origen: d.origen, invitado: invitar } });
+  await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "alta_asistida", objetoTipo: "proveedor", objetoId: id, metadatos: { origen: d.origen, invitado: invitar, aprobado: aprobar } });
+  // «Crear y publicar»: el equipo lo aprueba en el acto con los datos mínimos (nombre, WhatsApp y oficio).
+  if (aprobar) await aprobarYPublicar(id, actor);
   revalidatePath("/admin", "layout");
   volver(`/admin/proveedores/${id}`, {
-    ok: invitar
+    ok: aprobar
+      ? `${d.nombrePublico} creado, aprobado y publicado. Puedes completar el resto de sus datos aquí cuando los tengas.`
+      : invitar && !d.correo
+      ? `Borrador de ${d.nombrePublico} creado. No tiene correo: envíale la invitación por WhatsApp con el botón de abajo.`
+      : invitar
       ? `Borrador de ${d.nombrePublico} creado y la invitación enviada a ${correo}. Envíasela también por WhatsApp con el botón de abajo.`
       : `Borrador de ${d.nombrePublico} creado. Carga sus documentos aquí o envíale la invitación cuando tenga correo.`,
   });

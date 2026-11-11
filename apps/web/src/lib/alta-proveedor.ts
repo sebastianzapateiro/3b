@@ -67,7 +67,7 @@ export async function rutaInicialProveedor(usuarioId: string): Promise<string> {
     db.select({ n: count() }).from(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, p.id)),
     db.select({ n: count() }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, p.id)),
   ]);
-  return (cats[0]?.n ?? 0) > 0 && (servs[0]?.n ?? 0) === 0 ? "/panel/servicios?bienvenida=1" : "/panel?bienvenida=1";
+  return (cats[0]?.n ?? 0) > 0 && (servs[0]?.n ?? 0) === 0 ? "/panel/alta?bienvenida=1#servicios" : "/panel?bienvenida=1";
 }
 
 /**
@@ -95,6 +95,7 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
   const [[p], [cats], [locs], [servs], docs, [fotos]] = await Promise.all([
     db
       .select({
+        estado: proveedores.estado,
         nombre: proveedores.nombrePublico,
         whatsapp: proveedores.whatsapp,
         segmento: proveedores.segmento,
@@ -127,6 +128,13 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, iniciada: (fotos?.n ?? 0) > 0, href: "/panel/fotos", seccion: "fotos", opcional: true },
     { clave: "sobre", titulo: "Sobre mí", texto: "Cuéntales a los clientes cómo trabajas. Ayuda a que te escriban.", ok: Boolean(p?.presentacion?.trim()), href: "/panel/perfil#sobre", seccion: "perfil", opcional: true },
   ];
+  // En borrador todo el alta vive en una sola página (/panel/alta): cada tarea lleva a su bloque dentro de ella.
+  if (p?.estado === "borrador") {
+    for (const t of tareas) {
+      const ancla = t.href.split("#")[1] ?? (t.clave === "servicios" ? "servicios" : t.clave === "fotos" ? "fotos-trabajos" : "");
+      t.href = `/panel/alta${ancla ? `#${ancla}` : ""}`;
+    }
+  }
   const obligatorias = tareas.filter((t) => !t.opcional);
   const hechas = tareas.filter((t) => t.ok).length;
   return {
@@ -248,6 +256,12 @@ export async function guardarIdentidad(proveedor: { id: string; estado: string }
     .where(eq(proveedores.id, proveedor.id));
   await registrarEvento(proveedor.id, "cambios", { campos: ["documento de identidad", "dirección", "fecha de nacimiento", ...(r.data.numeroMatricula ? ["n.º de matrícula"] : [])] });
   return { ok: true };
+}
+
+/** A dónde va un borrador que abre una de las pantallas antiguas del alta: a la página única, conservando el aviso (ok/error/bienvenida). */
+export function rutaAlta(sp: Record<string, string | undefined>): string {
+  const q = new URLSearchParams(Object.entries(sp).filter((e): e is [string, string] => (e[0] === "ok" || e[0] === "error" || e[0] === "bienvenida" || e[0] === "ajustar") && Boolean(e[1])));
+  return `/panel/alta${q.size ? `?${q}` : ""}`;
 }
 
 /** 573001234567 → «300 123 4567» para mostrarlo en el campo. */

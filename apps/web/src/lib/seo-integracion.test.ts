@@ -110,6 +110,25 @@ describe("robots.txt", () => {
     expect(r.sitemap).toBe(`${SITIO_URL}/sitemap.xml`);
   });
 
+  it("invita a los rastreadores de IA con las mismas rutas bloqueadas", async () => {
+    vi.stubEnv("SITIO_INDEXABLE", "true");
+    vi.resetModules();
+    const { default: robots, RUTAS_BLOQUEADAS, RASTREADORES_IA } = await import("@/app/robots");
+    const reglas = robots().rules as { userAgent: string | string[]; allow?: string; disallow?: string[] }[];
+    const ia = reglas.find((x) => Array.isArray(x.userAgent) && x.userAgent.includes("GPTBot"))!;
+    expect(ia.userAgent).toEqual(RASTREADORES_IA);
+    expect(ia.allow).toBe("/");
+    expect(ia.disallow).toEqual(RUTAS_BLOQUEADAS);
+    for (const b of ["ClaudeBot", "PerplexityBot", "Google-Extended"]) expect(RASTREADORES_IA).toContain(b);
+  });
+
+  it("el sitemap declara las imágenes de la ficha y de «Cómo funciona»", async () => {
+    const { construirSitemap } = await import("@/lib/sitemap-construir");
+    const e = construirSitemap({ proveedores: [{ slug: "ana", actualizado: "2026-11-01T00:00:00.000Z", oficios: ["Aseo"], imagenes: ["https://x/a.jpg"] }], localidades: [], oficios: [], combinaciones: [], minimo: 3 });
+    expect(e.find((x) => x.url.endsWith("/ana/aseo"))?.images).toEqual(["https://x/a.jpg"]);
+    expect(e.find((x) => x.url.endsWith("/como-funciona"))?.images?.length).toBe(9);
+  });
+
   it("fuera de producción cierra todo el sitio", async () => {
     vi.stubEnv("SITIO_INDEXABLE", "false");
     vi.stubEnv("VERCEL_ENV", "preview");

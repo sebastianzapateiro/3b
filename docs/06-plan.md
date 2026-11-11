@@ -121,6 +121,12 @@ Definición de terminado para todas: `pnpm typecheck` y `pnpm build` pasan, la p
 
 Rediseño «Filas y recorrido» (`lib/como-funciona.content.ts`, `ComoFuncionaHome`, `ComoFuncionaPagina`). Trazabilidad verificada: cliente 1–2 → CU-01; cliente 4 → CU-05; proveedor 1–3 → CU-30/CU-32 (alta); cliente 3 y proveedor 4 → portafolio P7; cliente 5 → reseña por contacto previo (P5). No hay un CU propio de «Cómo funciona» en `docs/02`: no se le atribuye ninguno. Pendiente: fotos reales en `public/como-funciona/` (hoy degradado con icono; briefs en TODO del archivo de contenido), QR del proveedor y OTP de WhatsApp (no se prometen en el texto hasta que existan).
 
+## Alta en una sola página y rastreo de imágenes / IA, 11 nov 2026
+
+- **Alta de una página (`/panel/alta`):** en borrador, datos, oficios y página, servicios, localidades, sobre ti, fotos, redes, identidad y documentos van en una sola pantalla. Cada campo se guarda solo (`components/panel/AutoGuardadoAlta.tsx` → `POST /api/v1/yo/alta` → `lib/alta-autoguardado.ts`): guarda lo válido y avisa lo que no, sin borrar lo ya guardado. `/panel/perfil`, `/servicios`, `/fotos` y `/verificacion` redirigen ahí mientras el perfil es borrador (conservan el aviso); ya enviado, siguen como antes. Servicios, fotos y documentos se guardan al instante con sus propios controles. Pendiente de probar en pantalla (no se pudo con `pnpm dev` abierto).
+- **Silueta genérica por oficio** (`lib/foto-generica.ts`, `public/perfiles/`): solo presentación; no cuenta como foto real para indexar.
+- **Imágenes para Google:** el sitemap declara las fotos reales de cada ficha (perfil y trabajos, hasta 20) y las de «Cómo funciona». **IA:** `robots.txt` invita expresamente a GPTBot, ClaudeBot, PerplexityBot, Google-Extended y otros (misma lista de rutas privadas bloqueadas) y `llms.txt` lo explica. Validar con la base real (`/sitemap.xml` con `<image:image>`).
+
 ## [x] 8. Páginas legales `/terminos`, `/privacidad`, `/reclamos`
 
 > **Hecha (oct 2026):** además `/cookies`, `/terminos-proveedores`, `/resenas`, `/retiro-de-contenido`, `/reportar`. Pendiente: textos definitivos de Drive.

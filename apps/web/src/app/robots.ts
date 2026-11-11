@@ -8,11 +8,24 @@ import { absoluta, INDEXABLE } from "@/lib/seo";
  */
 export const RUTAS_BLOQUEADAS = ["/admin", "/api/", "/panel", "/cuenta"];
 
+/**
+ * Rastreadores de IA que se invitan expresamente (buscadores con IA y asistentes): OpenAI (GPTBot, OAI-SearchBot, ChatGPT-User),
+ * Anthropic (ClaudeBot, Claude-User, Claude-SearchBot), Perplexity, Google (Google-Extended para Gemini), Apple, Common Crawl, Meta y Amazon.
+ * Es una decisión del negocio: contenido público abierto para que la IA lo lea y recomiende a los proveedores. Se bloquean las mismas rutas privadas.
+ */
+export const RASTREADORES_IA = [
+  "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-User", "Claude-SearchBot", "anthropic-ai",
+  "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "CCBot", "Meta-ExternalAgent", "Amazonbot", "cohere-ai",
+];
+
 /** robots.txt: abierto solo en producción. */
 export default function robots(): MetadataRoute.Robots {
   if (!INDEXABLE) return { rules: { userAgent: "*", disallow: "/" } };
   return {
-    rules: { userAgent: "*", allow: "/", disallow: RUTAS_BLOQUEADAS },
+    rules: [
+      { userAgent: "*", allow: "/", disallow: RUTAS_BLOQUEADAS },
+      { userAgent: RASTREADORES_IA, allow: "/", disallow: RUTAS_BLOQUEADAS },
+    ],
     sitemap: absoluta("/sitemap.xml"),
     host: absoluta("/"),
   };

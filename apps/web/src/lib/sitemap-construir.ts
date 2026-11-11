@@ -4,12 +4,13 @@
  */
 import type { MetadataRoute } from "next";
 import { CATEGORIAS, LOCALIDADES_BOGOTA, rutaPrincipalProveedor, subcategoriaPorSlug } from "@las3b/shared";
+import { COMO_FUNCIONA } from "@/lib/como-funciona.content";
 import { GUIAS } from "@/lib/guias";
 import { absoluta } from "@/lib/seo";
 
 export type DatosSitemap = {
   /** Proveedores con ficha indexable (FICHA_INDEXABLE_SQL), con los nombres de sus oficios. */
-  proveedores: { slug: string; actualizado: string; oficios: string[] }[];
+  proveedores: { slug: string; actualizado: string; oficios: string[]; /** URLs absolutas de sus fotos reales (perfil y trabajos), para el rastreo de imágenes. */ imagenes?: string[] }[];
   /** Localidades con proveedores suficientes (localidadesIndexables). */
   localidades: string[];
   oficios: { oficio: string; total: number; urgentes: number; conPrecio: number; modificado: string | null }[];
@@ -19,19 +20,23 @@ export type DatosSitemap = {
 };
 
 type Entrada = MetadataRoute.Sitemap[number];
-const pagina = (ruta: string, prioridad: number, frecuencia: Entrada["changeFrequency"], modificado?: Date | string): Entrada => ({
+const pagina = (ruta: string, prioridad: number, frecuencia: Entrada["changeFrequency"], modificado?: Date | string, imagenes?: string[]): Entrada => ({
   url: absoluta(ruta),
   changeFrequency: frecuencia,
   priority: prioridad,
   ...(modificado ? { lastModified: modificado } : {}),
+  ...(imagenes && imagenes.length > 0 ? { images: imagenes } : {}),
 });
+
+/** Fotos de «Cómo funciona» (public/como-funciona): se declaran en su página para que Google las rastree. */
+const IMAGENES_COMO_FUNCIONA = COMO_FUNCIONA.pestanas.flatMap((p) => p.pasos.flatMap((s) => (s.imagen ? [absoluta(s.imagen)] : [])));
 
 /** Páginas que siempre se indexan, tengan o no oferta. */
 export function paginasFijas(): MetadataRoute.Sitemap {
   return [
     pagina("/", 1, "daily"),
     pagina("/proveedores", 0.8, "weekly"),
-    pagina("/como-funciona", 0.7, "monthly"),
+    pagina("/como-funciona", 0.7, "monthly", undefined, IMAGENES_COMO_FUNCIONA),
     pagina("/localidades", 0.8, "weekly"),
     pagina("/guias", 0.7, "weekly"),
     pagina("/nosotros", 0.6, "yearly"),
@@ -58,7 +63,7 @@ export function construirSitemap(d: DatosSitemap): MetadataRoute.Sitemap {
   // apunta a esta, así que no van en el sitemap (lib/ficha-seo.ts).
   for (const p of d.proveedores) {
     if (p.oficios.length === 0) continue; // una ficha sin oficio no es indexable (lib/indexacion.ts)
-    paginas.push(pagina(rutaPrincipalProveedor(p.slug, p.oficios), 0.8, "weekly", p.actualizado));
+    paginas.push(pagina(rutaPrincipalProveedor(p.slug, p.oficios), 0.8, "weekly", p.actualizado, p.imagenes));
   }
 
   // Páginas por oficio: solo las que cumplen la regla de publicación (lib/publicacion.ts).

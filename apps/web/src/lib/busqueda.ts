@@ -4,6 +4,7 @@
  * Nunca devuelve datos privados (regla 1): sin documento, dirección, RUT ni fecha de nacimiento.
  */
 import { urlPublica } from "@/lib/almacenamiento";
+import { fotoGenericaPara } from "@/lib/foto-generica";
 import { and, eq, inArray, sql, type SQL } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { distanciaALocalidades, type Punto } from "@/lib/ubicacion";
@@ -379,7 +380,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       disponible24h: r.h24,
       precioVisita: r.precioVisita != null ? Number(r.precioVisita) : null,
       visitaAConvenir: r.convenir,
-      fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : null,
+      fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : fotoGenericaPara(serviciosMapa.get(r.id) ?? []),
     })),
     total,
     pagina,
@@ -436,7 +437,7 @@ export async function buscarServicios(f: FiltrosBusqueda): Promise<PaginaServici
       oficio: r.oficio,
       precioDesde: r.precio != null ? Number(r.precio) : null,
       unidad: r.unidad,
-      proveedor: { slug: r.slug, nombre: r.proveedor, nivel: nivelDePerfil(r.completitud), fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : null },
+      proveedor: { slug: r.slug, nombre: r.proveedor, nivel: nivelDePerfil(r.completitud), fotoPerfil: r.fotoPerfil ? urlPublica(r.fotoPerfil) : fotoGenericaPara(r.oficio ? [r.oficio] : []) },
     })),
     total,
     pagina,

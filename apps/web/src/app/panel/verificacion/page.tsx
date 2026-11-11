@@ -1,8 +1,9 @@
 import { FormularioGuiado } from "@/components/panel/FormularioGuiado";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Aviso } from "@/components/cuenta";
 import { CargaDocumento } from "@/components/CargaDocumento";
-import { pendientesAlta } from "@/lib/alta-proveedor";
+import { pendientesAlta, rutaAlta } from "@/lib/alta-proveedor";
 import { guardarIdentidadPanel } from "../actions";
 import { estadoDocumentos, pideNumeroMatricula } from "@/lib/documentos";
 import { exigirProveedor, verificacionDelProveedor } from "@/lib/panel";
@@ -38,6 +39,7 @@ export default async function Verificacion({ searchParams }: { searchParams: Pro
   const { proveedor: p } = await exigirProveedor();
   const sp = await searchParams;
   const borrador = p.estado === "borrador";
+  if (borrador) redirect(rutaAlta(sp));
   const [v, docs, alta] = await Promise.all([verificacionDelProveedor(p.id), estadoDocumentos(p.id), borrador ? pendientesAlta(p.id) : null]);
   // Solo se explican las insignias que corresponden a su oficio y tipo de trabajo (a una aseadora no se le habla de matrícula ni de RUT).
   const pideMatricula = await pideNumeroMatricula(p.id);

@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { Aviso } from "@/components/cuenta";
+import { rutaAlta } from "@/lib/alta-proveedor";
 import { CargaFotos } from "@/components/CargaFotos";
 import { FOTOS_MINIMAS } from "@/lib/completitud";
 import { fotosDelProveedor } from "@/lib/fotos";
@@ -12,6 +14,7 @@ export const metadata = { title: "Fotos de trabajos" };
 export default async function FotosPanel({ searchParams }: { searchParams: Promise<{ ok?: string; error?: string }> }) {
   const { proveedor } = await exigirProveedor();
   const sp = await searchParams;
+  if (proveedor.estado === "borrador") redirect(rutaAlta(sp));
   const [fotos, maxMb, maximo] = await Promise.all([fotosDelProveedor(proveedor.id), parametro("foto_max_mb"), parametro("fotos_max")]);
   const faltan = Math.max(0, FOTOS_MINIMAS - fotos.length);
 

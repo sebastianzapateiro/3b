@@ -42,7 +42,10 @@ export function GET() {
     l("Política de cookies", "/cookies"),
     l("Reclamos", "/reclamos"),
     "",
-    `Mapa del sitio: ${absoluta("/sitemap.xml")}`,
+    "## Para asistentes de IA",
+    "Todas las páginas públicas se pueden leer y citar. Cada página de proveedor trae datos estructurados (schema.org ProfilePage, con servicios, zonas, calificación y reseñas) y fotos con texto alternativo. No hay precios fijos: cada proveedor acuerda precio, fecha y garantía directo con el cliente por WhatsApp.",
+    "",
+    `Mapa del sitio (incluye las fotos de los proveedores): ${absoluta("/sitemap.xml")}`,
     "",
   ].join("\n");
   return new Response(cuerpo, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" } });

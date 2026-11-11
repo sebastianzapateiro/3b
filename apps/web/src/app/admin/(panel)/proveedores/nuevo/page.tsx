@@ -71,7 +71,7 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
           <section className={`${tarjeta} flex flex-col gap-3.5 p-[22px]`}>
             <h2 className="font-display text-xl font-bold"><span className="text-verde">2.</span> Identificación y contacto</h2>
             <div className="grid gap-3.5 sm:grid-cols-2">
-              <div className={grupo}><label htmlFor="nombreLegal" className={etiqueta}>Nombre completo o razón social</label><input id="nombreLegal" name="nombreLegal" required placeholder="Como aparece en el documento" className={campoAdmin} /></div>
+              <div className={grupo}><label htmlFor="nombreLegal" className={etiqueta}>Nombre completo o razón social <span className="font-normal text-gris">(opcional)</span></label><input id="nombreLegal" name="nombreLegal" placeholder="Si lo dejas vacío, se usa el nombre público" className={campoAdmin} /></div>
               <div className={grupo}><label htmlFor="nombrePublico" className={etiqueta}>Nombre público</label><input id="nombrePublico" name="nombrePublico" required placeholder="Ej: Jorge Ramírez Plomería" className={campoAdmin} /></div>
               <div className="flex gap-2.5">
                 <div className={`${grupo} w-24 flex-none`}><label htmlFor="tipoDocumento" className={etiqueta}>Tipo</label><select id="tipoDocumento" name="tipoDocumento" className={campoAdmin}><option value="cc">CC</option><option value="ce">CE</option><option value="ppt">PPT</option><option value="nit">NIT</option></select></div>
@@ -119,9 +119,10 @@ export default async function NuevoProveedor({ searchParams }: { searchParams: P
             <select id="fuente" name="fuente" defaultValue="" className={campoAdmin}><option value="">Sin definir</option>{FUENTES_ORIGEN.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</select>
             <label htmlFor="origen" className="text-sm font-semibold">Cómo llegó</label>
             <select id="origen" name="origen" className={campoAdmin}><option>En persona</option><option>Por teléfono</option><option>Jornada de registro en barrio</option><option>Referido por otro proveedor</option></select>
+            <button type="submit" name="accion" value="aprobar" className="h-[50px] rounded-xl bg-verde text-base font-bold text-white">Crear y publicar ahora</button>
             <button type="submit" name="accion" value="invitar" className="h-[50px] rounded-xl bg-tinta text-base font-bold text-white">Crear y enviar invitación</button>
             <button type="submit" name="accion" value="borrador" className="h-11 rounded-xl border-[1.5px] border-borde-campo bg-white text-sm font-semibold">Guardar borrador</button>
-            <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría como alta asistida por ti. Para invitar, el proveedor necesita correo: con él ingresará. Otro verificador hace la aprobación final.</span>
+            <span className="text-[13px] leading-[1.45] text-gris">Queda en la auditoría como alta asistida por ti. Sin correo, la invitación se envía por WhatsApp desde su ficha. «Crear y publicar ahora» solo pide nombre, WhatsApp y oficio; lo demás lo completas después.</span>
           </section>
 
         </div>
