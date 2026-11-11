@@ -13,7 +13,8 @@ import { guardarCompletitud } from "@/lib/completitud";
 
 const { proveedores, proveedorCategorias, proveedorLocalidades, categorias, localidades } = schema;
 
-export const esquemaAlta = z.record(z.string(), z.union([z.string().max(600), z.array(z.string().max(20)).max(40)]));
+/** Cada texto admite más que el campo más largo (la presentación, PRESENTACION_MAX): el tope de cada campo se valida abajo, con su aviso. */
+export const esquemaAlta = z.record(z.string(), z.union([z.string().max(PRESENTACION_MAX * 2), z.array(z.string().max(20)).max(40)]));
 
 export type ResultadoAlta = {
   /** Etiquetas de lo que se guardó (para decir «Guardado»). */
@@ -28,7 +29,8 @@ export async function autoguardarAlta(proveedor: { id: string; estado: string },
   const vacio: ResultadoAlta = { guardados: [], avisos: {}, recargar: false };
   if (proveedor.estado !== "borrador") return vacio;
   const datos = esquemaAlta.safeParse(entrada);
-  if (!datos.success) return vacio;
+  // Nunca se responde «guardado» si no se pudo leer el envío.
+  if (!datos.success) return { ...vacio, avisos: { formulario: "No pudimos guardar lo último que escribiste. Revisa que ningún texto sea demasiado largo." } };
   const d = datos.data;
   const texto = (k: string) => (typeof d[k] === "string" ? (d[k] as string).trim() : undefined);
   const lista = (k: string) => (Array.isArray(d[k]) ? (d[k] as string[]) : typeof d[k] === "string" && d[k] ? [d[k] as string] : []);
@@ -134,7 +136,7 @@ export async function autoguardarAlta(proveedor: { id: string; estado: string },
     const validas = await db.select({ id: localidades.id }).from(localidades).where(and(inArray(localidades.id, localidadIds), eq(localidades.activa, true)));
     const actuales = await db.select({ id: proveedorLocalidades.localidadId }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedor.id));
     const ids = validas.map((v) => v.id);
-    if (!(actuales.length === ids.length && actuales.every((a) => ids.includes(a.id)))) {
+    if (ids.length > 0 && !(actuales.length === ids.length && actuales.every((a) => ids.includes(a.id)))) {
       await db.transaction(async (tx) => {
         await tx.delete(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedor.id));
         await tx.insert(proveedorLocalidades).values(ids.map((localidadId) => ({ proveedorId: proveedor.id, localidadId })));
