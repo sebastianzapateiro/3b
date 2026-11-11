@@ -99,7 +99,7 @@ export function PaginaServicio({
           <section aria-labelledby="proveedores" className="flex flex-col gap-3">
             <h2 id="proveedores" className="font-display text-2xl font-bold">{variante === "economico" ? "Del precio más bajo al más alto" : "Proveedores verificados"}</h2>
             <div className="flex flex-col gap-3 sm:gap-4">
-              {resultado.items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
+              {resultado.items.map((r) => <TarjetaResultado key={r.slug} r={r} />)}
               {resultado.total > resultado.items.length && <Link href={buscar} className="flex h-12 items-center justify-center rounded-[14px] border-2 border-tinta text-base font-semibold text-tinta">Ver los {resultado.total} proveedores</Link>}
             </div>
           </section>

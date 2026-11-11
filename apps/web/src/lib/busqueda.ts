@@ -27,6 +27,8 @@ export { INSIGNIAS_FILTRO, ORDENES, type InsigniaFiltro, type Orden } from "@/li
 import { ORDENES, RESENAS_MINIMAS, TOPES_VISITA, valoresDesdeParams, type ConteosFiltros, type InsigniaFiltro, type Orden } from "@/lib/filtros";
 
 export const POR_PAGINA = 10;
+/** /proveedores: se muestran de a 12 y «Ver más» suma otros 12. */
+export const LOTE_LISTADO = 12;
 
 /** Convierte los parámetros de /proveedores (URL) en filtros; lo comparten la página y la API de conteo. */
 export function filtrosDesdeParams(p: URLSearchParams): FiltrosBusqueda {
@@ -73,6 +75,8 @@ export type FiltrosBusqueda = {
   h24?: boolean;
   orden?: Orden;
   pagina?: number;
+  /** Cuántos resultados traer desde el primero (listado con «Ver más»); sustituye a `pagina`. */
+  mostrar?: number;
   /** Ubicación exacta del comprador: ordena por cercanía y no filtra por localidad. */
   punto?: Punto;
 };
@@ -287,6 +291,8 @@ async function idsPorCercania(donde: SQL | undefined, punto: Punto): Promise<str
 
 export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResultados> {
   const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
+  const limite = f.mostrar ? Math.min(Math.max(1, Math.floor(f.mostrar)), 240) : POR_PAGINA;
+  const desde = f.mostrar ? 0 : (pagina - 1) * POR_PAGINA;
   const { donde, categoria } = await condicionesDe(f);
   const total = await contarProveedores(f);
 
@@ -315,7 +321,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
   if (f.punto) {
     // Por ubicación exacta: todos los del servicio, del más cercano al más lejano (sin filtrar por localidad).
     const ordenados = await idsPorCercania(donde, f.punto);
-    const pagina_ids = ordenados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+    const pagina_ids = ordenados.slice(desde, desde + limite);
     const datos = pagina_ids.length ? await db.select(columnas).from(proveedores).where(inArray(proveedores.id, pagina_ids)) : [];
     filas = pagina_ids.flatMap((id) => datos.filter((d) => d.id === id));
   } else {
@@ -324,12 +330,12 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
       .from(proveedores)
       .where(donde)
       .orderBy(...orden, sql`${proveedores.createdAt} DESC`)
-      .limit(POR_PAGINA)
-      .offset((pagina - 1) * POR_PAGINA);
+      .limit(limite)
+      .offset(desde);
   }
 
   if (filas.length === 0) {
-    return { items: [], total, pagina, porPagina: POR_PAGINA, categoriaNombre: categoria?.nombre ?? null };
+    return { items: [], total, pagina, porPagina: limite, categoriaNombre: categoria?.nombre ?? null };
   }
 
   const ids = filas.map((r) => r.id);
@@ -384,7 +390,7 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
     })),
     total,
     pagina,
-    porPagina: POR_PAGINA,
+    porPagina: limite,
     categoriaNombre: categoria?.nombre ?? null,
   };
 }
@@ -395,6 +401,8 @@ export async function buscarProveedores(f: FiltrosBusqueda): Promise<PaginaResul
  */
 export async function buscarServicios(f: FiltrosBusqueda): Promise<PaginaServicios> {
   const pagina = Math.max(1, Math.floor(f.pagina ?? 1));
+  const limite = f.mostrar ? Math.min(Math.max(1, Math.floor(f.mostrar)), 240) : POR_PAGINA;
+  const desde = f.mostrar ? 0 : (pagina - 1) * POR_PAGINA;
   const { donde, categoria } = await condicionesDe(f);
   const where = and(eq(serviciosProveedor.visible, true), donde, categoria ? inArray(serviciosProveedor.categoriaId, categoria.ids) : undefined);
 
@@ -426,8 +434,8 @@ export async function buscarServicios(f: FiltrosBusqueda): Promise<PaginaServici
     .leftJoin(categorias, eq(categorias.id, serviciosProveedor.categoriaId))
     .where(where)
     .orderBy(...orden, serviciosProveedor.orden, serviciosProveedor.id)
-    .limit(POR_PAGINA)
-    .offset((pagina - 1) * POR_PAGINA);
+    .limit(limite)
+    .offset(desde);
 
   return {
     items: filas.map((r) => ({
@@ -441,7 +449,7 @@ export async function buscarServicios(f: FiltrosBusqueda): Promise<PaginaServici
     })),
     total,
     pagina,
-    porPagina: POR_PAGINA,
+    porPagina: limite,
     categoriaNombre: categoria?.nombre ?? null,
   };
 }

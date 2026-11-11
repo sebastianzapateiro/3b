@@ -96,7 +96,7 @@ export default async function Categoria({ params }: Props) {
           </div>
           {servicios.items.length > 0 ? (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {servicios.items.map((s, i) => <TarjetaServicio key={s.id} s={s} indice={i} />)}
+              {servicios.items.map((s) => <TarjetaServicio key={s.id} s={s} />)}
             </div>
           ) : (
             <p className={`${TARJETA} p-5 text-[15px] leading-normal text-tinta-2`}>
@@ -114,7 +114,7 @@ export default async function Categoria({ params }: Props) {
               {proveedoresCat.total > proveedoresCat.items.length && <Link href={`/proveedores?categoria=${categoria.slug}&vista=proveedores`} className="text-sm font-semibold text-verde underline">Ver los {proveedoresCat.total} proveedores</Link>}
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-              {proveedoresCat.items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
+              {proveedoresCat.items.map((r) => <TarjetaResultado key={r.slug} r={r} />)}
             </div>
           </section>
         )}

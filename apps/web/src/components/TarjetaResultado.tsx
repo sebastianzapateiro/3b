@@ -4,13 +4,6 @@ import type { ResultadoBusqueda } from "@/lib/busqueda";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
-const AVATARES = [
-  "bg-[#D7E8E2] text-verde-oscuro",
-  "bg-[#F6DCD5] text-ladrillo-oscuro",
-  "bg-[#FCE8C2] text-amarillo-oscuro",
-  "bg-[#E6E1F2] text-[#43307A]",
-];
-
 const TONO_INSIGNIA: Record<string, string> = {
   verificado: "bg-verde-claro text-verde-oscuro",
   formalizado: "bg-amarillo-suave text-amarillo-oscuro",
@@ -26,51 +19,41 @@ function IconoWhatsApp() {
   );
 }
 
-/** Tarjeta vertical de proveedor para la cuadrícula de /proveedores: perfil arriba, insignias y los dos botones abajo. */
-export function TarjetaResultado({ r, indice }: { r: ResultadoBusqueda; indice: number }) {
-  const iniciales = r.nombre.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2);
-  const detalle = [r.servicios.join(", "), r.localidades.join(", ")].filter(Boolean).join(" · ");
+/**
+ * Tarjeta de proveedor para la cuadrícula de /proveedores (P2, CU-01), sin fotos.
+ * De arriba abajo: oficios · nombre y nivel · zonas · distintivos · visita · botones.
+ */
+export function TarjetaResultado({ r }: { r: ResultadoBusqueda }) {
   const perfil = `/${r.slug}`;
   const textoVisita = r.precioVisita != null ? `Visita desde ${pesos.format(r.precioVisita)}` : r.visitaAConvenir ? "Visita a convenir" : null;
+  const distintivos = [
+    ...(r.atiendeUrgencias ? [{ k: "urg", t: "Atiende urgencias", c: "bg-piedra text-tinta-2" }] : []),
+    ...(r.disponible24h ? [{ k: "24h", t: "24 horas", c: "bg-piedra text-tinta-2" }] : []),
+    ...r.insignias.map((i) => ({ k: i.clave, t: i.nombre, c: TONO_INSIGNIA[i.clave] ?? "bg-piedra text-tinta-2" })),
+  ];
 
   return (
-    <article className="flex h-full flex-col gap-3 rounded-[20px] border border-borde-suave bg-white p-4">
-      <Link href={perfil} className="flex min-w-0 gap-3 text-tinta">
-        {r.fotoPerfil ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.fotoPerfil} alt="" className="size-16 flex-none rounded-2xl object-cover" loading="lazy" />
-        ) : (
-          <span aria-hidden="true" className={`flex size-16 flex-none items-center justify-center rounded-2xl font-display text-[22px] font-bold ${AVATARES[indice % AVATARES.length]}`}>
-            {iniciales}
-          </span>
-        )}
-        <span className="flex min-w-0 flex-1 flex-col gap-1">
-          <b className="text-base">{r.nombre}</b>
-          {detalle && <span className="line-clamp-2 text-sm text-gris">{detalle}</span>}
-          <span className="flex flex-wrap items-center gap-x-1 text-sm font-semibold">
-            <NivelPerfilMarca nivel={r.nivel} />
-          </span>
-        </span>
+    <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4">
+      <Link href={perfil} className="flex min-w-0 flex-col gap-1.5 text-tinta">
+        {r.servicios.length > 0 && <span className="line-clamp-1 text-xs font-bold uppercase tracking-wide text-verde-oscuro">{r.servicios.join(" · ")}</span>}
+        <b className="font-display text-lg font-bold leading-tight">{r.nombre}</b>
+        <NivelPerfilMarca nivel={r.nivel} />
+        {r.localidades.length > 0 && <span className="line-clamp-1 text-sm text-gris">{r.localidades.join(", ")}</span>}
       </Link>
 
-      {(r.insignias.length > 0 || r.atiendeUrgencias || r.disponible24h) && (
-        <div className="flex flex-wrap gap-1.5">
-          {r.atiendeUrgencias && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">Atiende urgencias</span>}
-          {r.disponible24h && <span className="flex h-[26px] items-center rounded-[13px] bg-piedra px-2.5 text-xs font-semibold text-tinta-2">24 horas</span>}
-          {r.insignias.map((i) => (
-            <span key={i.clave} className={`flex h-[26px] items-center rounded-[13px] px-2.5 text-xs font-semibold ${TONO_INSIGNIA[i.clave] ?? "bg-piedra text-tinta-2"}`}>
-              {i.nombre}
-            </span>
+      {distintivos.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {distintivos.map((d) => (
+            <span key={d.k} className={`flex h-[26px] items-center rounded-[13px] px-2.5 text-xs font-semibold ${d.c}`}>{d.t}</span>
           ))}
         </div>
       )}
 
-      <div className="mt-auto flex flex-col gap-2 pt-1">
-        {textoVisita && <b className="text-sm text-tinta">{textoVisita}</b>}
+      {/* Visita y botones al fondo: quedan alineados entre tarjetas de distinta altura. */}
+      <div className="mt-auto flex flex-col gap-3 pt-4">
+        {textoVisita && <b className="border-t border-borde-suave pt-3 text-[15px] text-tinta">{textoVisita}</b>}
         <div className="flex gap-2">
-          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta">
-            Ver perfil
-          </Link>
+          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta">Ver perfil</Link>
           {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
           <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro">
             <IconoWhatsApp />

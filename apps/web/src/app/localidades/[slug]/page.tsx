@@ -123,7 +123,7 @@ export default async function Localidad({ params }: Props) {
                 {total > (proveedores?.items.length ?? 0) && <Link href={`/proveedores?localidad=${localidad.slug}&vista=proveedores`} className="text-sm font-semibold text-verde underline">Ver los {total} proveedores</Link>}
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-                {(proveedores?.items ?? []).slice(0, 6).map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
+                {(proveedores?.items ?? []).slice(0, 6).map((r) => <TarjetaResultado key={r.slug} r={r} />)}
               </div>
             </section>
           </>

@@ -9,7 +9,8 @@ import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { TarjetaServicio } from "@/components/TarjetaServicio";
 import { cookies } from "next/headers";
 import { contieneServicioProhibido } from "@las3b/shared";
-import { buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados, type PaginaServicios } from "@/lib/busqueda";
+import { LOTE_LISTADO, buscarProveedores, buscarServicios, categoriaDeTexto, conteosDeFiltros, filtrosDesdeParams, type PaginaResultados, type PaginaServicios } from "@/lib/busqueda";
+import { TOTAL_DEMO, proveedoresDemo, serviciosDemo } from "@/lib/demo-listado";
 import { COOKIE_SOLICITUD, obtenerSolicitud } from "@/lib/solicitudes";
 import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValores, valoresDesdeParams, type ConteosFiltros, type Orden } from "@/lib/filtros";
 import { FAQ_BUSCAR } from "@/lib/faqs";
@@ -65,7 +66,11 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const params = new URLSearchParams();
   for (const [k, val] of Object.entries(sp)) for (const x of varios(val)) params.append(k, x);
   const { insignias, cal, visita, hoy, h24, tambien } = valoresDesdeParams(params);
-  const pagina = Math.max(1, Number(uno(sp.pagina)) || 1);
+  // De a 12; «Ver más» suma otros 12 (?mostrar=24, 36…).
+  const mostrar = Math.min(240, Math.max(LOTE_LISTADO, Math.ceil((Number(uno(sp.mostrar)) || LOTE_LISTADO) / LOTE_LISTADO) * LOTE_LISTADO));
+  // Solo en desarrollo: ?demo=1 muestra tarjetas de muestra (no toca la base).
+  const enDesarrollo = process.env.NODE_ENV !== "production";
+  const demo = enDesarrollo && uno(sp.demo) !== "0" && (uno(sp.demo) === "1" || !process.env.DATABASE_URL);
 
   // Ubicación exacta (viene del buscador del inicio): se ordena del más cercano al más lejano, sin filtrar por localidad.
   const exacta = uno(sp.ubic) === "exacta";
@@ -79,14 +84,22 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
 
   // Si la base no responde (p. ej. en local sin el túnel) la página se muestra vacía en vez de caerse.
   let sinBase = false;
-  const [resultado, conteos] = await Promise.all([
-    porServicios ? buscarServicios(filtrosDesdeParams(params)) : buscarProveedores({ ...filtrosDesdeParams(params), punto }),
-    conteosDeFiltros(filtrosDesdeParams(params)),
-  ]).catch((e) => {
+  const [resultado, conteos] = await (demo
+    ? Promise.resolve([
+        porServicios
+          ? ({ items: serviciosDemo(mostrar), total: TOTAL_DEMO, pagina: 1, porPagina: mostrar, categoriaNombre: null } as PaginaServicios)
+          : ({ items: proveedoresDemo(mostrar), total: TOTAL_DEMO, pagina: 1, porPagina: mostrar, categoriaNombre: null } as PaginaResultados),
+        CONTEOS_VACIOS,
+      ] as const)
+    : Promise.all([
+        porServicios ? buscarServicios({ ...filtrosDesdeParams(params), mostrar }) : buscarProveedores({ ...filtrosDesdeParams(params), mostrar, punto }),
+        conteosDeFiltros(filtrosDesdeParams(params)),
+      ])
+  ).catch((e) => {
     // Aviso corto (no console.error): en desarrollo Next lo convertiría en una pantalla de error.
     console.warn("[proveedores] sin base de datos:", (e as { cause?: { code?: string } }).cause?.code ?? (e instanceof Error ? e.message.slice(0, 80) : e));
     sinBase = true;
-    const vacio: PaginaResultados = { items: [], total: 0, pagina, porPagina: 10, categoriaNombre: null };
+    const vacio: PaginaResultados = { items: [], total: 0, pagina: 1, porPagina: LOTE_LISTADO, categoriaNombre: null };
     return [vacio, CONTEOS_VACIOS] as const;
   });
   // «Calificación» y «Mejor calificados» solo existen cuando hay proveedores con reseñas suficientes.
@@ -96,7 +109,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const lugar = nombreLocalidad ? ` en ${nombreLocalidad}` : exacta ? " cerca de ti" : "";
   const tema = resultado.categoriaNombre ?? (q ? `«${q}»` : null);
   const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `Proveedores en ${nombreLocalidad}` : "Proveedores";
-  const totalPaginas = Math.max(1, Math.ceil(resultado.total / resultado.porPagina));
+  const hayMas = resultado.items.length < resultado.total;
 
   /** URL de /proveedores con los parámetros actuales y los cambios indicados (null = quitar). */
   const href = (cambios: Record<string, string | string[] | null>) => {
@@ -104,7 +117,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     const actual: Record<string, string | string[] | undefined> = {
       q, localidad, categoria, orden, vista: porServicios ? undefined : "proveedores", ubic: exacta ? "exacta" : undefined, solicitud: enviada ? "1" : undefined, cal: cal === "0" ? undefined : cal, visita: visita || undefined,
       hoy: hoy ? "1" : undefined, h24: h24 ? "1" : undefined,
-      insignia: insignias, tambien, pagina: pagina > 1 ? String(pagina) : undefined,
+      insignia: insignias, tambien, demo: demo ? "1" : undefined, mostrar: mostrar > LOTE_LISTADO ? String(mostrar) : undefined,
     };
     for (const [k, v] of Object.entries({ ...actual, ...cambios })) {
       if (v == null) continue;
@@ -112,23 +125,23 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     }
     return `/proveedores?${p}`;
   };
-  const limpiar = href({ insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, pagina: null });
+  const limpiar = href({ insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, mostrar: null });
 
   // Filtros activos como chips con «x» para quitarlos de uno en uno.
   const activos: { texto: string; quitar: string }[] = [
-    ...(nombreLocalidad && !exacta ? [{ texto: nombreLocalidad, quitar: href({ localidad: null, tambien: null, pagina: null }) }] : []),
-    ...(q ? [{ texto: `«${q}»`, quitar: href({ q: null, pagina: null }) }] : []),
-    ...insignias.map((i) => ({ texto: ETIQUETA_INSIGNIA[i], quitar: href({ insignia: insignias.filter((x) => x !== i), pagina: null }) })),
-    ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")}+`, quitar: href({ cal: null, pagina: null }) }] : []),
-    ...(visita ? [{ texto: visita === "convenir" ? "Visita a convenir" : `Visita ${etiquetaTope(Number(visita)).toLowerCase()}`, quitar: href({ visita: null, pagina: null }) }] : []),
-    ...(hoy ? [{ texto: "Urgente hoy", quitar: href({ hoy: null, pagina: null }) }] : []),
-    ...(h24 ? [{ texto: "24 horas", quitar: href({ h24: null, pagina: null }) }] : []),
-    ...tambien.map((t) => ({ texto: `También ${LOCALIDADES_BOGOTA.find((l) => l.slug === t)?.nombre ?? t}`, quitar: href({ tambien: tambien.filter((x) => x !== t), pagina: null }) })),
+    ...(nombreLocalidad && !exacta ? [{ texto: nombreLocalidad, quitar: href({ localidad: null, tambien: null, mostrar: null }) }] : []),
+    ...(q ? [{ texto: `«${q}»`, quitar: href({ q: null, mostrar: null }) }] : []),
+    ...insignias.map((i) => ({ texto: ETIQUETA_INSIGNIA[i], quitar: href({ insignia: insignias.filter((x) => x !== i), mostrar: null }) })),
+    ...(cal !== "0" ? [{ texto: `★ ${cal.replace(".", ",")}+`, quitar: href({ cal: null, mostrar: null }) }] : []),
+    ...(visita ? [{ texto: visita === "convenir" ? "Visita a convenir" : `Visita ${etiquetaTope(Number(visita)).toLowerCase()}`, quitar: href({ visita: null, mostrar: null }) }] : []),
+    ...(hoy ? [{ texto: "Urgente hoy", quitar: href({ hoy: null, mostrar: null }) }] : []),
+    ...(h24 ? [{ texto: "24 horas", quitar: href({ h24: null, mostrar: null }) }] : []),
+    ...tambien.map((t) => ({ texto: `También ${LOCALIDADES_BOGOTA.find((l) => l.slug === t)?.nombre ?? t}`, quitar: href({ tambien: tambien.filter((x) => x !== t), mostrar: null }) })),
   ];
   // «hayFiltros» (los del panel) no cuenta la localidad ni el texto buscado, que sí se muestran como chips.
   const hayFiltros = insignias.length > 0 || cal !== "0" || !!visita || hoy || h24 || tambien.length > 0;
   /** Borra todo: filtros, localidad, texto y oficio. Deja solo la vista elegida. */
-  const borrarTodo = href({ q: null, localidad: null, categoria: null, ubic: null, solicitud: null, orden: null, insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, pagina: null });
+  const borrarTodo = href({ q: null, localidad: null, categoria: null, ubic: null, solicitud: null, orden: null, insignia: null, cal: null, visita: null, hoy: null, h24: null, tambien: null, mostrar: null });
 
   // Parámetros ajenos al panel y datos que este necesita.
   const base = new URLSearchParams();
@@ -170,6 +183,12 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
+          {enDesarrollo && (
+            <p className="rounded-xl bg-amarillo-suave px-3.5 py-2.5 text-sm text-amarillo-oscuro">
+              Solo en desarrollo: {demo ? "estás viendo tarjetas de muestra. " : "datos reales. "}
+              <Link href={href({ demo: demo ? "0" : "1", mostrar: null })} className="font-semibold underline">{demo ? "Ver datos reales" : "Ver tarjetas de muestra"}</Link>
+            </p>
+          )}
           <form action="/proveedores" className="flex flex-wrap gap-2" role="search">
             <div className="flex h-12 min-w-0 flex-[2_1_200px] items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3">
               <svg className="flex-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
@@ -212,7 +231,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <nav aria-label="Tipo de vista" className="flex rounded-xl bg-piedra p-1">
-                {([[true, "Por servicios", href({ vista: null, pagina: null })], [false, "Por proveedores", href({ vista: "proveedores", pagina: null })]] as const).map(([activa, texto, destino]) => (
+                {([[true, "Por servicios", href({ vista: null, mostrar: null })], [false, "Por proveedores", href({ vista: "proveedores", mostrar: null })]] as const).map(([activa, texto, destino]) => (
                   <Link key={texto} href={destino} aria-current={porServicios === activa ? "page" : undefined} className={`flex h-9 items-center rounded-lg px-3.5 text-sm font-semibold ${porServicios === activa ? "bg-white text-tinta shadow-sm" : "text-tinta-2 hover:text-tinta"}`}>{texto}</Link>
                 ))}
               </nav>
@@ -223,27 +242,18 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
           {resultado.items.length > 0 ? (
             <section aria-label="Resultados" className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 2xl:grid-cols-3">
               {porServicios
-                ? (resultado as PaginaServicios).items.map((s, i) => <TarjetaServicio key={s.id} s={s} indice={i} />)
-                : (resultado as PaginaResultados).items.map((r, i) => <TarjetaResultado key={r.slug} r={r} indice={i} />)}
+                ? (resultado as PaginaServicios).items.map((s) => <TarjetaServicio key={s.id} s={s} />)
+                : (resultado as PaginaResultados).items.map((r) => <TarjetaResultado key={r.slug} r={r} />)}
             </section>
           ) : null}
 
-          {totalPaginas > 1 && (
-            <nav aria-label="Páginas de resultados" className="flex flex-wrap justify-center gap-1.5 pt-2">
-              {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
-                <Link
-                  key={n}
-                  href={href({ pagina: n === 1 ? null : String(n) })}
-                  aria-current={n === pagina ? "page" : undefined}
-                  className={`flex size-11 items-center justify-center rounded-xl font-semibold ${n === pagina ? "bg-tinta text-white" : "border border-borde-campo text-tinta"}`}
-                >
-                  {n}
-                </Link>
-              ))}
-              {pagina < totalPaginas && (
-                <Link href={href({ pagina: String(pagina + 1) })} className="flex h-11 items-center rounded-xl border border-borde-campo px-4 font-semibold text-tinta">Siguiente</Link>
-              )}
-            </nav>
+          {hayMas && (
+            <div className="flex flex-col items-center gap-1 pt-2">
+              <Link href={href({ mostrar: String(mostrar + LOTE_LISTADO) })} scroll={false} className="flex h-12 items-center rounded-[14px] border-[1.5px] border-tinta px-6 text-[15px] font-semibold text-tinta hover:bg-tinta hover:text-white">
+                {porServicios ? "Ver más servicios" : "Ver más proveedores"}
+              </Link>
+              <span className="text-[13px] text-gris">Mostrando {resultado.items.length} de {resultado.total}</span>
+            </div>
           )}
 
           {exacta && resultado.items.length > 0 && !punto && (
