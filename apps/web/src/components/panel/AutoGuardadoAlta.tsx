@@ -14,7 +14,7 @@ type Respuesta = { guardados?: string[]; avisos?: Record<string, string>; recarg
 
 const ETIQUETA: Record<string, string> = {
   nombrePublico: "Nombre público", whatsapp: "WhatsApp", slug: "Dirección de tu página", presentacion: "Sobre ti", aniosExperiencia: "Años de experiencia",
-  documento: "Número de documento", fechaNacimiento: "Fecha de nacimiento", direccionNotificaciones: "Dirección", categoria: "Oficios", redes: "Redes sociales",
+  documento: "Número de documento", fechaNacimiento: "Fecha de nacimiento", direccionNotificaciones: "Dirección", categoria: "Oficios", localidad: "Localidades", redes: "Redes sociales",
   formulario: "Formulario",
 };
 

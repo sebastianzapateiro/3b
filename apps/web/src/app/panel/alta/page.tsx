@@ -215,7 +215,8 @@ export default async function AltaPanel({ searchParams }: { searchParams: Promis
           <div className="flex flex-wrap gap-3">
             <div className="flex flex-[1_1_200px] flex-col gap-1.5">
               <label htmlFor="tipoDocumento" className="text-sm font-semibold">Tipo de documento</label>
-              <select id="tipoDocumento" name="tipoDocumento" defaultValue="cc" className={campo}>
+              {/* El tipo guardado sí se muestra (no es el número): viaja junto con el número y, si saliera siempre «cc», lo pisaría al corregirlo. */}
+              <select id="tipoDocumento" name="tipoDocumento" defaultValue={p.tipoDocumento ?? "cc"} className={campo}>
                 <option value="cc">Cédula de ciudadanía</option>
                 <option value="ce">Cédula de extranjería</option>
                 <option value="ppt">Permiso por protección temporal (PPT)</option>

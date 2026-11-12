@@ -43,9 +43,10 @@ export async function autoguardarAlta(proveedor: { id: string; estado: string },
   // Contacto
   const nombre = texto("nombrePublico");
   if (nombre !== undefined) {
-    if (nombre.length >= 2 && nombre.length <= 80) { cambios.nombrePublico = nombre; guardados.push("nombre"); } else if (nombre) avisos.nombrePublico = "El nombre debe tener entre 2 y 80 letras.";
+    if (nombre.length >= 2 && nombre.length <= 80) { cambios.nombrePublico = nombre; guardados.push("nombre"); } else avisos.nombrePublico = nombre ? "El nombre debe tener entre 2 y 80 letras." : "El nombre no puede quedar vacío: conservamos el que tenías.";
   }
   const wa = texto("whatsapp");
+  if (wa === "") avisos.whatsapp = "El WhatsApp no puede quedar vacío: conservamos el que tenías.";
   if (wa) {
     const n = normalizarWhatsapp(wa);
     if (n) { cambios.whatsapp = n; guardados.push("WhatsApp"); } else avisos.whatsapp = "Falta completar el WhatsApp: son 10 dígitos, por ejemplo 300 123 4567.";
@@ -113,7 +114,8 @@ export async function autoguardarAlta(proveedor: { id: string; estado: string },
   // Oficios y localidades: solo se reemplazan si llega al menos uno válido (nunca se vacía por un envío incompleto).
   const oficioIds = [...new Set(lista("categoria").map(Number).filter((c) => Number.isInteger(c) && c > 0))];
   let slugsOficios: string[] | null = null;
-  if (oficioIds.length > 3) avisos.categoria = "Elige máximo 3 oficios.";
+  if ("categoria" in d && oficioIds.length === 0) avisos.categoria = "Elige al menos un oficio: conservamos los que tenías.";
+  else if (oficioIds.length > 3) avisos.categoria = "Elige máximo 3 oficios.";
   else if (oficioIds.length > 0) {
     const validas = await db.select({ id: categorias.id, slug: categorias.slug }).from(categorias).where(and(inArray(categorias.id, oficioIds), isNotNull(categorias.padreId), eq(categorias.activa, true)));
     if (validas.length !== oficioIds.length) avisos.categoria = "Uno de los oficios no está disponible.";
@@ -132,6 +134,7 @@ export async function autoguardarAlta(proveedor: { id: string; estado: string },
     }
   }
   const localidadIds = [...new Set(lista("localidad").map(Number).filter((c) => Number.isInteger(c) && c > 0))];
+  if ("localidad" in d && localidadIds.length === 0) avisos.localidad = "Marca al menos una localidad: conservamos las que tenías.";
   if (localidadIds.length > 0) {
     const validas = await db.select({ id: localidades.id }).from(localidades).where(and(inArray(localidades.id, localidadIds), eq(localidades.activa, true)));
     const actuales = await db.select({ id: proveedorLocalidades.localidadId }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedor.id));

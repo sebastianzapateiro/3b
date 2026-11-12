@@ -45,6 +45,17 @@ describe("autoguardado del alta: qué campos viajan", () => {
   });
 });
 
+describe("autoguardado del alta: listas vacías", () => {
+  const sinMarcar = pantalla.filter((c) => c.nombre !== "localidad" && c.nombre !== "categoria");
+  it("una lista tocada y sin nada marcado viaja vacía (el servidor avisa, no dice «Guardado»)", () => {
+    expect(datosAEnviar(sinMarcar, new Set(["localidad"]))).toEqual({ localidad: [] });
+    expect(datosAEnviar(sinMarcar, new Set(["categoria"]))).toEqual({ categoria: [] });
+  });
+  it("una lista que no se tocó no viaja", () => {
+    expect(datosAEnviar(sinMarcar, new Set(["presentacion"]))).toEqual({ presentacion: "Hola" });
+  });
+});
+
 describe("autoguardado del alta: avisos", () => {
   it("conserva el aviso de un campo que no viajó y quita el del que ya se corrigió", () => {
     const previos = { whatsapp: "Falta completar el WhatsApp", slug: "Esa dirección ya está en uso" };

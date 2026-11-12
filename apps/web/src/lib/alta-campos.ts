@@ -28,6 +28,8 @@ export function datosAEnviar(campos: CampoAlta[], tocados: ReadonlySet<string>):
     if (LISTAS.has(nombre)) datos[nombre] = [...((datos[nombre] as string[] | undefined) ?? []), valor];
     else datos[nombre] = valor;
   }
+  // Una lista tocada y sin nada marcado viaja vacía: el servidor no la borra, pero avisa en vez de decir «Guardado».
+  for (const l of LISTAS) if (tocados.has(l) && datos[l] === undefined) datos[l] = [];
   return datos;
 }
 

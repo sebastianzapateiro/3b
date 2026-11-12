@@ -42,6 +42,7 @@ export async function exigirProveedor() {
       fotoPerfil: proveedores.fotoPerfil,
       redesSociales: proveedores.redesSociales,
       rutFechaLimite: proveedores.rutFechaLimite,
+      tipoDocumento: proveedores.tipoDocumento,
       promedio: proveedores.promedio,
       totalResenas: proveedores.totalResenas,
     })
