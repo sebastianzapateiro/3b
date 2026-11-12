@@ -127,6 +127,25 @@ Rediseño «Filas y recorrido» (`lib/como-funciona.content.ts`, `ComoFuncionaHo
 - **Silueta genérica por oficio** (`lib/foto-generica.ts`, `public/perfiles/`): solo presentación; no cuenta como foto real para indexar.
 - **Imágenes para Google:** el sitemap declara las fotos reales de cada ficha (perfil y trabajos, hasta 20) y las de «Cómo funciona». **IA:** `robots.txt` invita expresamente a GPTBot, ClaudeBot, PerplexityBot, Google-Extended y otros (misma lista de rutas privadas bloqueadas) y `llms.txt` lo explica. Validar con la base real (`/sitemap.xml` con `<image:image>`).
 
+## Tarjetas y listado de `/proveedores`, 11 nov 2026
+
+- **Tarjeta de servicio sin foto** (`TarjetaServicio`): oficio, título, precio, «Lo ofrece» con el nivel del perfil y los dos botones alineados al fondo. `TarjetaResultado` (vista por proveedores) con el mismo ajuste.
+- **«Ver más» de a 12:** `LOTE_LISTADO` y el filtro `mostrar` en `lib/busqueda.ts` (trae desde el primero hasta `mostrar`, tope 240; sustituye a `pagina` en este listado).
+- **Tarjetas de muestra:** `/proveedores?demo=1` (`lib/demo-listado.ts`) solo en desarrollo; no toca la base ni se activa en producción.
+- **Desplegado** en `main` (`4edde7c`) el 11 nov; `pnpm typecheck` y `pnpm test` (114 pruebas) pasan; sin migraciones.
+
+## Estado en producción, 11 nov 2026
+
+Todo lo anterior (SEO del 10 nov, Cómo funciona, alta de una página y tarjetas) está en `main` y desplegado. Comprobado desde fuera ese día: `/sitemap.xml` 200, XML válido, 50 URL sin duplicados (2 fichas de proveedor, 9 localidades, 7 oficios, 20 guías) y 11 imágenes declaradas; el Home sale `index, follow` (o sea, `SITIO_INDEXABLE` está activo); `robots.txt` bloquea solo `/admin`, `/api/`, `/panel` y `/cuenta`. La nota del 10 nov que condicionaba el merge a una validación previa quedó superada por el despliegue.
+
+**Sigue pendiente, en este orden:**
+
+1. Probar `/panel/alta` en pantalla con una cuenta en borrador: autoguardado campo por campo, identidad (que no se borre), servicios, fotos y documentos, y el envío a revisión.
+2. SEO: revisar un proveedor real con varios oficios (canonical de las URL secundarias hacia la principal) y enviar el sitemap en Search Console y Bing.
+3. GA4: marcar `contacto_proveedor` y `registro_proveedor` como eventos clave y publicar el contenedor en Tag Manager.
+4. Decidir la revisión de los servicios «Otro servicio» (previa o posterior).
+5. Alta asistida: conservar lo escrito cuando hay un error de validación.
+
 ## [x] 8. Páginas legales `/terminos`, `/privacidad`, `/reclamos`
 
 > **Hecha (oct 2026):** además `/cookies`, `/terminos-proveedores`, `/resenas`, `/retiro-de-contenido`, `/reportar`. Pendiente: textos definitivos de Drive.

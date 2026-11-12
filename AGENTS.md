@@ -50,7 +50,7 @@ apps/web/src/
     [slug]/                P7 portafolio, calificar (P5), OG por proveedor
     servicios/, categorias/, localidades/, guias/   Páginas SEO por oficio y localidad
     proveedores/registro/  P3 crea el borrador y redirige a /panel (page.tsx, no route handler: la Server Action de Google no seguía el 307; enlaces con prefetch={false})
-    panel/                 Panel del proveedor: tareas del alta en el Resumen, perfil (+ datos del negocio en borrador), servicios, reseñas, verificación (+ identidad en borrador); confirmar (acepta términos y envía a revisión)
+    panel/                 Panel del proveedor: alta (todo el perfil en una página con autoguardado, solo en borrador), tareas del alta en el Resumen, perfil (+ datos del negocio en borrador), servicios, reseñas, verificación (+ identidad en borrador); confirmar (acepta términos y envía a revisión)
     reclamos/, reportar/   Formularios públicos (CU-10/11, reportes)
     terminos/, terminos-proveedores/, privacidad/, cookies/, resenas/, retiro-de-contenido/   Legales
     admin/ingresar/        Ingreso del equipo: clave + 2FA (QR la primera vez)
@@ -58,8 +58,8 @@ apps/web/src/
                            usuarios (crear, roles, suspender), catalogo, cumplimiento, auditoria
     api/auth/[...all]      Better Auth
     admin/documentos/[id]  Abre un documento privado: auditoría + redirección a URL firmada
-    api/v1/                health, yo, yo/documentos (+ /subida), admin/proveedores/[id]/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
-  lib/                     Lógica de negocio (regla 7): alta-proveedor (borrador y tareas del alta), documentos (requisitos, subida, apertura), almacenamiento (Storage REST), invitaciones (enlace de clave, estado, WhatsApp), busqueda, portafolio(-completo), resenas, panel, admin,
+    api/v1/                health, yo, yo/alta (autoguardado del alta), yo/documentos (+ /subida), admin/proveedores/[id]/documentos (+ /subida), contactos (+ /ir: registra clic y redirige a wa.me), consentimientos, politicas
+  lib/                     Lógica de negocio (regla 7): alta-proveedor (borrador y tareas del alta), alta-autoguardado y alta-campos (alta de una página), indexacion, ficha-seo y sitemap-construir (qué se indexa), analitica-eventos, demo-listado (muestra, solo desarrollo), documentos (requisitos, subida, apertura), almacenamiento (Storage REST), invitaciones (enlace de clave, estado, WhatsApp), busqueda, portafolio(-completo), resenas, panel, admin,
                            moderacion, cumplimiento, auditoria(-consulta), parametros, verificacion (guardia backoffice),
                            consentimientos, correo (Resend o consola), seo, seo-servicios, publicacion, guias, faqs
   components/              UI pública; components/admin/ para el backoffice
@@ -127,8 +127,15 @@ pnpm docs:diagramas         # SVG de docs/diagramas/ desde docs/07-diagramas.md 
 - UI: cursor de mano global en elementos pulsables (`globals.css`).
 - **Correo entrante (6 nov 2026):** Cloudflare Email Routing. `contactolastresb@lastresb.com.co` → Worker `snowy-moon-1aaf` que reenvía a los dos socios (MX y SPF en el dominio raíz). DMARC `p=none` con informes a esa dirección. Resend no cambia: usa solo `send.` y `resend._domainkey`; no tocar esos registros.
 - **Analítica (6 nov 2026):** Google Tag Manager `GTM-P3DSRWVH` (`NEXT_PUBLIC_GTM_ID` en `build.env` y `web.env` del VPS) con modo de consentimiento de Google: sin permiso, GA4 sin cookies; al aceptar, cookies `_ga`. El contenedor (etiqueta de Google `G-LJPS2R11K6` + clics) está en `infra/gtm/contenedor-lastresb.json`. Clics con nombre fijo por `data-evento` (`menu_proveedores`, `home_buscar`, `menu_ingreso_proveedores`); con Tag Manager no se llama a `gtag()` (duplicaba eventos).
+- **Eventos clave de GA4 (9 nov 2026):** `contacto_proveedor` y `registro_proveedor` en `lib/analitica-eventos.ts`; el contenedor de `infra/gtm/` ya los reenvía. Falta marcarlos como eventos clave en GA4 y publicar el contenedor en Tag Manager (a mano).
+- **SEO por oferta real (10 nov 2026):** regla única en `lib/indexacion.ts`: la ficha se indexa solo si el proveedor está aprobado y completo; localidades y oficios según `min_proveedores_localidad` y `min_proveedores_seo`. Una sola URL canónica por proveedor (`lib/ficha-seo.ts`, `rutaPrincipalProveedor`). Sitemap dinámico (`lib/sitemap-construir.ts`) con imágenes; `robots.txt` invita a los rastreadores de IA. Pie con enlaces SEO (`PieSeo`). Comprobado en producción el 11 nov: `/sitemap.xml` responde 200, XML válido, 50 URL sin duplicados (2 fichas de proveedor, 9 localidades, 7 oficios, 20 guías), y el Home sale `index, follow`.
+- **Cómo funciona (10 nov 2026):** rediseño del Home y `/como-funciona` (`lib/como-funciona.content.ts`, `ComoFuncionaHome`, `ComoFuncionaPagina`) con fotos en `public/como-funciona/`.
+- **Alta en una sola página (11 nov 2026):** en borrador todo el perfil se llena en `/panel/alta` y cada campo se guarda solo (`AutoGuardadoAlta` → `POST /api/v1/yo/alta` → `lib/alta-autoguardado.ts`; solo viaja lo que se tocó, `lib/alta-campos.ts`). `/panel/perfil`, `/servicios`, `/fotos` y `/verificacion` redirigen ahí mientras sea borrador. Silueta genérica por oficio (`lib/foto-generica.ts`, `public/perfiles/`). **Está en producción sin prueba en pantalla.**
+- **Tarjetas y listado de `/proveedores` (11 nov 2026):** tarjetas de servicio sin foto (oficio, servicio, precio, quién lo ofrece), listado de a 12 con «Ver más» (`LOTE_LISTADO`, filtro `mostrar` en `lib/busqueda.ts`) y tarjetas de muestra solo en desarrollo (`/proveedores?demo=1`, `lib/demo-listado.ts`). Desplegado en `main` (`4edde7c`); sin migraciones nuevas (siguen hasta `0020`).
 
 **Deuda abierta (ver plan):**
+- Alta de una página (`/panel/alta`): probarla en pantalla con una cuenta en borrador (autoguardado, identidad, documentos); ya está en producción.
+- SEO: revisar en un proveedor real con varios oficios que las URL secundarias declaran como canonical la principal; enviar `sitemap.xml` a Search Console y Bing; oficio principal elegible (hoy es el primero alfabético).
 - VPS (2 nov 2026): Resend y Google OAuth configurados en local y en el servidor. Quizá faltan `GOOGLE_MAPS_API_KEY`, `NEXT_PUBLIC_GA_ID`, `GOOGLE_SITE_VERIFICATION`; respaldos fuera del VPS; quitar el dominio en Vercel; permisos del usuario `desarrollo`. Ver `infra/vps/README.md` § Pendiente.
 - Autorización Ley 1918: el alta la firma con casilla, pero el backoffice la marca como «Falta» si no hay archivo; unificar criterio.
 - Fotos del portafolio al bucket `publico` (aún no hay carga).
