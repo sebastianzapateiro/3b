@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, type LocalidadSlug } from "@las3b/shared";
 import { Faq } from "@/components/Faq";
+import { BandaConfianza } from "@/components/BandaConfianza";
 import { AvisoWhatsApp } from "@/components/AvisoWhatsApp";
 import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
 import { SelectorOrden } from "@/components/SelectorOrden";
@@ -108,7 +109,8 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const nombreLocalidad = LOCALIDADES_BOGOTA.find((l) => l.slug === localidad)?.nombre;
   const lugar = nombreLocalidad ? ` en ${nombreLocalidad}` : exacta ? " cerca de ti" : "";
   const tema = resultado.categoriaNombre ?? (q ? `«${q}»` : null);
-  const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `Proveedores en ${nombreLocalidad}` : "Proveedores";
+  const palabra = porServicios ? "Servicios" : "Proveedores";
+  const titulo = tema ? `${tema}${lugar}` : nombreLocalidad ? `${palabra} en ${nombreLocalidad}` : palabra;
   const hayMas = resultado.items.length < resultado.total;
 
   /** URL de /proveedores con los parámetros actuales y los cambios indicados (null = quitar). */
@@ -160,6 +162,8 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
   const prohibido = Boolean(q) && contieneServicioProhibido(q!);
   const oficio = sinResultados && !prohibido ? (resultado.categoriaNombre ?? (q && !sinBase ? (await categoriaDeTexto(q))?.nombre : null) ?? null) : null;
   const textoAviso = oficio ?? q ?? "";
+  // Sin búsqueda ni filtros: se muestran los beneficios y el título del buscador.
+  const listaCompleta = !["q", "localidad", "categoria", "ubic", "solicitud", "orden", "cal", "visita", "hoy", "h24", "insignia", "tambien"].some((k) => sp[k] !== undefined);
 
   return (
     <>
@@ -176,10 +180,13 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             )}
           />
         </>
-      )}      <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
+      )}
+      {/* Solo en la lista completa: con búsqueda o filtros la persona ya sabe qué hace el sitio. */}
+      {listaCompleta && <BandaConfianza />}
+      <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
         {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
         <aside className="hidden min-w-0 lg:block lg:flex-[0_0_300px]">
-          <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5"><PanelFiltros {...panel} modo="escritorio" /></div>
+          <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5 shadow-[0_2px_10px_rgba(27,38,35,0.05)]"><PanelFiltros {...panel} modo="escritorio" /></div>
         </aside>
 
         <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
@@ -189,16 +196,23 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
               <Link href={href({ demo: demo ? "0" : "1", mostrar: null })} className="font-semibold underline">{demo ? "Ver datos reales" : "Ver tarjetas de muestra"}</Link>
             </p>
           )}
+          {listaCompleta && (
+            <div className="pt-1">
+              <p className="font-display text-[28px] font-extrabold leading-[1.1] tracking-[-0.8px] text-tinta sm:text-[40px] sm:tracking-[-1.2px]">
+                Encuentra personas que te ayudan <span className="text-ladrillo">en tu día a día</span>
+              </p>
+            </div>
+          )}
           <form action="/proveedores" className="flex flex-wrap gap-2" role="search">
-            <div className="flex h-12 min-w-0 flex-[2_1_200px] items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3">
+            <div className="flex h-12 min-w-0 flex-[2_1_200px] items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 shadow-[0_2px_8px_rgba(27,38,35,0.05)]">
               <svg className="flex-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
               <input name="q" type="search" defaultValue={q} aria-label="Servicio o clase" placeholder="Ej: plomero, clases de inglés" className="min-w-0 flex-1 bg-transparent text-base outline-none" />
             </div>
-            <select name="localidad" aria-label="Localidad" defaultValue={localidad ?? ""} className="h-12 min-w-0 flex-[1_1_140px] rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 text-base">
+            <select name="localidad" aria-label="Localidad" defaultValue={localidad ?? ""} className="h-12 min-w-0 flex-[1_1_140px] rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 text-base shadow-[0_2px_8px_rgba(27,38,35,0.05)]">
               <option value="">Toda Bogotá</option>
               {LOCALIDADES_BOGOTA.map((l) => <option key={l.slug} value={l.slug}>{l.nombre}</option>)}
             </select>
-            <button type="submit" className="h-12 rounded-[14px] bg-tinta px-6 text-[15px] font-semibold text-white">Buscar</button>
+            <button type="submit" className="h-12 rounded-[14px] bg-ladrillo px-6 text-[15px] font-semibold text-white hover:bg-ladrillo-oscuro">Buscar</button>
           </form>
 
           {/* Móvil: botón que abre la hoja de filtros */}

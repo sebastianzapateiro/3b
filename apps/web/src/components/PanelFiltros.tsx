@@ -36,9 +36,19 @@ type Props = {
 };
 
 const chipBase = "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta";
-const chipOn = "border-verde bg-verde-claro font-semibold text-verde-oscuro";
-const chipOff = "border-borde-campo bg-white text-tinta hover:border-tinta";
+const chipOn = "border-verde bg-verde-suave font-semibold text-verde-oscuro";
+const chipOff = "border-borde bg-gris-claro text-tinta hover:border-tinta";
 const chipVacio = "cursor-not-allowed border-borde-suave bg-piedra text-gris";
+
+/** Ícono sencillo para los títulos de grupo. */
+function IconoGrupo({ d }: { d: string }) {
+  return <svg className="flex-none text-verde" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>;
+}
+const D_PERSONA = "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0";
+const D_ETIQUETA = "M3 12V4h8l10 10-8 8zM7.5 8h.01";
+const D_ESTRELLA = "m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z";
+const D_RELOJ = "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2";
+const D_PIN = "M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11zM12 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4z";
 
 function Marca() {
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>;
@@ -118,8 +128,8 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
     { v: "convenir", t: "A convenir", n: conteos.visita.convenir ?? 0 },
   ];
 
-  const grupo = "flex flex-col gap-2.5 border-0 p-0";
-  const legenda = "mb-1 text-sm font-bold";
+  const grupo = "flex flex-col gap-2.5 border-0 p-0 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-borde-suave [&:not(:first-child)]:pt-5";
+  const legenda = "mb-1 flex items-center gap-2 text-[15px] font-bold text-tinta";
 
   const textoBoton =
     total === null
@@ -131,7 +141,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-none items-center justify-between">
-        <b className="font-display text-xl">Filtros</b>
+        <b className="font-display text-xl text-tinta">Filtros</b>
         <button
           type="button"
           onClick={limpiar}
@@ -145,8 +155,8 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
       {/* Desplazamiento propio: ningún chip queda tapado por el botón fijo del celular. */}
       <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto pb-4 pr-1">
         <div role="group" aria-label="Quiero que el proveedor tenga" className={grupo}>
-          <div className={`${legenda} flex flex-wrap items-baseline justify-between gap-x-3`}>
-            <span>Quiero que el proveedor tenga</span>
+          <div className={`${legenda} flex-wrap justify-between gap-x-3`}>
+            <span className="flex items-center gap-2"><IconoGrupo d={D_PERSONA} />Quiero que el proveedor tenga</span>
             <button type="button" aria-expanded={definiciones} aria-controls={idDefiniciones} onClick={() => setDefiniciones((a) => !a)} className="text-[13px] font-semibold text-verde underline">
               ¿Qué significa cada uno?
             </button>
@@ -167,7 +177,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
 
         {(mostrarCalificacion || v.cal !== "0") && (
           <div role="group" aria-label="Calificación" className={grupo}>
-            <span className={legenda}>Calificación</span>
+            <span className={legenda}><IconoGrupo d={D_ESTRELLA} />Calificación</span>
             <div className="flex flex-wrap gap-2">
               {calificaciones.map((o) => <Chip key={o.v} activo={v.cal === o.v} onClick={() => cambiar({ cal: o.v })} cuenta={o.n}>{o.t}</Chip>)}
             </div>
@@ -175,7 +185,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
         )}
 
         <div role="group" aria-label="Precio de la visita" className={grupo}>
-          <span className={legenda}>Precio de la visita</span>
+          <span className={legenda}><IconoGrupo d={D_ETIQUETA} />Precio de la visita</span>
           <p className="text-[13px] leading-snug text-gris">La visita es lo que cobra el proveedor por ir, revisar y cotizar. Algunos la acuerdan contigo, por ejemplo si están cerca.</p>
           <div className="flex flex-wrap gap-2">
             {visitas.map((o) => <Chip key={o.v || "todas"} activo={v.visita === o.v} onClick={() => cambiar({ visita: o.v })} cuenta={o.n}>{o.t}</Chip>)}
@@ -183,7 +193,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
         </div>
 
         <div role="group" aria-label="Disponibilidad" className={grupo}>
-          <span className={legenda}>Disponibilidad</span>
+          <span className={legenda}><IconoGrupo d={D_RELOJ} />Disponibilidad</span>
           <div className="flex flex-wrap gap-2">
             <Chip activo={v.hoy} onClick={() => cambiar({ hoy: !v.hoy })} cuenta={conteos.hoy}>Urgente hoy</Chip>
             <Chip activo={v.h24} onClick={() => cambiar({ h24: !v.h24 })} cuenta={conteos.h24}>24 horas</Chip>
@@ -192,7 +202,7 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
 
         {vecinas.length > 0 && (
           <div role="group" aria-label="También en localidades vecinas" className={grupo}>
-            <span className={legenda}>También en localidades vecinas</span>
+            <span className={legenda}><IconoGrupo d={D_PIN} />También en localidades vecinas</span>
             <div className="flex flex-wrap gap-2">
               {vecinas.map((s) => <Chip key={s.slug} activo={v.tambien.includes(s.slug)} onClick={() => alternarVecina(s.slug)}>{s.nombre}</Chip>)}
             </div>

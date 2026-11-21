@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EtiquetaOficio } from "@/components/EtiquetaOficio";
 import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
 import type { ResultadoBusqueda } from "@/lib/busqueda";
 
@@ -33,10 +34,11 @@ export function TarjetaResultado({ r }: { r: ResultadoBusqueda }) {
   ];
 
   return (
-    <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4">
-      <Link href={perfil} className="flex min-w-0 flex-col gap-1.5 text-tinta">
-        {r.servicios.length > 0 && <span className="line-clamp-1 text-xs font-bold uppercase tracking-wide text-verde-oscuro">{r.servicios.join(" · ")}</span>}
-        <b className="font-display text-lg font-bold leading-tight">{r.nombre}</b>
+    <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4 shadow-[0_2px_10px_rgba(27,38,35,0.05)]">
+      <Link href={perfil} className="flex min-w-0 flex-col gap-2 text-tinta">
+        {/* Una sola etiqueta de oficio por tarjeta (el principal); nunca varios mezclados. Los demás oficios se ven en el perfil. */}
+        {r.servicios[0] && <EtiquetaOficio texto={r.servicios[0]} />}
+        <b className="font-display text-xl font-bold leading-tight">{r.nombre}</b>
         <NivelPerfilMarca nivel={r.nivel} />
         {r.localidades.length > 0 && <span className="line-clamp-1 text-sm text-gris">{r.localidades.join(", ")}</span>}
       </Link>
@@ -51,9 +53,9 @@ export function TarjetaResultado({ r }: { r: ResultadoBusqueda }) {
 
       {/* Visita y botones al fondo: quedan alineados entre tarjetas de distinta altura. */}
       <div className="mt-auto flex flex-col gap-3 pt-4">
-        {textoVisita && <b className="border-t border-borde-suave pt-3 text-[15px] text-tinta">{textoVisita}</b>}
+        {textoVisita && <b className="self-start rounded-xl border border-borde-suave bg-gris-claro px-3 py-2 text-[15px] text-tinta">{textoVisita}</b>}
         <div className="flex gap-2">
-          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta">Ver perfil</Link>
+          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-ladrillo bg-white text-[15px] font-semibold text-ladrillo hover:bg-coral-suave">Ver perfil</Link>
           {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
           <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro">
             <IconoWhatsApp />
