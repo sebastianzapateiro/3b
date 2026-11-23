@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EtiquetaOficio } from "@/components/EtiquetaOficio";
 import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
 import type { ResultadoServicio } from "@/lib/busqueda";
 
@@ -21,26 +22,26 @@ export function TarjetaServicio({ s }: { s: ResultadoServicio }) {
   const p = s.proveedor;
   const perfil = `/${p.slug}`;
   return (
-    <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4">
-      <div className="flex flex-col gap-1.5">
-        {s.oficio && <span className="self-start text-xs font-bold uppercase tracking-wide text-verde-oscuro">{s.oficio}</span>}
+    <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4 shadow-[0_2px_10px_rgba(27,38,35,0.05)]">
+      <div className="flex flex-col gap-2">
+        {s.oficio && <EtiquetaOficio texto={s.oficio} />}
         <h3 className="font-display text-lg font-bold leading-tight text-tinta">{s.nombre}</h3>
-        {s.descripcion && <p className="line-clamp-2 text-sm leading-snug text-gris">{s.descripcion}</p>}
+        {s.descripcion && <p className="line-clamp-2 text-sm leading-snug text-tinta-2">{s.descripcion}</p>}
       </div>
 
-      <p className="mt-3 text-[15px] text-tinta">
+      <p className="mt-3 self-start rounded-xl border border-borde-suave bg-gris-claro px-3 py-2 text-[15px] text-tinta">
         {s.precioDesde != null ? <><span className="text-gris">Desde </span><b className="text-lg">{pesos.format(s.precioDesde)}</b> <span className="text-gris">{POR[s.unidad] ?? ""}</span></> : <b className="text-base">A convenir</b>}
       </p>
 
       {/* Quién lo ofrece: texto, sin foto. El bloque se pega al fondo para que los botones queden alineados entre tarjetas. */}
       <Link href={perfil} className="mt-auto flex flex-col gap-0.5 border-t border-borde-suave pt-3 text-tinta">
         <span className="text-xs text-gris">Lo ofrece</span>
-        <b className="truncate text-[15px]">{p.nombre}</b>
+        <b className="truncate font-display text-base">{p.nombre}</b>
         <NivelPerfilMarca nivel={p.nivel} />
       </Link>
 
       <div className="mt-3 flex gap-2">
-        <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-borde-campo text-[15px] font-semibold text-tinta">Ver perfil</Link>
+        <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-ladrillo bg-white text-[15px] font-semibold text-ladrillo hover:bg-coral-suave">Ver perfil</Link>
         {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
         <a href={`/api/v1/contactos/ir?p=${p.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro">
           <IconoWhatsApp />

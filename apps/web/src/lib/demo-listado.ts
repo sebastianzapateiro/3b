@@ -36,7 +36,7 @@ export function proveedorDemo(n: number): ResultadoBusqueda {
   const m = MUESTRA[n % MUESTRA.length]!;
   return {
     slug: `demo-${n % NOMBRES.length}`, nombre: de(NOMBRES, n),
-    servicios: [m.oficio, MUESTRA[(n + 3) % MUESTRA.length]!.oficio].slice(0, n % 3 === 0 ? 1 : 2),
+    servicios: [m.oficio],
     localidades: [de(ZONAS, n), de(ZONAS, n + 2)],
     promedio: 4.2 + (n % 8) / 10, totalResenas: (n * 3) % 17, nivel: nivelDe(n),
     insignias: n % 2 === 0 ? [{ clave: "verificado", nombre: "Identidad verificada" }] : [],
