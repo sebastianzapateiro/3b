@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { cambiarClaveUsuario, cambiarExigencia2fa, crearPerfilesProveedorFaltantes, crearUsuario, eliminarUsuario, guardarRoles, restablecerDosFactor, suspenderUsuario } from "@/app/admin/actions";
+import { Modal } from "@/components/admin/Modal";
 import { Aviso, botonOscuro, campoAdmin, Chip, Encabezado, etiquetaAdmin, tarjeta } from "@/components/admin/Ui";
 import { listarUsuarios } from "@/lib/admin";
 import { CLAVE_MAX, CLAVE_MIN } from "@/lib/claves";
 import { exigencia2fa, exigirBackoffice } from "@/lib/verificacion";
 import { MOTIVO_SERVICIOS_NO_PERMITIDOS } from "@las3b/shared";
 
-/** B4 · Usuarios: crear, roles, suspensión y eliminación (CU-70 a CU-72, CU-27). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html. */
+/**
+ * B4 · Usuarios: crear, roles, suspensión y eliminación (CU-70 a CU-72, CU-27). Solo administradores. Mockup: docs/mockups/BO_Usuarios.dc.html.
+ * El usuario elegido (?u=) y «Crear usuario» (?nuevo=1) se abren en una ventana emergente sobre la tabla.
+ */
 const ROLES = [
   { v: "comprador", t: "Comprador" },
   { v: "proveedor", t: "Proveedor" },
@@ -35,7 +39,10 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
   const resumenFiltro = !filtroAplicado || filtroRoles.length === TODOS.length ? "Todos" : filtroRoles.length === 0 ? "Ninguno" : filtroRoles.map((v) => ROLES.find((r) => r.v === v)?.t ?? "Sin rol de equipo").join(", ");
   const creando = sp.nuevo === "1";
   const sinPerfil = lista.filter((u) => u.roles.includes("proveedor") && !u.perfilProveedor).length;
-  const elegido = creando ? undefined : (lista.find((u) => u.id === sp.u) ?? lista[0]);
+  const elegido = creando || !sp.u ? undefined : lista.find((u) => u.id === sp.u);
+  // Al cerrar la ventana se vuelve a la lista con la búsqueda y el filtro actuales.
+  const cerrarHref = `/admin/usuarios${filtroUrl ? `?${filtroUrl.slice(1)}` : ""}`;
+  const aviso = <Aviso ok={sp.ok} error={sp.error} />;
 
   return (
     <>
@@ -49,6 +56,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
 
       <main className="flex flex-wrap items-start gap-6 px-5 pb-10 pt-6 lg:px-8">
         <section className="flex min-w-0 flex-[1_1_100%] flex-col gap-4">
+        {!creando && !elegido && aviso}
         {sinPerfil > 0 && (
           <form action={crearPerfilesProveedorFaltantes} className="flex flex-wrap items-center justify-between gap-3 rounded-[18px] bg-amarillo-suave p-4 text-amarillo-oscuro">
             <span className="text-[15px]"><b>{sinPerfil} {sinPerfil === 1 ? "cuenta tiene" : "cuentas tienen"} el rol Proveedor y no {sinPerfil === 1 ? "tiene" : "tienen"} perfil.</b> Se crea en borrador: nadie lo ve hasta que se apruebe.</span>
@@ -94,7 +102,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                 return (
                   <tr key={u.id} className={`border-t border-borde-suave align-top ${u.id === elegido?.id ? "bg-piedra" : ""}`}>
                     <td className="max-w-[300px] px-3.5 py-3">
-                      <Link href={`/admin/usuarios?u=${u.id}${filtroUrl}`} className="flex flex-col hover:underline">
+                      <Link href={`/admin/usuarios?u=${u.id}${filtroUrl}`} scroll={false} className="flex flex-col hover:underline">
                         <b className="text-[14px]">{u.nombre}</b>
                         <span className="truncate text-gris">{sinCorreo ? "Sin correo (alta asistida)" : u.correo}</span>
                       </Link>
@@ -115,7 +123,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
                     <td className="whitespace-nowrap px-3.5 py-3">{u.eliminadoEn ? <span className="font-semibold text-gris">Eliminada</span> : suspendido ? <span className="font-semibold text-ladrillo-oscuro">Suspendido hasta {fecha(u.suspendidoHasta)}</span> : <span className="font-semibold text-verde-oscuro">Activo{u.dosFactor ? " · 2FA" : ""}</span>}</td>
                     <td className="whitespace-nowrap px-3.5 py-3 text-gris">{fecha(u.ultimoIngreso)}</td>
                     <td className="px-3.5 py-3">
-                      <Link href={u.proveedorId ? `/admin/proveedores/${u.proveedorId}` : `/admin/usuarios?u=${u.id}${filtroUrl}`} className="inline-flex h-9 items-center whitespace-nowrap rounded-lg border-[1.5px] border-tinta px-3 font-semibold text-tinta hover:bg-piedra">Ver perfil</Link>
+                      <Link href={u.proveedorId ? `/admin/proveedores/${u.proveedorId}` : `/admin/usuarios?u=${u.id}${filtroUrl}`} scroll={false} className="inline-flex h-9 items-center whitespace-nowrap rounded-lg border-[1.5px] border-tinta px-3 font-semibold text-tinta hover:bg-piedra">Ver perfil</Link>
                     </td>
                   </tr>
                 );
@@ -147,10 +155,9 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
         </form>
 
         {creando && (
-          <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
-            <Aviso ok={sp.ok} error={sp.error} />
-            <form action={crearUsuario} className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
-              <h2 className="font-display text-xl font-bold">Crear usuario</h2>
+          <Modal key={`nuevo-${sp.error ?? ""}`} titulo="Crear usuario" cerrarHref={cerrarHref}>
+            {aviso}
+            <form action={crearUsuario} className="flex flex-col gap-3">
               <label htmlFor="nombre" className={etiquetaAdmin}>Nombre</label>
               <input id="nombre" name="nombre" required minLength={2} maxLength={80} autoComplete="off" placeholder="Ej: Laura Gómez" className={campoAdmin} />
               <label htmlFor="correo" className={etiquetaAdmin}>Correo <span className="font-normal text-gris">(opcional)</span></label>
@@ -164,31 +171,31 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
               <span className="text-[13px] leading-[1.45] text-gris">Si tiene correo, le enviamos un enlace para que elija su clave; sin correo no hay invitación (los roles del equipo sí lo necesitan). Al entrar por primera vez acepta las políticas y, si su rol lo exige, activa el 2FA.</span>
               <div className="flex gap-2">
                 <button type="submit" className={botonOscuro}>Crear y enviar invitación</button>
-                <Link href="/admin/usuarios" className="inline-flex h-11 items-center px-3 text-sm font-semibold text-gris">Cancelar</Link>
+                <Link href={cerrarHref} scroll={false} className="inline-flex h-11 items-center px-3 text-sm font-semibold text-gris">Cancelar</Link>
               </div>
             </form>
-          </section>
+          </Modal>
         )}
 
         {elegido?.eliminadoEn && (
-          <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
-            <Aviso ok={sp.ok} error={sp.error} />
-            <div className={`${tarjeta} flex flex-col gap-2 p-[22px]`}>
-              <h2 className="font-display text-xl font-bold">{elegido.nombre} · cuenta eliminada</h2>
+          <Modal key={elegido.id} titulo={`${elegido.nombre} · cuenta eliminada`} cerrarHref={cerrarHref}>
+            {aviso}
+            <div className="flex flex-col gap-2">
               <p className="text-sm leading-normal text-gris">
                 Eliminada el {fecha(elegido.eliminadoEn)}. No puede ingresar, su perfil de proveedor está oculto y sus reseñas salen anónimas.
                 Los datos se conservan bloqueados hasta el {fecha(elegido.conservarHasta)} (CU-27).
               </p>
             </div>
-          </section>
+          </Modal>
         )}
 
         {elegido && !elegido.eliminadoEn && (
-          <section className="flex min-w-0 flex-[2_1_340px] flex-col gap-[18px]">
-            <Aviso ok={sp.ok} error={sp.error} />
+          <Modal key={`${elegido.id}-${sp.ok ?? ""}-${sp.error ?? ""}`} titulo={elegido.nombre} cerrarHref={cerrarHref}>
+            <p className="-mt-2 text-sm text-gris">{elegido.correo.endsWith(".invalid") ? "Sin correo (alta asistida)" : elegido.correo}{elegido.telefono ? ` · ${elegido.telefono}` : ""}</p>
+            {aviso}
             <form action={guardarRoles} className={`${tarjeta} flex flex-col gap-3 p-[22px]`}>
               <input type="hidden" name="usuarioId" value={elegido.id} />
-              <h2 className="font-display text-xl font-bold">{elegido.nombre} · roles</h2>
+              <h2 className="font-display text-xl font-bold">Roles</h2>
               <fieldset className="flex flex-col gap-2.5 text-[15px]">
                 <legend className="sr-only">Roles</legend>
                 {ROLES.map((r) => (
@@ -250,7 +257,7 @@ export default async function Usuarios({ searchParams }: { searchParams: Promise
               <input id="confirmacion-eliminar" name="confirmacion" required autoComplete="off" className={campoAdmin} />
               <button type="submit" className="h-11 self-start rounded-xl bg-ladrillo px-4 text-sm font-bold text-white">Eliminar cuenta</button>
             </form>
-          </section>
+          </Modal>
         )}
       </main>
     </>
