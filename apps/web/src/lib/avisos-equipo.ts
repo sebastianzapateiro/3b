@@ -11,7 +11,7 @@ import { enviarCorreo } from "@/lib/correo";
 import { nuevoRegistroEquipo } from "@/lib/plantillas";
 
 const CLAVE = "correos_aviso_registro";
-const DESTINATARIOS_POR_DEFECTO = ["andres.becerr13@hotmail.com", "zapateirosebastain@gmail.com"];
+const DESTINATARIOS_POR_DEFECTO = ["andres.becerr13@hotmail.com", "zapateirosebastian@gmail.com"];
 
 /** Correos que reciben el aviso: los de `configuracion` si hay una lista válida, si no los de por defecto. */
 export async function correosAvisoRegistro(): Promise<string[]> {
