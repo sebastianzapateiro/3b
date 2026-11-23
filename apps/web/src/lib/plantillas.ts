@@ -111,6 +111,33 @@ export function bienvenidaProveedor(d: { nombre?: string | null }): Mensaje {
   });
 }
 
+/* ───────────── Correo: avisos al equipo ───────────── */
+
+/** Equipo: alguien creó una cuenta (con correo o con Google). Sin datos privados: solo contacto y tipo. */
+export function nuevoRegistroEquipo(d: { nombre: string; correo: string; telefono?: string | null; tipo: "proveedor" | "cliente"; metodo: string; oficios: string[] }): Mensaje {
+  const quien = d.tipo === "proveedor" ? "proveedor" : "cliente";
+  return armar({
+    asunto: `Nuevo registro de ${quien}: ${d.nombre}`,
+    nombre: null,
+    titulo: `Nuevo ${quien} registrado`,
+    cuerpo: [
+      `Se acaba de crear una cuenta en LasTresB.`,
+      {
+        lista: [
+          `Nombre: ${d.nombre}`,
+          `Correo: ${d.correo}`,
+          ...(d.telefono ? [`WhatsApp: ${d.telefono}`] : []),
+          `Tipo: ${quien}`,
+          `Cómo se registró: ${d.metodo}`,
+          ...(d.oficios.length ? [`Oficios: ${d.oficios.join(", ")}`] : []),
+        ],
+      },
+    ],
+    boton: { texto: "Ver usuarios", url: `${sitio}/admin/usuarios` },
+    pie: "Aviso automático para el equipo de LasTresB.",
+  });
+}
+
 /* ───────────── Correo: revisión del proveedor ───────────── */
 
 /** Proveedor: envió su registro y quedó en revisión. */

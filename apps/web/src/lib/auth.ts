@@ -131,6 +131,19 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user, ctx) => {
+          // Aviso al equipo por cada cuenta nueva con correo o Google (las que crea el equipo no avisan).
+          const conGoogle = ctx?.path?.startsWith("/callback") ?? false;
+          if (ctx?.path === "/sign-up/email" || conGoogle) {
+            const { avisarRegistroAlEquipo } = await import("./avisos-equipo");
+            void avisarRegistroAlEquipo({
+              nombre: user.name,
+              correo: user.email,
+              telefono: (user as { telefono?: string | null }).telefono,
+              tipo: tipoDeCabeceras(ctx?.headers),
+              metodo: conGoogle ? "Google" : "correo y clave",
+              oficios: conGoogle ? [] : oficiosDelRegistro(ctx?.body),
+            });
+          }
           if (ctx?.path !== "/sign-up/email") return;
           // El tipo elegido en /ingreso (cookie): el proveedor acepta sus términos y queda con el borrador del alta
           // (CU-30), así al confirmar el correo e ingresar entra directo a /panel.
