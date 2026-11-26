@@ -22,6 +22,11 @@ import {
   type VisitaFiltro,
 } from "@/lib/filtros";
 
+import { InsigniasSuperiores } from "@/components/InsigniasSuperiores";
+import { PrecioVisitaSuperior } from "@/components/PrecioVisitaSuperior";
+import { CalificacionSuperior } from "@/components/CalificacionSuperior";
+import { LocalidadesVecinasSuperior } from "@/components/LocalidadesVecinasSuperior";
+
 type Props = {
   /** Parámetros que no son del panel (q, localidad, categoria, orden), ya serializados. */
   base: string;
@@ -35,7 +40,7 @@ type Props = {
   alAplicar?: () => void;
 };
 
-const chipBase = "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta";
+export const chipBase = "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta";
 const chipOn = "border-verde bg-verde-suave font-semibold text-verde-oscuro";
 const chipOff = "border-borde bg-gris-claro text-tinta hover:border-tinta";
 const chipVacio = "cursor-not-allowed border-borde-suave bg-piedra text-gris";
@@ -56,7 +61,7 @@ function Marca() {
 
 /** Chip con conteo. Sin resultados y sin estar activo: atenuado y no se puede pulsar. */
 /** `ajustar`: deja que un texto muy largo pase a otra línea; por defecto el chip va en una sola línea. */
-function Chip({ activo, onClick, cuenta, ajustar = false, children }: { activo: boolean; onClick: () => void; cuenta?: number; ajustar?: boolean; children: React.ReactNode }) {
+export function Chip({ activo, onClick, cuenta, ajustar = false, children }: { activo: boolean; onClick: () => void; cuenta?: number; ajustar?: boolean; children: React.ReactNode }) {
   const vacio = !activo && cuenta === 0;
   return (
     <button
@@ -73,12 +78,13 @@ function Chip({ activo, onClick, cuenta, ajustar = false, children }: { activo: 
   );
 }
 
-export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mostrarCalificacion, alAplicar, modo }: Props & { modo: "escritorio" | "hoja" }) {
+export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mostrarCalificacion, alAplicar, modo }: Props & { modo: "escritorio" | "hoja" | "superior" }) {
   const router = useRouter();
   const idDefiniciones = useId();
   const [v, setV] = useState<ValoresFiltros>(inicial);
   const [total, setTotal] = useState<number | null>(null);
   const [definiciones, setDefiniciones] = useState(false);
+  const [disponibilidadAbierta, setDisponibilidadAbierta] = useState(false);
 
   useEffect(() => setV(inicial), [inicial]);
 
@@ -99,15 +105,16 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
     };
   }, [v, base, modo]);
 
-  /** En escritorio cada cambio navega; en la hoja solo actualiza el borrador. */
+  /** En la hoja el cambio es un borrador; en las barras visibles se aplica al instante. */
   const cambiar = (parcial: Partial<ValoresFiltros>) => {
     const nuevo = { ...v, ...parcial };
     setV(nuevo);
-    if (modo === "escritorio") router.push(`/proveedores?${paramsDesdeValores(nuevo, new URLSearchParams(base))}`, { scroll: false });
+    if (modo !== "hoja") router.push(`/proveedores?${paramsDesdeValores(nuevo, new URLSearchParams(base))}`, { scroll: false });
   };
   const alternarInsignia = (c: InsigniaFiltro) =>
     cambiar({ insignias: v.insignias.includes(c) ? v.insignias.filter((i) => i !== c) : [...v.insignias, c] });
   const alternarVecina = (s: string) => cambiar({ tambien: v.tambien.includes(s) ? v.tambien.filter((t) => t !== s) : [...v.tambien, s] });
+  const cambiarCal = (c: string) => cambiar({ cal: c as CalificacionFiltro });
 
   const aplicar = () => {
     router.push(`/proveedores?${paramsDesdeValores(v, new URLSearchParams(base))}`);
@@ -139,7 +146,9 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
         : `Ver ${total} ${total === 1 ? "proveedor" : "proveedores"}`;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3">
+    <div className="flex min-h-0 w-full flex-col gap-3">
+      {modo !== "superior" && (
+        <>
       <div className="flex flex-none items-center justify-between">
         <b className="font-display text-xl text-tinta">Filtros</b>
         <button
@@ -209,6 +218,8 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
           </div>
         )}
       </div>
+        </>
+      )}
 
       {modo === "hoja" && (
         <div className="flex-none border-t border-borde-suave bg-white pt-3">
@@ -221,6 +232,27 @@ export function PanelFiltros({ base, inicial, mostrarNinos, vecinas, conteos, mo
             {textoBoton}
           </button>
         </div>
+      )}
+      {modo === "superior" && (
+        <section aria-label="Filtros" className="flex w-full flex-col gap-3 border-y border-borde-suave bg-white py-4 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 flex-wrap gap-2 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:pb-1 max-sm:pr-12 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <InsigniasSuperiores inicial={v.insignias} onAlternar={(clave) => alternarInsignia(clave as any)} conteos={conteos.insignias} />
+            <PrecioVisitaSuperior inicial={v.visita} onCambiar={(v) => cambiar({ visita: v as any })} conteos={conteos.visita} />
+            {(mostrarCalificacion || v.cal !== "0") && <CalificacionSuperior inicial={v.cal} onCambiar={cambiarCal} conteos={{ cal4: conteos.cal4, cal45: conteos.cal45 }} />}
+            <LocalidadesVecinasSuperior vecinas={vecinas} inicial={v.tambien} onAlternar={alternarVecina} />
+            <div className="relative shrink-0">
+              <button type="button" onClick={() => setDisponibilidadAbierta((abierta) => !abierta)} className={`flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold ${v.hoy || v.h24 ? "border-verde bg-verde-suave text-verde-oscuro" : "border-borde text-tinta hover:bg-piedra"}`}>
+                Disponibilidad
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+              </button>
+              {disponibilidadAbierta && <div className="absolute left-0 top-full z-30 mt-2 flex w-56 flex-wrap gap-2 rounded-xl border border-borde-suave bg-white p-3 shadow-lg">
+                <Chip activo={v.hoy} onClick={() => cambiar({ hoy: !v.hoy })} cuenta={conteos.hoy}>Urgente hoy</Chip>
+                <Chip activo={v.h24} onClick={() => cambiar({ h24: !v.h24 })} cuenta={conteos.h24}>24 horas</Chip>
+              </div>}
+            </div>
+          </div>
+          {hayFiltros && <button type="button" onClick={limpiar} className="min-h-11 shrink-0 px-2 text-sm font-semibold text-verde hover:text-verde-oscuro">Limpiar</button>}
+        </section>
       )}
     </div>
   );

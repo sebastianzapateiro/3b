@@ -4,7 +4,7 @@ import { LOCALIDADES_BOGOTA, LOCALIDADES_VECINAS, type LocalidadSlug } from "@la
 import { Faq } from "@/components/Faq";
 import { BandaConfianza } from "@/components/BandaConfianza";
 import { AvisoWhatsApp } from "@/components/AvisoWhatsApp";
-import { HojaFiltros, PanelFiltros } from "@/components/PanelFiltros";
+import { PanelFiltros } from "@/components/PanelFiltros";
 import { SelectorOrden } from "@/components/SelectorOrden";
 import { TarjetaResultado } from "@/components/TarjetaResultado";
 import { TarjetaServicio } from "@/components/TarjetaServicio";
@@ -17,6 +17,7 @@ import { ETIQUETA_INSIGNIA, ORDENES, aplicaNinos, etiquetaTope, paramsDesdeValor
 import { FAQ_BUSCAR } from "@/lib/faqs";
 import { JsonLd } from "@/components/JsonLd";
 import { jsonLdLista, jsonLdMigas, meta } from "@/lib/seo";
+
 
 /**
  * Proveedores (P2, CU-01): todos los proveedores aprobados en cuadrícula, con filtros y búsqueda. Reemplaza a /buscar y a la portada de /categorias.
@@ -153,7 +154,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
     slug: s,
     nombre: LOCALIDADES_BOGOTA.find((l) => l.slug === s)?.nombre ?? s,
   }));
-  const panel = { base: base.toString(), inicial, mostrarNinos: aplicaNinos(categoria), vecinas, conteos, mostrarCalificacion: hayCalificados };
+  const panel = { base: base.toString(), inicial, mostrarNinos: aplicaNinos(categoria), vecinas, conteos, mostrarCalificacion: hayCalificados, modo: "superior" };
   const ordenActual: Orden = orden === "calificacion" && !hayCalificados ? "relevancia" : (orden ?? "relevancia");
   const opcionesOrden = ORDENES.filter((o) => o !== "calificacion" || hayCalificados).map((o) => ({ valor: o, texto: ETIQUETA_ORDEN[o] }));
 
@@ -183,27 +184,56 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
       )}
       {/* Solo en la lista completa: con búsqueda o filtros la persona ya sabe qué hace el sitio. */}
       {listaCompleta && <BandaConfianza />}
-      <main className="mx-auto flex max-w-[1280px] flex-col gap-4 px-4 pb-14 pt-4 sm:px-6 sm:pt-7 lg:flex-row lg:items-start lg:gap-8">
-        {/* Filtros: columna fija en escritorio; en móvil, panel desplegable */}
-        <aside className="hidden min-w-0 lg:block lg:flex-[0_0_300px]">
-          <div className="sticky top-20 flex max-h-[calc(100dvh-6rem)] flex-col rounded-[22px] border border-borde-suave bg-white p-5 shadow-[0_2px_10px_rgba(27,38,35,0.05)]"><PanelFiltros {...panel} modo="escritorio" /></div>
-        </aside>
+      <main className="mx-auto flex max-w-[1280px] flex-col gap-5 px-4 pb-14 pt-5 sm:gap-7 sm:px-6 sm:pt-8">
+        {listaCompleta && (
+          <h1 className="font-display text-[28px] font-extrabold leading-[1.1] tracking-[-0.8px] text-tinta sm:text-[40px] sm:tracking-[-1.2px]">
+            Encuentra personas que te ayudan <span className="text-ladrillo">en tu día a día</span>
+          </h1>
+        )}
+        <div className={resultado.items.length > 0 ? "lg:sticky lg:top-0 lg:z-40 lg:-mx-6 lg:bg-crema lg:px-6 lg:py-3 lg:shadow-[0_3px_10px_rgba(27,38,35,0.10)]" : ""}>
+        {/* Buscador */}
+        <form id="buscar" action="/proveedores" className="flex w-full flex-col gap-2 sm:flex-row">
+          <div className="flex h-12 min-w-0 flex-none items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 shadow-[0_2px_8px_rgba(27,38,35,0.05)] sm:flex-[2_1_200px]">
+            <svg className="flex-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+            <input name="q" type="search" defaultValue={q} aria-label="Servicio o clase" placeholder="Ej: plomero, clases de inglés" className="min-w-0 flex-1 bg-transparent text-base outline-none" />
+          </div>
+          <select name="localidad" aria-label="Localidad" defaultValue={localidad ?? ""} className="h-12 min-w-0 flex-none rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 text-base shadow-[0_2px_8px_rgba(27,38,35,0.05)] sm:flex-[1_1_140px]">
+            <option value="">Toda Bogotá</option>
+            {LOCALIDADES_BOGOTA.map((l) => <option key={l.slug} value={l.slug}>{l.nombre}</option>)}
+          </select>
+          {inicial.insignias.map((insignia) => <input key={insignia} type="hidden" name="insignia" value={insignia} />)}
+          {inicial.cal !== "0" && <input type="hidden" name="cal" value={inicial.cal} />}
+          {inicial.visita && <input type="hidden" name="visita" value={inicial.visita} />}
+          {inicial.hoy && <input type="hidden" name="hoy" value="1" />}
+          {inicial.h24 && <input type="hidden" name="h24" value="1" />}
+          {inicial.tambien.map((vecina) => <input key={vecina} type="hidden" name="tambien" value={vecina} />)}
+          {!porServicios && <input type="hidden" name="vista" value="proveedores" />}
+          <button type="submit" className="h-12 rounded-[14px] bg-ladrillo px-6 text-[15px] font-semibold text-white hover:bg-ladrillo-oscuro">Buscar</button>
+        </form>
 
-        <div className="flex min-w-0 flex-col gap-4 lg:flex-[999_1_560px]">
+        <div className={`${resultado.items.length > 0 ? "sticky top-0 z-40 -mx-4 bg-crema px-4 py-2 shadow-[0_3px_10px_rgba(27,38,35,0.10)] lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:py-0 lg:shadow-none" : ""} border-b border-borde-suave pb-3 sm:pb-5`}>
+          {resultado.items.length > 0 && <a href="#buscar" aria-label="Volver al buscador" className="absolute right-4 top-2 flex size-11 items-center justify-center rounded-full border border-borde bg-white text-tinta shadow-sm lg:hidden">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          </a>}
+          <PanelFiltros {...panel} modo="superior" />
+        </div>
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-4">
           {enDesarrollo && (
             <p className="rounded-xl bg-amarillo-suave px-3.5 py-2.5 text-sm text-amarillo-oscuro">
               Solo en desarrollo: {demo ? "estás viendo tarjetas de muestra. " : "datos reales. "}
               <Link href={href({ demo: demo ? "0" : "1", mostrar: null })} className="font-semibold underline">{demo ? "Ver datos reales" : "Ver tarjetas de muestra"}</Link>
             </p>
           )}
-          {listaCompleta && (
+          {false && listaCompleta && (
             <div className="pt-1">
               <p className="font-display text-[28px] font-extrabold leading-[1.1] tracking-[-0.8px] text-tinta sm:text-[40px] sm:tracking-[-1.2px]">
                 Encuentra personas que te ayudan <span className="text-ladrillo">en tu día a día</span>
               </p>
             </div>
           )}
-          <form action="/proveedores" className="flex flex-wrap gap-2" role="search">
+          <form action="/proveedores" className="hidden" role="search" aria-hidden="true">
             <div className="flex h-12 min-w-0 flex-[2_1_200px] items-center gap-2 rounded-[14px] border-[1.5px] border-borde-campo bg-white px-3 shadow-[0_2px_8px_rgba(27,38,35,0.05)]">
               <svg className="flex-none" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5B6663" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
               <input name="q" type="search" defaultValue={q} aria-label="Servicio o clase" placeholder="Ej: plomero, clases de inglés" className="min-w-0 flex-1 bg-transparent text-base outline-none" />
@@ -214,11 +244,6 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
             </select>
             <button type="submit" className="h-12 rounded-[14px] bg-ladrillo px-6 text-[15px] font-semibold text-white hover:bg-ladrillo-oscuro">Buscar</button>
           </form>
-
-          {/* Móvil: botón que abre la hoja de filtros */}
-          <div className="flex flex-col lg:hidden">
-            <HojaFiltros {...panel} activos={activos.length} />
-          </div>
 
           {activos.length > 0 && (
             <ul aria-label="Filtros activos" className="flex flex-wrap gap-2">
@@ -243,6 +268,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
                 {resultado.total} {porServicios ? (resultado.total === 1 ? "servicio" : "servicios") : resultado.total === 1 ? "proveedor" : "proveedores"}
               </span>
             </div>
+            {resultado.items.length > 0 && (
             <div className="flex flex-wrap items-center gap-3">
               <nav aria-label="Tipo de vista" className="flex rounded-xl bg-piedra p-1">
                 {([[true, "Por servicios", href({ vista: null, mostrar: null })], [false, "Por proveedores", href({ vista: "proveedores", mostrar: null })]] as const).map(([activa, texto, destino]) => (
@@ -251,6 +277,7 @@ export default async function Buscar({ searchParams }: { searchParams: Promise<P
               </nav>
               <SelectorOrden actual={ordenActual} opciones={opcionesOrden} base={paramsDesdeValores(inicial, base).toString()} />
             </div>
+            )}
           </div>
 
           {resultado.items.length > 0 ? (
