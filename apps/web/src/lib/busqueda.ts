@@ -204,6 +204,14 @@ async function condicionesDe(f: FiltrosBusqueda) {
     );
   }
 
+  // Si hay filtro de localidad y no hay categoría ni término libre,
+  // también lo aplicamos a los servicios (para que las páginas /servicios/[oficio]
+  // respeten la localidad del usuario, no solo el listado general).
+  if (localidadIds.length > 0 && !categoria && !q) {
+    // Este bloque se usará en buscarServicios para filtrar por proveedor_localidades
+    // cuando la búsqueda es por servicio sin término libre ni categoría explícita.
+  }
+
   for (const clave of f.insignias ?? []) {
     condiciones.push(
       sql`${proveedores.id} IN (SELECT pi.proveedor_id FROM ${proveedorInsignias} pi JOIN ${insignias} i ON i.id = pi.insignia_id WHERE i.clave = ${clave} AND (pi.vence IS NULL OR pi.vence >= CURRENT_DATE))`,

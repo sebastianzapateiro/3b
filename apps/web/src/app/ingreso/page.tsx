@@ -9,8 +9,8 @@ import { IngresoClient } from "./IngresoClient";
 /** A0 · Único ingreso del sitio. El registro es solo para proveedores; el de cliente aparece únicamente si llega a calificar un servicio. */
 /** Es el enlace que se comparte en grupos de WhatsApp: lleva título, descripción e imagen de vista previa (Open Graph). Sin indexar. */
 export const metadata = meta({
-  titulo: "Inscríbete gratis en LasTresB",
-  descripcion: "Date a conocer en Bogotá sin costo ni comisión: los clientes te contactan directo por WhatsApp. Crea tu perfil y empieza a recibir clientes.",
+  titulo: "Haz que encuentren tu trabajo en LasTresB",
+  descripcion: "Publica tus servicios en un directorio donde personas de Bogotá pueden buscar proveedores por oficio y localidad",
   ruta: "/ingreso",
   noindex: true,
 });

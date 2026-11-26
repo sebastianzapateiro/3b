@@ -31,11 +31,16 @@ const VISUAL: Record<Tipo, { foto: string; alt: string; titulo: string; puntos: 
   proveedor: {
     foto: "/fotos/servicios-varios.jpg",
     alt: "Persona trabajando en su oficio",
-    titulo: "Consigue clientes en tu zona",
-    puntos: ["Perfil propio y gratis", "Contactos por WhatsApp", "Reputación con reseñas verificadas"],
-    acento: "text-amarillo",
-    fondoAcento: "bg-amarillo",
-    tono: "from-tinta/90 via-tinta/60",
+    titulo: "Haz que encuentren tu trabajo en LasTresB",
+    puntos: [
+      "Aparece en el directorio de servicios de Bogotá",
+      "Muestra lo que haces y dónde trabajas",
+      "Recibe contactos directos por WhatsApp",
+      "Sin inscripción, comisiones ni mensualidades",
+    ],
+    acento: "text-verde-vivo",
+    fondoAcento: "bg-verde",
+    tono: "from-tinta/85 via-tinta/55",
   },
 };
 
@@ -45,6 +50,9 @@ const AVISOS: Record<Exclude<Aviso_, null>, { tono: "exito" | "error"; texto: st
   enlace: { tono: "error", texto: "El enlace venció o ya se usó. Ingresa y te enviamos uno nuevo." },
   oauth: { tono: "error", texto: "No pudimos completar el ingreso. Intenta de nuevo o usa tu correo." },
 };
+
+/** Texto de apoyo móvil: muestra en mobile, oculta en lg+ */
+const textoApoyoMobile = "Completa tu perfil y, después de nuestra revisión, podrás aparecer en el directorio para que potenciales clientes encuentren tus servicios.";
 
 export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: { destino: string; google: boolean; apple: boolean; aviso: Aviso_; oficios: { id: string; nombre: string; slug: string; grupo: string }[]; tipo: Tipo }) {
   const [modo, setModo] = useState<"ingresar" | "crear">(aviso ? "ingresar" : "crear") // tras confirmar el correo o cambiar la clave toca ingresar;
@@ -73,19 +81,20 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
           </span>
           <div className="flex max-w-[480px] flex-col gap-3 lg:gap-6">
             <p className="text-balance font-display text-[22px] font-extrabold leading-[1.1] tracking-[-0.5px] sm:text-[28px] lg:text-[44px] lg:tracking-[-1.2px]">{v.titulo}</p>
-            <ul className="hidden flex-col gap-2 text-base sm:flex lg:gap-3">
+            {/* En móvil mostramos los 4 beneficios como lista vertical; en escritorio (lg) también visibles */}
+            <ul className="flex flex-col gap-2 text-sm">
               {v.puntos.map((p) => (
-                <li key={p} className="flex items-center gap-2.5">
-                  <span aria-hidden="true" className={`flex size-6 flex-none items-center justify-center rounded-full ${v.fondoAcento} text-tinta`}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                <li key={p} className="flex items-center gap-1.5">
+                  <span aria-hidden="true" className={`flex size-5 flex-none items-center justify-center rounded-full ${v.fondoAcento} text-tinta`}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
                   </span>
-                  {p}
+                  <span>{p}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <p className="hidden max-w-[420px] text-sm leading-normal text-[#C9D1CF] lg:block">
-            LasTresB es un directorio de contacto. El servicio, el precio y la garantía se acuerdan directamente con cada proveedor.
+          <p className="text-sm leading-normal text-tinta-2">
+            {textoApoyoMobile}
           </p>
         </div>
       </aside>
@@ -99,15 +108,15 @@ export function IngresoClient({ destino, google, apple, aviso, oficios, tipo }: 
               {tipo === "cliente" ? "Soy cliente" : "Soy proveedor"}
             </span>
             <h1 className="font-display text-[30px] font-extrabold leading-[1.1] tracking-[-1px]">
-              {modo === "ingresar" ? "Hola de nuevo" : tipo === "cliente" ? "Crea tu cuenta" : "Crea tu cuenta como Proveedor de Servicios"}
+              {modo === "ingresar" ? "Hola de nuevo" : tipo === "cliente" ? "Crea tu cuenta" : "Registra tus servicios gratis"}
             </h1>
             {/* En celular no hace falta el texto: quien llega aquí ya sabe a qué vino. */}
-            <p className="hidden text-base leading-normal text-tinta-2 sm:block">
+            <p className="text-base leading-normal text-tinta-2">
               {tipo === "cliente"
                 ? "La necesitas para calificar a quienes contactaste por LasTresB."
                 : modo === "ingresar"
                   ? "100% gratis y sin comisión: tus clientes te escriben directo por WhatsApp."
-                  : "100% gratis y sin comisión: tus clientes te escriben directo por WhatsApp. Con tu nombre, WhatsApp y oficios creamos tu perfil."}
+                  : textoApoyoMobile}
             </p>
           </div>
 

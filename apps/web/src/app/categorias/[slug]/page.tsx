@@ -15,6 +15,8 @@ import { absoluta, jsonLdMigas, meta } from "@/lib/seo";
 /** Lista completa de oficios de una categoría (P2, CU-03). Mismo estilo que /categorias. Datos: CATEGORIAS de @las3b/shared. */
 type Props = { params: Promise<{ slug: string }> };
 
+const uno = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) || undefined;
+
 export const dynamicParams = false;
 /** Los servicios y proveedores cambian: la página se regenera cada 5 minutos (antes se congelaba al compilar). */
 export const revalidate = 300;
@@ -33,16 +35,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function Categoria({ params }: Props) {
+export default async function Categoria({ params, searchParams }: Props & { searchParams: Promise<{ localidad?: string }> }) {
   const categoria = categoriaPorSlug((await params).slug);
   if (!categoria) notFound();
+
+  // Parámetros de filtro (localidad, orden, etc.)
+  const sp = await searchParams;
+  const localidad = uno(sp.localidad);
 
   // Servicios y proveedores reales de la categoría (incluye todos sus oficios). Si la base falla, la página sigue con los oficios.
   let sinBase = false;
   const vacio = { items: [], total: 0, pagina: 1, porPagina: 6, categoriaNombre: categoria.nombre };
   const [servicios, proveedoresCat] = await Promise.all([
-    buscarServicios({ categoria: categoria.slug }).then((r) => ({ ...r, items: r.items.slice(0, 6) })),
-    buscarProveedores({ categoria: categoria.slug }).then((r) => ({ ...r, items: r.items.slice(0, 6) })),
+    buscarServicios({ categoria: categoria.slug, localidad }).then((r) => ({ ...r, items: r.items.slice(0, 6) })),
+    buscarProveedores({ categoria: categoria.slug, localidad }).then((r) => ({ ...r, items: r.items.slice(0, 6) })),
   ]).catch((e) => {
     sinBase = true;
     console.warn("[categoria] No se pudieron leer los proveedores:", e instanceof Error ? e.message : e);
