@@ -129,11 +129,11 @@ export function TarjetaServicio({ s }: { s: ResultadoServicio }) {
           ) : null}
         </span>
 
-        <div>
+        <div className="flex flex-col gap-1">
           <span className="text-xs text-gris">Lo ofrece</span>
           <b className="truncate font-display text-base">{p?.nombre || ""}</b>
           {/* Simulamos NivelPerfilMarca con la info del proveedor */}
-          {p.nivel && <span className="text-[10px] mt-1">Nivel: {String(p.nivel)}</span>}
+          {p.nivel && <span className="text-[10px]">Nivel: {String(p.nivel)}</span>}
         </div>
       </div>
 
@@ -142,7 +142,7 @@ export function TarjetaServicio({ s }: { s: ResultadoServicio }) {
           <>
             <span className="text-gris">Desde </span>
             <b className="text-lg">{pesos.format(s.precioDesde)}</b>
-            <span className="text-gris">{POR[s.unidad] ?? ""}</span>
+            <span className="text-gris"> {POR[s.unidad] ?? ""}</span>
           </>
         ) : (
           <b className="text-base">A convenir</b>

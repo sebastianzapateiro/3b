@@ -24,8 +24,7 @@ const social = {
   ...(appleHabilitado ? { apple: { clientId: process.env.APPLE_CLIENT_ID!, clientSecret: process.env.APPLE_CLIENT_SECRET! } } : {}),
 };
 
-/**
- * El sitio puede servirse con y sin «www» (según el dominio principal en Vercel). Better Auth rechaza con
+/** El sitio puede servirse con y sin «www» (según el dominio principal en Vercel). Better Auth rechaza con
  * INVALID_ORIGIN cualquier origen distinto de BETTER_AUTH_URL, así que se aceptan ambas variantes del mismo dominio.
  */
 function origenesConfiables(): string[] {
@@ -67,6 +66,9 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    // La contraseña se genera automáticamente en el servidor de Better Auth y es segura;
+    // nunca se muestra en pantalla ni se le pide al usuario al registrarse.
+    // El usuario entrará por Magic Link o OTP que se enviará a su correo.
     minPasswordLength: 8,
     requireEmailVerification: true,
     revokeSessionsOnPasswordReset: true,
@@ -81,7 +83,7 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       void enviarCorreo({ para: user.email, ...confirmarCorreo({ nombre: user.name, url }) });
     },
-    // Al confirmar el correo: bienvenida de proveedor (si tiene perfil de proveedor) o de cliente.
+    // Después de confirmar el correo, enviamos un mensaje de bienvenida y indicamos cómo ingresar.
     afterEmailVerification: async (user) => {
       const [prov] = await db.select({ id: schema.proveedores.id }).from(schema.proveedores).where(eq(schema.proveedores.usuarioId, user.id)).limit(1);
       void enviarCorreo({ para: user.email, ...(prov ? bienvenidaProveedor({ nombre: user.name }) : bienvenidaCliente({ nombre: user.name })) });

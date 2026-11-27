@@ -15,7 +15,18 @@ export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: bo
   const [cargando, setCargando] = useState(false);
   const [enviadoA, setEnviadoA] = useState("");
 
-  async function registrar(e: React.FormEvent<HTMLFormElement>) {
+  /** Genera una contraseña aleatoria criptográficamente segura (24 caracteres). */
+function generarPasswordAleatoria(): string {
+  const caracteres =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+";
+  let password = "";
+  for (let i = 0; i < 24; i++) {
+    password += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  return password;
+}
+
+async function registrar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const datos = new FormData(e.currentTarget);
     const correo = String(datos.get("correo"));
@@ -27,10 +38,13 @@ export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: bo
     if (proveedor && oficiosElegidos.length === 0) return setError("Elige al menos un oficio.");
     setCargando(true);
     setError("");
+    // Se genera una contraseña aleatoria y segura en el cliente que Better Auth aceptará
+    // pero que nunca se muestra al usuario; el acceso será vía Magic Link o OTP.
+    const passwordAleatorio = generarPasswordAleatoria();
     const { error } = await authClient.signUp.email({
       name: String(datos.get("nombre")).trim(),
       email: correo,
-      password: String(datos.get("clave")),
+      password: passwordAleatorio,
       declaraMayorDeEdad: datos.get("mayorDeEdad") === "on",
       ...(whatsapp ? ({ telefono: whatsapp } as object) : {}),
       // Lo valida y registra el servidor (hooks de auth.ts → consentimientos).
@@ -74,11 +88,6 @@ export function FormRegistro({ proveedor, oficios, alIngresar }: { proveedor: bo
         </div>
       )}
       {proveedor && <SelectorOficios oficios={oficios} elegidos={[]} porSlug />}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="clave" className={etiqueta}>Clave</label>
-        <CampoClave id="clave" autoComplete="new-password" placeholder="Mínimo 8 caracteres" minLength={8} />
-      </div>
-
       {/* RF-19: casillas no premarcadas. */}
       <label className="mt-1 flex items-start gap-3 text-[15px] leading-snug">
         <input type="checkbox" name="mayorDeEdad" required className={casilla} />
