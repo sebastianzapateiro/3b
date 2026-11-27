@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db, descifrar, estaCifrado, schema } from "@las3b/db";
 import { auditar } from "@/lib/auditoria";
 import { enviarCorreo } from "@/lib/correo";
+import { reclamoDatosProveedor, reclamoRespondido, solicitudDatosRespondida } from "@/lib/plantillas";
 import { exigirBackoffice } from "@/lib/verificacion";
 
 const { mensajesContacto, reclamos, solicitudesDatos, proveedores, user, politicas } = schema;
@@ -33,18 +34,14 @@ export async function entregarDatos(formData: FormData) {
 
   await enviarCorreo({
     para: r.correoReclamante,
-    asunto: "Datos del proveedor sobre tu reclamo en LasTresB",
-    texto: [
-      `Hola, ${r.nombreReclamante}.`,
-      "Como pediste en tu reclamo, estos son los datos de identificación y contacto del proveedor (art. 53, Ley 1480 de 2011):",
-      `- Nombre o razón social: ${u?.nombre ?? p.nombrePublico}`,
-      `- Nombre público: ${p.nombrePublico}`,
-      `- Documento: ${p.tipoDocumento?.toUpperCase() ?? ""} ${documentoLegible(p.documentoCifrado) ?? "no registrado"}`,
-      `- Dirección de notificaciones: ${p.direccionNotificaciones ?? "no registrada"}`,
-      `- Teléfono / WhatsApp: ${p.whatsapp}`,
-      "",
-      "LasTresB es un portal de contacto y no es parte de la relación con el proveedor.",
-    ].join("\n"),
+    ...reclamoDatosProveedor({
+      reclamante: r.nombreReclamante,
+      nombreLegal: u?.nombre ?? p.nombrePublico,
+      nombrePublico: p.nombrePublico,
+      documento: `${p.tipoDocumento?.toUpperCase() ?? ""} ${documentoLegible(p.documentoCifrado) ?? "no registrado"}`,
+      direccion: p.direccionNotificaciones ?? "no registrada",
+      whatsapp: p.whatsapp,
+    }),
   });
   await db.update(reclamos).set({ datosEntregadosEn: new Date() }).where(eq(reclamos.id, reclamoId));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "entregar_datos_art53", objetoTipo: "reclamo", objetoId: reclamoId, resultado: "enviado" });
@@ -61,7 +58,7 @@ export async function responderReclamo(formData: FormData) {
   if (!r) return volver({ error: "Reclamo no encontrado." });
   if (r.solicitaDatosProveedor && !r.datosEntregadosEn) return volver({ i: `reclamo:${reclamoId}`, error: "El comprador pidió los datos del proveedor: entrégalos antes de cerrar." });
 
-  await enviarCorreo({ para: r.correoReclamante, asunto: "Respuesta a tu reclamo en LasTresB", texto: `Hola, ${r.nombreReclamante}.\n\n${respuesta.data}\n\nLasTresB` });
+  await enviarCorreo({ para: r.correoReclamante, ...reclamoRespondido({ reclamante: r.nombreReclamante, respuesta: respuesta.data }) });
   await db.update(reclamos).set({ estado: "respondido" }).where(eq(reclamos.id, reclamoId));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: "reclamo_respondido", objetoTipo: "reclamo", objetoId: reclamoId, metadatos: { respuesta: respuesta.data } });
   revalidatePath("/admin", "layout");
@@ -79,7 +76,7 @@ export async function gestionarSolicitud(formData: FormData) {
 
   if (respuesta) {
     const [u] = await db.select({ correo: user.email, nombre: user.name }).from(user).where(eq(user.id, s.usuarioId)).limit(1);
-    if (u) await enviarCorreo({ para: u.correo, asunto: "Respuesta a tu solicitud sobre tus datos en LasTresB", texto: `Hola, ${u.nombre}.\n\n${respuesta}\n\nLasTresB` });
+    if (u) await enviarCorreo({ para: u.correo, ...solicitudDatosRespondida({ nombre: u.nombre, respuesta }) });
   }
   await db.update(solicitudesDatos).set({ estado }).where(eq(solicitudesDatos.id, solicitudId));
   await auditar({ actorId: actor.user.id, rol: actor.rol, accion: `solicitud_datos_${estado}`, objetoTipo: "solicitud_datos", objetoId: solicitudId, metadatos: respuesta ? { respuesta } : undefined });

@@ -48,6 +48,18 @@ nuevas al puerto 22 en 30 s.
 `ssh lastresb-root 'touch /var/www/mantenimiento/activo'` pone «Estamos de trasteo» (503) en www; `rm` del mismo archivo lo quita.
 Debe estar en `/var/www`: nginx corre como `www-data` y no ve `/opt/lastresb` (750).
 
+## Avisos de actividad (cron, desde el 26 nov 2026)
+
+Los avisos al equipo de «Proveedor creado», «Datos guardados», «Archivo subido», etc. (`/admin/actividad`) quedan en la
+cola `avisos_proveedor` y solo salen cuando algo llama a `/api/cron/avisos`. Sin esto la tarjeta dice «correo pendiente».
+
+- `web.env`: `CRON_SECRET` (aleatorio, `openssl rand -hex 32`) y `ADMIN_NOTIFY_EMAIL=contactolastresb@lastresb.com.co`
+  (reenvía a los dos socios). Opcionales: `NOTIFY_WINDOW_MINUTES` (5), `NOTIFY_PROVIDER_EVENTS=false` (apaga), `NOTIFY_DRY_RUN=true`.
+- Crontab de root, cada minuto (lee el secreto del archivo, no lo copia):
+  `* * * * * curl -fsS -H "Authorization: Bearer $(grep ^CRON_SECRET= /opt/lastresb/web.env | cut -d= -f2-)" https://www.lastresb.com.co/api/cron/avisos >/dev/null 2>&1`
+- Comprobar: el mismo `curl` sin `>/dev/null` responde `{"ok":true,"enviados":…}`.
+- El aviso inmediato de «cuenta nueva» (`lib/avisos-equipo.ts`) es otro: no usa el cron y no sale para cuentas creadas por el equipo.
+
 ## Despliegue continuo (desde el 2 nov 2026)
 
 Cada push a **`main`** despliega producción con GitHub Actions (`.github/workflows/desplegar.yml`): typecheck y pruebas,
