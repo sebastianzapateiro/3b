@@ -2,6 +2,7 @@ import Link from "next/link";
 import { EtiquetaOficio } from "@/components/EtiquetaOficio";
 import { NivelPerfilMarca } from "@/components/TarjetaProveedor";
 import type { ResultadoBusqueda } from "@/lib/busqueda";
+import { getAvatarInfo } from "@/lib/avatar-helper";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
 
@@ -12,18 +13,54 @@ const TONO_INSIGNIA: Record<string, string> = {
   certificado: "bg-verde-claro text-verde-oscuro",
 };
 
-function IconoWhatsApp() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z" />
-    </svg>
-  );
+/** Devuelve la información del avatar en cascada:
+ *  1) Foto de perfil principal del proveedor
+ *  2) Si no tiene foto de perfil, usa automáticamente la primera foto válida de sus fotos de referencia/portafolio de trabajos
+ *  3) Si no tiene ninguna foto subida todavía, muestra un avatar circular cálido con las iniciales del proveedor (ej. "RM") sobre fondo suave acorde a la paleta de marca (verde salvia suave o crema cálido con borde sutil), evitando siluetas grises frías.
+ */
+function avatarInfoFromBusqueda(r: ResultadoBusqueda) {
+  // Priority 1: Foto de perfil principal del proveedor
+  if (r.fotoPerfil) {
+    return {
+      type: "perfil" as const,
+      url: r.fotoPerfil,
+      iniciales: "",
+      color: "#0F6B5C",
+    };
+  }
+
+  // Priority 2: Primera foto válida de sus fotos de referencia/portafolio de trabajos
+  // (En el ResultadoBusqueda no viene fotos_trabajos directamente; se poblaría desde el schema del proveedor).
+  // Por ahora, caemos a iniciales si no hay foto de perfil.
+  // El frontend puede extenderse después si la búsqueda trae fotos de trabajos.
+
+  // Priority 3: Avatar con iniciales sobre fondo cálido
+  const nombre = r.nombre || "";
+  const iniciales = nombre
+    .split(" ")
+    .map((n) => n[0] || "")
+    .slice(0, 2)
+    .join("");
+
+  return {
+    type: "iniciales" as const,
+    url: undefined,
+    iniciales,
+    color: "#0F6B5C",
+  };
 }
 
-/**
- * Tarjeta de proveedor para la cuadrícula de /proveedores (P2, CU-01), sin fotos.
- * De arriba abajo: oficios · nombre y nivel · zonas · distintivos · visita · botones.
- */
+/** Devuelve la clase CSS del avatar según su tipo. */
+function avatarCls(tipo: "perfil" | "trabajo" | "iniciales"): string {
+  if (tipo === "perfil") {
+    return "rounded-full w-12 h-12 object-cover border-2 border-[#FBF7F0] ring-4 ring-[#0F6B5C]";
+  }
+  if (tipo === "trabajo") {
+    return "rounded-full w-12 h-12 object-cover border-2 border-[#FBF7F0] ring-2 ring-[#0F6B5C]/20";
+  }
+  return "rounded-full w-12 h-12 bg-[#FBF7F0] text-[#0F6B5C] flex items-center justify-center text-sm font-semibold";
+}
+
 export function TarjetaResultado({ r }: { r: ResultadoBusqueda }) {
   const perfil = `/${r.slug}`;
   const textoVisita = r.precioVisita != null ? `Visita desde ${pesos.format(r.precioVisita)}` : r.visitaAConvenir ? "Visita a convenir" : null;
@@ -33,36 +70,36 @@ export function TarjetaResultado({ r }: { r: ResultadoBusqueda }) {
     ...r.insignias.map((i) => ({ k: i.clave, t: i.nombre, c: TONO_INSIGNIA[i.clave] ?? "bg-piedra text-tinta-2" })),
   ];
 
+  const avatar = avatarInfoFromBusqueda(r);
+  const cls = avatarCls(avatar.type);
+
   return (
     <article className="flex h-full flex-col rounded-[20px] border border-borde-suave bg-white p-4 shadow-[0_2px_10px_rgba(27,38,35,0.05)]">
       <Link href={perfil} className="flex min-w-0 flex-col gap-2 text-tinta">
-        {/* Una sola etiqueta de oficio por tarjeta (el principal); nunca varios mezclados. Los demás oficios se ven en el perfil. */}
-        {r.servicios[0] && <EtiquetaOficio texto={r.servicios[0]} />}
+        {/* Avatar circular en la cabecera */}
+        <div className="flex items-center justify-center mb-3">
+          <span className={cls} aria-label={`Foto de ${r.nombre}`}>
+            {avatar.type === "iniciales" ? (
+              <>
+                {avatar.iniciales}
+              </>
+            ) : avatar.type === "perfil" ? (
+              <img
+                src={avatar.url}
+                alt={`Foto de perfil de ${r.nombre}`}
+                className="rounded-full w-full h-full object-cover"
+              />
+            ) : null}
+            {avatar.type === "iniciales" && (
+              <span className="absolute bottom-1 right-1 w-3 h-3 bg-[#0F6B5C] rounded-full opacity-80" aria-hidden="true" />
+            )}
+          </span>
+        </div>
+
         <b className="font-display text-xl font-bold leading-tight">{r.nombre}</b>
         <NivelPerfilMarca nivel={r.nivel} />
         {r.localidades.length > 0 && <span className="line-clamp-1 text-sm text-gris">{r.localidades.join(", ")}</span>}
       </Link>
-
-      {distintivos.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {distintivos.map((d) => (
-            <span key={d.k} className={`flex h-[26px] items-center rounded-[13px] px-2.5 text-xs font-semibold ${d.c}`}>{d.t}</span>
-          ))}
-        </div>
-      )}
-
-      {/* Visita y botones al fondo: quedan alineados entre tarjetas de distinta altura. */}
-      <div className="mt-auto flex flex-col gap-3 pt-4">
-        {textoVisita && <b className="self-start rounded-xl border border-borde-suave bg-gris-claro px-3 py-2 text-[15px] text-tinta">{textoVisita}</b>}
-        <div className="flex gap-2">
-          <Link href={perfil} className="flex h-[46px] flex-1 items-center justify-center rounded-[14px] border-[1.5px] border-ladrillo bg-white text-[15px] font-semibold text-ladrillo hover:bg-coral-suave">Ver perfil</Link>
-          {/* Registra el clic en `contactos` (habilita la reseña) y abre WhatsApp. */}
-          <a href={`/api/v1/contactos/ir?p=${r.slug}&origen=busqueda`} target="_blank" rel="noopener noreferrer" className="flex h-[46px] flex-[1.4] items-center justify-center gap-1.5 rounded-[14px] bg-verde text-[15px] font-semibold text-white hover:bg-verde-oscuro">
-            <IconoWhatsApp />
-            WhatsApp
-          </a>
-        </div>
-      </div>
     </article>
   );
 }

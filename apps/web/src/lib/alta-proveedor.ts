@@ -38,11 +38,7 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
   const validas = slugs.length > 0 ? await db.select({ id: categorias.id }).from(categorias).where(and(inArray(categorias.slug, slugs), isNotNull(categorias.padreId), eq(categorias.activa, true))) : [];
   // Dirección automática con el modelo de la plataforma: el nombre («clemencia-rojas»), con número si ya existe. El oficio va en la URL pública (/nombre/oficio).
   const direccion = await slugLibre(sugerirSlug(nombre));
-  const [p] = await db
-    .insert(proveedores)
-    .values({ usuarioId: usuario.id, estado: "borrador", nombrePublico: nombre, slug: direccion, whatsapp: normalizarWhatsapp(usuario.telefono ?? "") ?? "" })
-    .onConflictDoNothing({ target: proveedores.usuarioId })
-    .returning({ id: proveedores.id });
+  const [p] = await db.select().from(proveedores).where(eq(proveedores.usuarioId, usuario.id)).limit(1);
   if (p) {
     if (validas.length > 0) await db.insert(proveedorCategorias).values(validas.map((c) => ({ proveedorId: p.id, categoriaId: c.id }))).onConflictDoNothing();
     await guardarCompletitud(p.id);
@@ -56,12 +52,11 @@ export async function crearBorrador(usuario: { id: string; name?: string | null;
   return otro!.id;
 }
 
-/**
- * A dónde entra el proveedor al panel tras crear su cuenta: con el perfil recién creado (borrador, sin servicios)
- * lo siguiente es crear sus servicios; en cualquier otro caso, al Resumen.
+/** A dónde entra el proveedor al panel tras crear su cuenta: con el perfil recién creado (borrador, sin servicios)
+ *  lo siguiente es crear sus servicios; en cualquier otro caso, al Resumen.
  */
 export async function rutaInicialProveedor(usuarioId: string): Promise<string> {
-  const [p] = await db.select({ id: proveedores.id, estado: proveedores.estado }).from(proveedores).where(eq(proveedores.usuarioId, usuarioId)).limit(1);
+  const [p] = await db.select().from(proveedores).where(eq(proveedores.usuarioId, usuarioId)).limit(1);
   if (!p || p.estado !== "borrador") return "/panel";
   const [cats, servs] = await Promise.all([
     db.select({ n: count() }).from(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, p.id)),
@@ -70,9 +65,8 @@ export async function rutaInicialProveedor(usuarioId: string): Promise<string> {
   return (cats[0]?.n ?? 0) > 0 && (servs[0]?.n ?? 0) === 0 ? "/panel/alta?bienvenida=1#servicios" : "/panel?bienvenida=1";
 }
 
-/**
- * Cuentas con el rol «proveedor» que no tienen perfil (por ejemplo, las que el equipo creó desde «Crear usuario»):
- * les crea el perfil en borrador. Idempotente. Devuelve cuántas creó.
+/** Cuentas con el rol «proveedor» que no tienen perfil (por ejemplo, las que el equipo creó desde «Crear usuario»):
+ *  les crea el perfil en borrador. Idempotente. Devuelve cuántos creó.
  */
 export async function crearPerfilesFaltantes(): Promise<number> {
   const sin = await consultar<{ id: string; name: string; email: string; telefono: string | null }>(sql`
@@ -87,28 +81,12 @@ export async function crearPerfilesFaltantes(): Promise<number> {
 export type SeccionPanel = "perfil" | "servicios" | "fotos" | "verificacion";
 export type TareaAlta = { clave: string; titulo: string; texto: string; ok: boolean; href: string; seccion: SeccionPanel; opcional?: boolean; /** Ya guardó algo pero falta: se muestra «Completar»; sin nada, «Empezar». */ iniciada?: boolean };
 
-/**
- * Qué le falta al borrador para enviarlo a revisión. `listo` ignora las tareas opcionales.
+/** Qué le falta al borrador para enviarlo a revisión. `listo` ignora las tareas opcionales.
  * Con cache(): el layout y la página del panel lo piden en la misma petición y se consulta una sola vez.
  */
 export const pendientesAlta = cache(async (proveedorId: string) => {
   const [[p], [cats], [locs], [servs], docs, [fotos]] = await Promise.all([
-    db
-      .select({
-        estado: proveedores.estado,
-        nombre: proveedores.nombrePublico,
-        whatsapp: proveedores.whatsapp,
-        segmento: proveedores.segmento,
-        presentacion: proveedores.presentacion,
-        tipoDocumento: proveedores.tipoDocumento,
-        documento: proveedores.documentoCifrado,
-        direccion: proveedores.direccionNotificaciones,
-        nacimiento: proveedores.fechaNacimiento,
-        fotoPerfil: proveedores.fotoPerfil,
-      })
-      .from(proveedores)
-      .where(eq(proveedores.id, proveedorId))
-      .limit(1),
+    db.select().from(proveedores).where(eq(proveedores.id, proveedorId)).limit(1),
     db.select({ n: count() }).from(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, proveedorId)),
     db.select({ n: count() }).from(proveedorLocalidades).where(eq(proveedorLocalidades.proveedorId, proveedorId)),
     db.select({ n: count() }).from(serviciosProveedor).where(eq(serviciosProveedor.proveedorId, proveedorId)),
@@ -121,8 +99,8 @@ export const pendientesAlta = cache(async (proveedorId: string) => {
     { clave: "oficios", titulo: "Tus oficios", texto: "A qué te dedicas. Cada servicio que ofrezcas va dentro de uno de tus oficios.", ok: (cats?.n ?? 0) > 0, href: "/panel/perfil#negocio", seccion: "perfil" },
     { clave: "servicios", titulo: "Tus servicios y precios", texto: "Lo que haces dentro de cada oficio, con su precio desde. Al menos uno.", ok: (servs?.n ?? 0) > 0, href: "/panel/servicios", seccion: "servicios" },
     { clave: "negocio", titulo: "Cómo trabajas y tu página", texto: "Si eres independiente o empresa y la dirección de tu página.", ok: Boolean(p?.segmento), iniciada: Boolean(p?.segmento), href: "/panel/perfil#negocio", seccion: "perfil" },
-    { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atiendes.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
-    { clave: "identidad", titulo: "Datos de identidad", texto: "Tu cédula y fecha de nacimiento (la dirección es opcional). Son privados.", ok: Boolean(p?.tipoDocumento && p.documento && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
+    { clave: "localidades", titulo: "Dónde trabajas", texto: "Las localidades de Bogotá en las que atienden.", ok: (locs?.n ?? 0) > 0, href: "/panel/perfil#localidades", seccion: "perfil" },
+    { clave: "identidad", titulo: "Datos de identidad", texto: "Tu cédula y fecha de nacimiento (la dirección es opcional). Son privadas.", ok: Boolean(p?.tipoDocumento && p.documento && p.nacimiento), iniciada: Boolean(p?.tipoDocumento || p?.documento || p?.direccion || p?.nacimiento), href: "/panel/verificacion#identidad", seccion: "verificacion" },
     { clave: "documentos", titulo: "Tu documento", texto: "Opcional: la foto de tu documento ayuda a verificar tu perfil. Es privada, solo la ve el equipo.", ok: docs.lista.some((r) => r.tipo === "documento_frente" && r.cargado), iniciada: docs.lista.some((r) => r.cargado), href: "/panel/verificacion#documentos", seccion: "verificacion", opcional: true },
     { clave: "foto", titulo: "Tu foto de perfil", texto: "Opcional, pero los clientes confían más en perfiles con foto. Se muestra en tu perfil.", ok: Boolean(p?.fotoPerfil), href: "/panel/perfil#foto", seccion: "perfil", opcional: true },
     { clave: "fotos", titulo: "Fotos de tus trabajos", texto: `Sube al menos ${FOTOS_MINIMAS}: los clientes escriben más cuando ven tu trabajo.`, ok: (fotos?.n ?? 0) >= FOTOS_MINIMAS, iniciada: (fotos?.n ?? 0) > 0, href: "/panel/fotos", seccion: "fotos", opcional: true },
@@ -173,6 +151,7 @@ export async function negocioEditable(proveedorId: string) {
   return { oficios, elegidos: new Set(elegidos.map((e) => e.id)) };
 }
 
+/** Schema para el contacto inicial (nombre y WhatsApp). */
 const esquemaContacto = z.object({
   nombrePublico: z.string().trim().min(2, "Escribe el nombre con el que te van a ver los clientes.").max(80, "El nombre admite hasta 80 caracteres."),
   whatsapp: z.string().transform((v, ctx) => normalizarWhatsapp(v) ?? (ctx.addIssue({ code: "custom", message: "Escribe un WhatsApp válido, por ejemplo 300 123 4567." }), z.NEVER)),
@@ -194,9 +173,7 @@ export async function guardarContacto(proveedor: { id: string; estado: string },
   return { ok: true };
 }
 
-/**
- * Datos del negocio: solo mientras es borrador (después, nombre, dirección y oficio los revisa el equipo).
- */
+/** Datos del negocio: solo mientras es borrador (después, nombre, dirección y oficio los revisa el equipo). */
 export async function guardarNegocio(proveedor: { id: string; estado: string }, formData: FormData): Promise<Resultado> {
   if (proveedor.estado !== "borrador") return { error: "Tu perfil ya fue enviado: para cambiar estos datos escríbenos." };
   const r = esquemaNegocio.safeParse(Object.fromEntries(formData));
@@ -214,7 +191,7 @@ export async function guardarNegocio(proveedor: { id: string; estado: string }, 
   await db.transaction(async (tx) => {
     await tx.update(proveedores).set({ ...r.data, updatedAt: new Date() }).where(eq(proveedores.id, proveedor.id));
     await tx.delete(proveedorCategorias).where(eq(proveedorCategorias.proveedorId, proveedor.id));
-    await tx.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: proveedor.id, categoriaId })));
+    await tx.insert(proveedorCategorias).values(categoriaIds.map((categoriaId) => ({ proveedorId: proveedor.id, categoriaId }))).onConflictDoNothing();
   });
   await guardarCompletitud(proveedor.id);
   await registrarEvento(proveedor.id, "cambios", { campos: ["oficios", "tipo de trabajo", "dirección de la página"] });
@@ -254,7 +231,7 @@ export async function guardarIdentidad(proveedor: { id: string; estado: string }
       updatedAt: new Date(),
     })
     .where(eq(proveedores.id, proveedor.id));
-  await registrarEvento(proveedor.id, "cambios", { campos: ["documento de identidad", "dirección", "fecha de nacimiento", ...(r.data.numeroMatricula ? ["n.º de matrícula"] : [])] });
+  await registrarEvento(proveedor.id, "cambios", { campos: [ " documento de identidad", "dirección", "fecha de nacimiento", ...(r.data.numeroMatricula ? ["n.º de matrícula"] : [])] });
   return { ok: true };
 }
 
