@@ -8,6 +8,7 @@ import { z } from "zod";
 import { db, schema } from "@las3b/db";
 import { auth } from "@/lib/auth";
 import { enviarCorreo } from "@/lib/correo";
+import { reclamoRecibido } from "@/lib/plantillas";
 import { sumarDiasHabiles } from "@/lib/cuenta";
 import { parametro } from "@/lib/parametros";
 
@@ -59,10 +60,6 @@ export async function presentarReclamo(formData: FormData) {
     .returning({ id: schema.reclamos.id });
 
   const radicado = nuevo!.id.slice(0, 8).toUpperCase();
-  await enviarCorreo({
-    para: d.correo,
-    asunto: `Recibimos tu reclamo ${radicado} en LasTresB`,
-    texto: `Hola, ${d.nombre}.\n\nRecibimos tu reclamo sobre ${proveedor.nombre} (radicado ${radicado}). Te responderemos a más tardar el ${fechaLimite}, contando días hábiles.\n\nLasTresB es un portal de contacto: facilitamos la comunicación con el proveedor y, si lo pediste, te entregamos sus datos de identificación y contacto.`,
-  });
+  await enviarCorreo({ para: d.correo, ...reclamoRecibido({ nombre: d.nombre, proveedor: proveedor.nombre, radicado, fechaLimite }) });
   redirect(`/reclamos?${new URLSearchParams({ enviado: radicado, limite: fechaLimite })}#formulario`);
 }

@@ -2,8 +2,10 @@
  * Plantillas de los mensajes de registro y de cuenta (correo y WhatsApp), todas en un solo lugar.
  * Son funciones puras —sin base de datos ni envío— para poder probarlas y revisarlas juntas.
  * Cada correo sale en texto plano y en HTML minimalista (sin fotos): `armar` produce ambos a partir del mismo contenido.
- * Quien las usa: lib/auth.ts, lib/claves.ts, lib/invitaciones.ts, lib/avisos-proveedor.ts.
+ * Quien las usa: lib/auth.ts, lib/claves.ts, lib/invitaciones.ts, lib/avisos-proveedor.ts, lib/servicios-prestados.ts, reclamos y cumplimiento.
+ * El catálogo que ve el equipo en /admin/correos (lib/correos-catalogo.ts) sale de aquí: al crear una plantilla, agrégala allí.
  */
+import { mensajeCalificacion } from "@/lib/calificacion";
 import { SITIO_URL } from "@/lib/seo";
 
 export type Mensaje = { asunto: string; texto: string; html: string };
@@ -182,6 +184,52 @@ export function proveedorRechazado(d: { nombre?: string | null; motivo: string }
     boton: { texto: "Corregir mi registro", url: `${sitio}/panel` },
     pie: "Si tienes dudas, respóndenos este correo.",
   });
+}
+
+/* ───────────── Correo de texto plano: clientes, reclamos y datos personales ───────────── */
+
+/** Estos correos salen solo en texto (sin diseño). */
+export type MensajeTexto = { asunto: string; texto: string };
+
+/** Cliente: el servicio quedó como prestado y se le invita a calificar. */
+export function calificacionServicio(d: { cliente: string | null; proveedor: string; enlace: string }): MensajeTexto {
+  return { asunto: `¿Cómo te fue con ${d.proveedor}?`, texto: mensajeCalificacion(d) };
+}
+
+/** Reclamante: acuse de recibo de su reclamo, con la fecha límite de respuesta. */
+export function reclamoRecibido(d: { nombre: string; proveedor: string; radicado: string; fechaLimite: string }): MensajeTexto {
+  return {
+    asunto: `Recibimos tu reclamo ${d.radicado} en LasTresB`,
+    texto: `Hola, ${d.nombre}.\n\nRecibimos tu reclamo sobre ${d.proveedor} (radicado ${d.radicado}). Te responderemos a más tardar el ${d.fechaLimite}, contando días hábiles.\n\nLasTresB es un portal de contacto: facilitamos la comunicación con el proveedor y, si lo pediste, te entregamos sus datos de identificación y contacto.`,
+  };
+}
+
+/** Reclamante: el equipo le entrega la identificación y el contacto del proveedor (art. 53, Ley 1480). */
+export function reclamoDatosProveedor(d: { reclamante: string; nombreLegal: string; nombrePublico: string; documento: string; direccion: string; whatsapp: string }): MensajeTexto {
+  return {
+    asunto: "Datos del proveedor sobre tu reclamo en LasTresB",
+    texto: [
+      `Hola, ${d.reclamante}.`,
+      "Como pediste en tu reclamo, estos son los datos de identificación y contacto del proveedor (art. 53, Ley 1480 de 2011):",
+      `- Nombre o razón social: ${d.nombreLegal}`,
+      `- Nombre público: ${d.nombrePublico}`,
+      `- Documento: ${d.documento}`,
+      `- Dirección de notificaciones: ${d.direccion}`,
+      `- Teléfono / WhatsApp: ${d.whatsapp}`,
+      "",
+      "LasTresB es un portal de contacto y no es parte de la relación con el proveedor.",
+    ].join("\n"),
+  };
+}
+
+/** Reclamante: respuesta del equipo que cierra el reclamo. */
+export function reclamoRespondido(d: { reclamante: string; respuesta: string }): MensajeTexto {
+  return { asunto: "Respuesta a tu reclamo en LasTresB", texto: `Hola, ${d.reclamante}.\n\n${d.respuesta}\n\nLasTresB` };
+}
+
+/** Titular de una cuenta: respuesta a su solicitud sobre sus datos personales (Ley 1581). */
+export function solicitudDatosRespondida(d: { nombre: string; respuesta: string }): MensajeTexto {
+  return { asunto: "Respuesta a tu solicitud sobre tus datos en LasTresB", texto: `Hola, ${d.nombre}.\n\n${d.respuesta}\n\nLasTresB` };
 }
 
 /* ───────────── WhatsApp (el equipo lo abre y lo envía desde su WhatsApp) ───────────── */
