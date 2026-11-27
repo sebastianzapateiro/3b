@@ -8,6 +8,7 @@ import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db, schema } from "@las3b/db";
 import { enviarCorreo } from "@/lib/correo";
 import { enlaceCalificar, generarCodigo, mensajeCalificacion } from "@/lib/calificacion";
+import { calificacionServicio } from "@/lib/plantillas";
 import { esCorreoFicticio } from "@/lib/invitaciones";
 import { SITIO_URL } from "@/lib/seo";
 
@@ -62,7 +63,7 @@ export async function marcarServicioPrestado(proveedorId: string, contactoId: st
   const [comprador] = c.compradorId ? await db.select({ nombre: user.name, correo: user.email }).from(user).where(eq(user.id, c.compradorId)).limit(1) : [];
   if (comprador && !esCorreoFicticio(comprador.correo)) {
     const enlace = enlaceCalificar(SITIO_URL, c.slug, codigo);
-    await enviarCorreo({ para: comprador.correo, asunto: `¿Cómo te fue con ${c.proveedor}?`, texto: mensajeCalificacion({ cliente: comprador.nombre, proveedor: c.proveedor, enlace }) });
+    await enviarCorreo({ para: comprador.correo, ...calificacionServicio({ cliente: comprador.nombre, proveedor: c.proveedor, enlace }) });
     await db.update(servicios).set({ calificacionEnviadaEn: new Date(), calificacionCanal: "correo" }).where(eq(servicios.id, servicio!.id));
     return { ok: true, enviado: "correo" };
   }
